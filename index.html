@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title> (ó)regla </title>
+
+        <script src="libs/pusher.min.js"></script>
+
+        <script src="libs/flocking-all.min.js"></script>
+        <script src="utilities.js"></script>
+        <script src="schillinger_functions.js"></script>
+        <script src="chaos.js"></script>
+        <script src="soundComposition.js"></script>
+        <script src="synthDefinitions.js"></script>
+
+        <link rel="stylesheet" href="style.css"/>
+        <script>
+          // Enable pusher logging - don't include this in production
+          Pusher.log = function(message) {
+            if (window.console && window.console.log) {
+              window.console.log(message);
+            }
+          };
+
+          var pusher = new Pusher('7386b1954d49d1d73eea', {
+            encrypted: true,
+          });
+
+          var channel = pusher.subscribe('oregla-channel');
+
+          channel.bind('pusher:subscription_succeeded', function() {
+            channel.bind('start_sequence', sound.startSequence);
+            channel.bind('stop_sequence', sound.stopSequence);
+          });
+
+        </script>
+
+    </head>
+
+    <body class=mainStyle>
+      <div class=titleStyle><br><b>(ó)regla<br>&nbsp;</b></div>
+      <div id=splash></div>
+      <div id=memberCount></div>
+        <canvas id=cvs></canvas>
+        <script>
+        var bPlaying = false;
+        window.addEventListener("keydown", function (e) { // start keyboard listener
+
+          if( event.keyCode >= 49 && event.keyCode <= 57 ) { // if nr 1 - 9 is pressed select that melody
+            var n = event.keyCode - 48;
+            document.getElementById('splash').innerHTML = '<br><br><br><br>'+n;
+            sound.chaosToPlay = n;
+          }
+          switch (event.keyCode) {
+            case 87: /*w*/  case 38: /*up*/
+              break;
+            case 83: /*s*/  case 40: /*down*/
+              break;
+            case 65: /*a*/  case 37: /*left*/
+              break;
+            case 68: /*d*/  case 39: /*right*/
+              break;
+            case 69: /*e*/
+              break;
+            case 80: /*p*/
+              break;
+            case 77: /*m*/
+              break;
+            case 13: /*enter*/
+            break;
+            case 32: /*spaceBar*/
+              !bPlaying ? sound.startSequence() : sound.stopSequence();
+              bPlaying = !bPlaying;
+              break;
+            // default:
+            //   console.log(event.keyCode)
+            //   break;
+            }
+        })
+        </script>
+    </body>
+</html>

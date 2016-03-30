@@ -1,0 +1,67 @@
+.mainStyle {
+  font-family: Menlo;
+  text-rendering: geometricPrecision;
+
+  font-size: 20px;
+  line-height: 100%;
+  box-shadow: 10px 10px 5px #888888;
+  overflow: hidden;
+}
+
+#splash {
+  min-width: 300px;
+  width: 50%;
+  min-height: 200px;
+  height: 25%;
+  position: fixed;
+  text-align: center;
+  align-self: center;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  background: white;
+  transition: background-color 0.2s ease;
+  transition: color 0.2s ease;
+
+  box-shadow: 10px 10px 5px #888888;
+  border:5px solid #000000;
+  overflow: scroll;
+}
+#memberCount {
+  min-width: 150px;
+  min-height: 100px;
+  position: fixed;
+  text-align: center;
+  align-self: center;
+  top: 50%; left: 10%;
+  /*transform: translate(-25%, -25%);
+  -webkit-transform: translate(-25%, -25%);*/
+  background: white;
+  transition: background-color 0.2s ease;
+  transition: color 0.2s ease;
+
+  box-shadow: 10px 10px 5px #888888;
+  border:5px solid #000000;
+  overflow: scroll;
+}
+
+.titleStyle {
+  font-size: 30px;
+  top: 5%;
+  left: 0;
+  text-align: center;
+  background: white;
+  border:5px solid #000000;"
+}
+
+#cvs {
+ position: absolute;
+ cursor: default;
+ top: 0;
+ left: 0;
+ bottom: 0;
+ right: 0;
+ z-index: -1;
+ -webkit-user-select: none;
+ overflow: hidden;
+}
