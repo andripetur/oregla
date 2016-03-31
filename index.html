@@ -5,9 +5,8 @@
         <meta charset="UTF-8">
         <title> (ó)regla </title>
 
-        <script src="libs/pusher.min.js"></script>
-
         <script src="libs/flocking-all.min.js"></script>
+        <script src="websocket.js"></script>
         <script src="utilities.js"></script>
         <script src="schillinger_functions.js"></script>
         <script src="chaos.js"></script>
@@ -16,23 +15,10 @@
 
         <link rel="stylesheet" href="style.css"/>
         <script>
-          // Enable pusher logging - don't include this in production
-          Pusher.log = function(message) {
-            if (window.console && window.console.log) {
-              window.console.log(message);
-            }
-          };
 
-          var pusher = new Pusher('7386b1954d49d1d73eea', {
-            encrypted: true,
-          });
-
-          var channel = pusher.subscribe('oregla-channel');
-
-          channel.bind('pusher:subscription_succeeded', function() {
-            channel.bind('start_sequence', sound.startSequence);
-            channel.bind('stop_sequence', sound.stopSequence);
-          });
+            // needs new way of binding
+            // channel.bind('start_sequence', sound.startSequence);
+            // channel.bind('stop_sequence', sound.stopSequence);
 
         </script>
 
