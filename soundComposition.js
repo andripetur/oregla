@@ -52,8 +52,10 @@
     b: -1.9, o: 1
   }
 
-  for(var i=0; i<10; i++){
-    sound.chaos[i].calculatePhrase(sound.coordinates);
+  for(var i=0; i<4; i++){
+    // sound.chaos[i].calculatePhrase(sound.coordinates);
+    sound.chaos[i].calculateBufferedPhrase(sound.coordinates);
+
     sound.coordinates.b -= 0.002;
   }
 
@@ -92,18 +94,18 @@
           offset += 12;
         }
 
-        if( noteAbove > 0 ){ // if note above is valid check if it false
-          // check the space beetween playing note and the one above it.
-          var noteDelta = Math.abs( n - noteAbove);
-
-          if( noteDelta == 0 ) { // up an octave
-            offset += 12;
-          } else if ( noteDelta == 1) {
-            offset += 2
-          } else if ( noteDelta == 2) {
-            offset += 1
-          }
-        }
+        // if( noteAbove > 0 ){ // if note above is valid check if it false
+        //   // check the space beetween playing note and the one above it.
+        //   var noteDelta = Math.abs( n - noteAbove);
+        //
+        //   if( noteDelta == 0 ) { // up an octave
+        //     offset += 12;
+        //   } else if ( noteDelta == 1) {
+        //     offset += 2
+        //   } else if ( noteDelta == 2) {
+        //     offset += 1
+        //   }
+        // }
 
         sound.playNote( 'synth', flock.midiFreq(sound.lockToScale( n + offset )) );
         blink();
@@ -111,7 +113,7 @@
 
     });
   }
-  // // play filterbank 
+  // // play filterbank
   // clock.repeat(0.125, function() {
   //     sound.chaos[1].calculate();
   //     var n = Math.floor( sound.chaos[1].getNormalized('x', 20, 120));

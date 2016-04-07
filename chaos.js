@@ -33,17 +33,40 @@ Chaos.prototype.getNormalized= function(which, nLow, nHigh){
 }
 
 Chaos.prototype.getNote = function(){
-  if(this.restCounter == 0){
-    var n = this.phrase[this.pos];
+  if(this.restCounter === this.rest[this.pos % this.rest.length]){
+    var n = this.phrase[this.pos%this.phrase.length]
     this.pos++;
     if(this.pos > this.phrase.length-1) this.pos = 0;
-    this.restCounter++;
+    this.restCounter=0;
     return n + 36;
-  } else {
-    this.restCounter++;
-    if(this.restCounter > this.rest[this.pos] ) this.restCounter = 0;
-    return -1;
   }
+    this.restCounter++;
+    return -1;
+}
+
+Chaos.prototype.calculateBufferedPhrase = function( coords ) {
+  this.x=coords.x; this.y=coords.y; this.a=coords.a; this.t=coords.t; this.b=coords.b; this.o=coords.o;
+  this.phrase = [];
+  this.rest = [];
+  this.pos = 0;
+  this.restCounter = 0;
+
+  var phrase = [];
+  for(var i=0; i<100; i++){
+    phrase.push( { x: this.x, y: this.y, length: utilities.pythagoras(this.x, this.y) });
+    this.chaosFunc();
+  }
+
+  // reorder by distance from point 0, 0
+  phrase.sort(function(a,b){
+    return a.length - b.length;
+  })
+
+  this.phrase = phrase.map(function(el){ return Math.abs(Math.floor(el.x)); } );
+  // this.rest =   phrase.map(function(el){ return 2; })
+  this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
+
+  console.log('Buffered phrase generated')
 }
 
 Chaos.prototype.calculatePhrase = function( coords ) {

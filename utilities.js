@@ -24,6 +24,10 @@ utilities.min = function( arr ) {
   return m;
 }
 
+utilities.pythagoras = function(a,b) {
+  return Math.sqrt((a*a) + (b*b));
+}
+
 utilities.round = function( toRound, val ) {
   return Math.floor(toRound / val) * val;
 }
