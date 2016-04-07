@@ -79,6 +79,61 @@
       },
   });
 
+  sound.pianoSamples = [];
+
+  for (var i = 0; i < 16; i++) {
+    var url = (i < 8 ? "./piano/C" + i : "./piano/Fis" + (i-8)) + ".wav";
+    sound.pianoSamples.push( flock.synth({
+        synthDef: {
+            ugen: "flock.ugen.playBuffer",
+            id: "buffer",
+            buffer: {
+                id: "n"+Math.random(),
+                url: url
+            },
+
+            trigger: {
+              id: "trig",
+              ugen: "flock.ugen.inputChangeTrigger",
+              source: 0,
+            },
+            speed: 1,
+            loop: 0,
+            start: 0,
+        }
+    }));
+  }
+
+  sound.cMidiNrs = [0, 12, 24, 36, 48, 60, 72, 84, 96];
+  sound.fisMidiNrs = [6, 18, 30, 42, 54, 66, 78, 90, 102];
+
+  sound.midiNrsOfNotes = [0,12,24,36,48,60,72,84,96,6,18,30,42,54,66,78,90,102];
+
+  // returns the index of the number, closest to the provided number
+  sound.closestIndex = function( n, arr ){
+    var diffs = arr.map(function(el){ return Math.abs(el - n); });
+    var lowest = Number.MAX_VALUE, indx = 0;
+    for (var i = 0; i < diffs.length; i++) {
+      if( diffs[i] < lowest ){
+        lowest = diffs[i];
+        indx = i;
+      }
+    }
+    return indx;
+  }
+
+  sound.pianoPlayNote = function(n){
+    var tempIndx = 0;
+
+    if( (tempIndx = sound.midiNrsOfNotes.indexOf(n)) > -1) {
+      sound.pianoSamples[tempIndx].set({"trig.source": 1, "buffer.speed": 1});
+    } else { // pitch chaaange
+      tempIndx = sound.closestIndex(n,sound.midiNrsOfNotes);
+      var delta = n - sound.midiNrsOfNotes[tempIndx];
+      sound.pianoSamples[tempIndx].set({"trig.source": 1, "buffer.speed": Math.pow(2, delta/12)});
+    }
+  }
+
   var ffBankSize = 10;
   function fillFilterBank() {
     var ffb = [];

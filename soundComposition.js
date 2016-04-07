@@ -110,7 +110,7 @@
         sound.playNote( 'synth', flock.midiFreq(sound.lockToScale( n + offset )) );
         blink();
       }
-
+        flock
     });
   }
   // // play filterbank
