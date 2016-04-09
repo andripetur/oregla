@@ -87,12 +87,12 @@
       n = nArr[sound.chaosToPlay];
 
       if( n >= 0 ){ // note is valid
-        if(sound.chaosToPlay % 2 == 0){
-          s = 'synth';
-        } else {
-          s = 'synth2';
-          offset += 12;
-        }
+        // if(sound.chaosToPlay % 2 == 0){
+        //   s = 'synth';
+        // } else {
+        //   s = 'synth2';
+        //   offset += 12;
+        // }
 
         // if( noteAbove > 0 ){ // if note above is valid check if it false
         //   // check the space beetween playing note and the one above it.
@@ -107,10 +107,17 @@
         //   }
         // }
 
-        sound.playNote( 'synth', flock.midiFreq(sound.lockToScale( n + offset )) );
+        // sound.playNote( 'synth', flock.midiFreq(sound.lockToScale( n + offset )) );
+        // sound.pianoPlayNote( sound.lockToScale( n + offset ) );v
+        var midiNote = sound.lockToScale( n + offset );
+        // var pDuration = "piano-"+midiNote+".end";
+        var pNote = "piano-"+midiNote+".trigger.source";
+        // sound.dasPiano.set( { pDuration : 1, pNote : 1 });
+        // sound.dasPiano.set( pDuration , 0.05);
+        sound.piano.set( pNote , 1 );
+
         blink();
       }
-        flock
     });
   }
   // // play filterbank

@@ -62,7 +62,7 @@ Schillinger.interference = function(){ // takes two or more arguments
   var impulses = args.map(Schillinger.fromMonomialsToImpulse);
   // var l = Math.min.apply(this, impulses.map(function(el){ return el.length; }));
   var l = Math.min(...impulses.map(function(el){ return el.length; }))
-  console.log(l)
+  // console.log(l)
 
   for (var i = 0; i < l; i++) {
     for(var ai = 0; ai < impulses.length; ai++){

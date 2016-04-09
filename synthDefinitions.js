@@ -79,60 +79,74 @@
       },
   });
 
-  sound.pianoSamples = [];
+  function makeBufferDefs(){
+    var note, id, defs = [];
+    for (var i = 0; i < 16; i++) {
+      note = ((i % 2) == 0 ? "C" : "Fis" ) + Math.floor(i/2);
+      id = "pi-note-" + (i * 6);
+      defs.push( { id: id, url: "./piano/" + note + ".wav" });
+    }
+    return defs;
+  }
 
-  for (var i = 0; i < 16; i++) {
-    var url = (i < 8 ? "./piano/C" + i : "./piano/Fis" + (i-8)) + ".wav";
-    sound.pianoSamples.push( flock.synth({
-        synthDef: {
+  sound.loader = flock.bufferLoader({
+    bufferDefs: makeBufferDefs(),
+    listeners: {
+        afterBuffersLoaded: function () {
+            // console.log("buffers ready");
+        }
+    }
+  });
+
+  var everySixUnder103 = [];
+  for (var i = 0; i < 18; i++) everySixUnder103.push(i*6);
+
+  function makePianoSamples(){
+    var bufferId, delta, synths = [];
+      for (var i = 0; i < 128; i++) {
+        if( everySixUnder103.indexOf(i) > -1){
+          delta = 1;
+          bufferId = "pi-note-"+ i;
+        } else {
+          var diffs = everySixUnder103.map(function(el){ return { diff: Math.abs(el - i), val: el }; });
+          diffs.sort(function(a,b){
+            return a.diff - b.diff;
+          });
+          var baseNote = diffs[0].val;
+          bufferId = "pi-note-"+ baseNote;
+          delta = i - baseNote;
+        }
+
+        synths.push({
             ugen: "flock.ugen.playBuffer",
-            id: "buffer",
-            buffer: {
-                id: "n"+Math.random(),
-                url: url
-            },
+            id: "piano-"+i,
+            buffer: bufferId,
 
             trigger: {
               id: "trig",
               ugen: "flock.ugen.inputChangeTrigger",
               source: 0,
             },
-            speed: 1,
+
+            speed: Math.pow(2, delta/12),
             loop: 0,
             start: 0,
-        }
-    }));
-  }
+          });
+      }
+      return synths;
+    }
 
-  sound.cMidiNrs = [0, 12, 24, 36, 48, 60, 72, 84, 96];
-  sound.fisMidiNrs = [6, 18, 30, 42, 54, 66, 78, 90, 102];
+  sound.piano = flock.synth( {
+    synthDef: {
+      ugen: 'flock.ugen.freeverb',
+      // ugen: 'flock.ugen.distortion',
 
-  sound.midiNrsOfNotes = [0,12,24,36,48,60,72,84,96,6,18,30,42,54,66,78,90,102];
-
-  // returns the index of the number, closest to the provided number
-  sound.closestIndex = function( n, arr ){
-    var diffs = arr.map(function(el){ return Math.abs(el - n); });
-    var lowest = Number.MAX_VALUE, indx = 0;
-    for (var i = 0; i < diffs.length; i++) {
-      if( diffs[i] < lowest ){
-        lowest = diffs[i];
-        indx = i;
+      source: {
+        ugen: 'flock.ugen.sum',
+        sources: makePianoSamples(),
       }
     }
-    return indx;
-  }
-
-  sound.pianoPlayNote = function(n){
-    var tempIndx = 0;
-
-    if( (tempIndx = sound.midiNrsOfNotes.indexOf(n)) > -1) {
-      sound.pianoSamples[tempIndx].set({"trig.source": 1, "buffer.speed": 1});
-    } else { // pitch chaaange
-      tempIndx = sound.closestIndex(n,sound.midiNrsOfNotes);
-      var delta = n - sound.midiNrsOfNotes[tempIndx];
-      sound.pianoSamples[tempIndx].set({"trig.source": 1, "buffer.speed": Math.pow(2, delta/12)});
-    }
-  }
+  })
 
   var ffBankSize = 10;
   function fillFilterBank() {
