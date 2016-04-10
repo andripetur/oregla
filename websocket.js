@@ -4,9 +4,10 @@
   var socket = null;
   var msgTypeActions = {};
   var isopen = false;
+  var timeoutIdToReconnect = null;
   var lastUserToPost = '';
 
-  window.onload = function() {
+  function connectSocket() {
 
       msgTypeActions = {
         start_sequence : sound.startSequence,
@@ -36,11 +37,19 @@
      }
 
      socket.onclose = function(e) {
-        console.log("Connection closed.");
+        console.log("Connection closed. Trying to reconnect in 10 seconds. Cancel with: cancelRecon()");
         socket = null;
         isopen = false;
+        timeoutIdToReconnect = setTimeout(connectSocket, 1000);
      }
   };
+
+  window.onload = connectSocket;
+
+  function cancelRecon(){
+    window.clearTimeout(timeoutIdToReconnect);
+    console.log("Reconnect cancelled.")
+  }
 
   function sendText(_text) {
     var text = _text || "Hello, world!";
@@ -83,7 +92,7 @@
        type: 'message'
      }
 
-     postMessage( msg, 'blue');
+    //  postMessage( msg, 'blue');
 
      var js = JSON.stringify(msg);
      sendText(js);

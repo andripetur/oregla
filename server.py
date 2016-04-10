@@ -24,7 +24,6 @@ class MyServerProtocol(WebSocketServerProtocol):
         pl = json.loads(payload)
 
         if pl['type'] == 'message' :
-            # global clients
             for i in clientsArr :
                 if not i == self : # dont send message to original sender
                     i.sendMessage(payload, isBinary)
@@ -39,11 +38,12 @@ class MyServerProtocol(WebSocketServerProtocol):
 def serverThread() :
     while True:
         key = raw_input('$: ' )
-        # key = 'm'
         if key is 'h' :
             print '   h: help, \n   m: send message, \n   l: list commands, \n   c: send command.'
         elif key is 'l' :
             print '   st: start_sequence, \n   sp: stop_sequence'
+        elif key is 'c' :
+            sendCommandFromServer( raw_input('send a command:' ) )
         elif key is 'm' :
             sendMessageFromServer(raw_input('send server message:' ))
 
@@ -51,6 +51,13 @@ def sendMessageFromServer(message) :
     msg = { 'userId' : 'server',
             'content' : message,
             'type' : 'message' }
+    jsonString = json.dumps(msg)
+    for i in clientsArr :
+        i.sendMessage(jsonString, isBinary=False)
+
+def sendCommandFromServer(commandType) :
+    msg = { 'userId' : 'server',
+            'type' : commandType }
     jsonString = json.dumps(msg)
     for i in clientsArr :
         i.sendMessage(jsonString, isBinary=False)

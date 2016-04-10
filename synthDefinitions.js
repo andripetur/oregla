@@ -8,7 +8,7 @@
            ugen: "flock.ugen.sinOsc",
            freq: 1/8,
            mul: 5000,
-           add: 7000
+           add: 6000
        },
        resonance: 2,
        source: {
@@ -86,6 +86,7 @@
       id = "pi-note-" + (i * 6);
       defs.push( { id: id, url: "./piano/" + note + ".wav" });
     }
+    defs.push( {id: 'oboe', url: "./audio/oboe_C4.wav"});
     return defs;
   }
 
@@ -147,6 +148,46 @@
       }
     }
   })
+
+  sound.oboe = flock.synth( {
+    synthDef: {
+        ugen: "flock.ugen.playBuffer",
+        id: "oboe",
+        buffer: "oboe",
+
+        trigger: {
+          id: "trig",
+          ugen: "flock.ugen.inputChangeTrigger",
+          source: 0,
+        },
+
+        mul: {
+            id: "env",
+            ugen: "flock.ugen.asr",
+            start: 0.0,
+            attack: 0.1,
+            sustain: 0.25,
+            release: 0.1,
+            gate: 0
+        },
+
+        speed: 1,
+        loop: 1,
+        start: 0,
+        end: 1,
+      }
+    });
+
+  sound.playOboe = function(n){
+    var c4 = 48;
+    var delta = n - c4;
+    sound.oboe.set( "oboe.speed" , Math.pow(2, delta/12));
+    sound.oboe.set( "trig.source" , 1);
+    sound.oboe.set( "env.gate" , 1);
+    setTimeout(function () {
+      sound.oboe.set( "env.gate" , 0);
+    }, 100);
+  }
 
   var ffBankSize = 10;
   function fillFilterBank() {

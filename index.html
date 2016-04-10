@@ -6,6 +6,8 @@
         <title> (ó)regla </title>
 
         <script src="libs/flocking-all.min.js"></script>
+        <script src="libs/fabric.js"></script>
+        <script src="draw.js"></script>
         <script src="websocket.js"></script>
         <script src="utilities.js"></script>
         <script src="schillinger_functions.js"></script>
@@ -14,22 +16,26 @@
         <script src="synthDefinitions.js"></script>
 
         <link rel="stylesheet" href="style.css"/>
-        <script>
-
-            // needs new way of binding
-            // channel.bind('start_sequence', sound.startSequence);
-            // channel.bind('stop_sequence', sound.stopSequence);
-
-        </script>
 
     </head>
 
-    <body class=mainStyle>
+    <body>
       <div class=titleStyle><br><b>(ó)regla<br>&nbsp;</b></div>
-      <div id=splash></div>
-      <div id=memberCount></div>
-        <canvas id=cvs></canvas>
+      <!-- <div id=splash></div> -->
+      <!-- <div id=memberCount></div> -->
+        <canvas id="cvs"></canvas>
+
+
         <script>
+        var canvas = new fabric.Canvas('cvs', {
+          backgroundColor: 'black',
+          renderOnAddRemove: false,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+
+        drawChaos(sound.chaos[0].points)
+
         var bPlaying = false;
         window.addEventListener("keydown", function (e) { // start keyboard listener
 

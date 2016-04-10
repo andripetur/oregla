@@ -6,6 +6,7 @@ Chaos = function(_x, _y, _a, _t, _b, _o){
   this.rest = [];
   this.restCounter = 0;
   this.pos = 0;
+  this.points = [];
 }
 
 Chaos.prototype.higherOrLower = function(val){
@@ -63,6 +64,7 @@ Chaos.prototype.calculateBufferedPhrase = function( coords ) {
   })
 
   this.phrase = phrase.map(function(el){ return Math.abs(Math.floor(el.x)); } );
+  this.points = phrase;
   // this.rest =   phrase.map(function(el){ return 2; })
   this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
 

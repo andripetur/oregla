@@ -46,9 +46,14 @@
   sound.chaos = [];
   for(var i=0; i<10; i++) sound.chaos.push(new Chaos(0.1, 0.1, 0, -5, 0.9, 1));
 
+  // sound.coordinates = {
+  //   x: 0.1, y: 0.1,
+  //   a: 0, t: -10,
+  //   b: -1.9, o: 1
+  // }
   sound.coordinates = {
     x: 0.1, y: 0.1,
-    a: 0, t: -10,
+    a: 0, t: -4.1,
     b: -1.9, o: 1
   }
 
@@ -107,16 +112,15 @@
         //   }
         // }
 
-        // sound.playNote( 'synth', flock.midiFreq(sound.lockToScale( n + offset )) );
-        // sound.pianoPlayNote( sound.lockToScale( n + offset ) );v
         var midiNote = sound.lockToScale( n + offset );
-        // var pDuration = "piano-"+midiNote+".end";
+        animatePoint(sound.chaos[0].pos);
+
+        // sound.playNote( 'synth', flock.midiFreq(midiNote) );
+        // sound.playOboe( midiNote - 24 );
         var pNote = "piano-"+midiNote+".trigger.source";
-        // sound.dasPiano.set( { pDuration : 1, pNote : 1 });
-        // sound.dasPiano.set( pDuration , 0.05);
         sound.piano.set( pNote , 1 );
 
-        blink();
+        // blink();
       }
     });
   }
