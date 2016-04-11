@@ -1,4 +1,5 @@
 (function () {
+  // - - - - synths - - - -
 
   sound.synth = flock.synth({
     nickName: "square-synth",
@@ -78,6 +79,23 @@
        },
       },
   });
+
+  sound.playNote = function (synth, f, _duration) {
+    var duration = duration || 200;
+    sound[synth].set({
+        "osc.freq": f,
+        "osc2.freq": f*1.02,
+        "env.gate":  1,
+        "env2.gate":  1,
+
+    }); //<<set note
+    setTimeout(function(){ // put note out
+      sound[synth].set("env.gate", 0);
+      sound[synth].set("env2.gate", 0);
+    }, duration)
+  }
+
+  // - - - - samplers - - - -
 
   function makeBufferDefs(){
     var note, id, defs = [];
@@ -188,6 +206,8 @@
       sound.oboe.set( "env.gate" , 0);
     }, 100);
   }
+
+  // - - - - filterbanks - - - -
 
   var ffBankSize = 10;
   function fillFilterBank() {

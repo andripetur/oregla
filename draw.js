@@ -10,9 +10,42 @@ function initDrawing(){
 
   drawChaos(sound.chaos[0].points);
 
+  fabric.util.loadImage('./imgs/paper.jpg', function(img) {
+    canvas.item(0).fill = new fabric.Pattern({
+      source: img,
+      repeat: 'repeat'
+    });
+  });
+
   setInterval(function () {
     canvas.renderAll();
   }, 40);
+}
+
+function textureColor(){
+  fabric.Image.fromURL('./imgs/paper.jpg', function(img) {
+    img.scaleToWidth(100);
+
+    var patternSourceCanvas = new fabric.StaticCanvas();
+    patternSourceCanvas.add(img);
+
+    img.filters.push(new fabric.Image.filters.Tint({
+      color: "rgba(0,0,0,0.5)",
+    }));
+
+    img.applyFilters(patternSourceCanvas.renderAll.bind(patternSourceCanvas));
+
+    canvas.backgroundColor = new fabric.Pattern({
+      source: function() {
+        patternSourceCanvas.setDimensions({
+          width: img.getWidth(),
+          height: img.getHeight()
+        });
+        return patternSourceCanvas.getElement();
+      },
+      repeat: 'repeat'
+    });
+  })
 }
 
 var smallRadius = 10;
@@ -35,7 +68,7 @@ function drawChaos(points){
     yavg += y;
 
     clrVal = Math.floor(points[i].length * Math.floor(255/bigRadious));
-    color = 'rgb('+clrVal+',100,100)';
+    color = 'rgba('+clrVal+',100,100,0.5)';
 
     canvas.add( new fabric.Circle({
         originX: "center",
@@ -43,7 +76,7 @@ function drawChaos(points){
         left: x,
         top:  y,
         fill: color,
-        stroke: true,
+        stroke: 'rgba('+clrVal+',100,100,1)',
         radius: smallRadius,
       }));
     }
@@ -62,12 +95,10 @@ function drawChaos(points){
     });
 
     canvas.add(big);
-    // console.log(big);
     big.sendToBack();
 }
 
 function moveChaos(points){
-
   var bigRadious = utilities.max(points.map(function(p){ return p.length; }));
   var xrange = utilities.range(points.map(function(p){ return p.x; }));
   var yrange = utilities.range(points.map(function(p){ return p.y; }));
@@ -138,4 +169,15 @@ function animatePoint(n){
     }
   });
 
+}
+
+// make html element blink
+function blink(){
+  var splash = document.getElementById('splash');
+  splash.style.background = 'black';
+  splash.style.color = 'white';
+  setTimeout(function(){
+    splash.style.background = 'white';
+    splash.style.color = 'black';
+  }, 200);
 }
