@@ -37,7 +37,7 @@ Chaos.prototype.getNote = function(){
   if(this.restCounter === this.rest[this.pos % this.rest.length]){
     var n = this.phrase[this.pos%this.phrase.length]
     this.pos++;
-    if(this.pos > this.phrase.length-1) this.pos = 0;
+    // if(this.pos > this.phrase.length-1) this.pos = 0;
     this.restCounter=0;
     return n + 36;
   }

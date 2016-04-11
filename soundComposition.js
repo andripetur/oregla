@@ -1,10 +1,6 @@
-// Wrap everything in a function to keep your stuff private.
 (function () {
-
-  // JavaScript strict mode is a good thing.
   "use strict";
 
-  // Define a unique global namespace for your stuff.
   fluid.registerNamespace("sound");
 
   var environment = flock.init();
@@ -54,10 +50,10 @@
   sound.coordinates = {
     x: 0.1, y: 0.1,
     a: 0, t: -4.1,
-    b: -1.9, o: 1
+    b: Math.random()*100, o: 1
   }
 
-  for(var i=0; i<4; i++){
+  for(var i=0; i<10; i++){
     // sound.chaos[i].calculatePhrase(sound.coordinates);
     sound.chaos[i].calculateBufferedPhrase(sound.coordinates);
 
@@ -113,7 +109,7 @@
         // }
 
         var midiNote = sound.lockToScale( n + offset );
-        animatePoint(sound.chaos[0].pos);
+        animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].phrase.length+1);
 
         // sound.playNote( 'synth', flock.midiFreq(midiNote) );
         // sound.playOboe( midiNote - 24 );

@@ -27,22 +27,18 @@
 
 
         <script>
-        var canvas = new fabric.Canvas('cvs', {
-          backgroundColor: 'black',
-          renderOnAddRemove: false,
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-
-        drawChaos(sound.chaos[0].points)
+        initDrawing();
 
         var bPlaying = false;
         window.addEventListener("keydown", function (e) { // start keyboard listener
 
           if( event.keyCode >= 49 && event.keyCode <= 57 ) { // if nr 1 - 9 is pressed select that melody
             var n = event.keyCode - 48;
-            document.getElementById('splash').innerHTML = '<br><br><br><br>'+n;
+            // document.getElementById('splash').innerHTML = '<br><br><br><br>'+n;
             sound.chaosToPlay = n;
+
+            moveChaos(sound.chaos[sound.chaosToPlay].points)
+
           }
           switch (event.keyCode) {
             case 87: /*w*/  case 38: /*up*/
