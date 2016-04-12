@@ -25,7 +25,7 @@
       <!-- <div id=memberCount></div> -->
         <canvas id="cvs"></canvas>
         <div id="controls">
-          piano <input type='range' name='p-vol' class='seethrough' min=0 max=1 step=0.01 oninput="showVal(this.value)">
+          piano <input type='range' name='p-vol' class='seethrough' min=0 max=1 step=0.01 oninput="setValue(this.value)">
           nuthing <input type='range' name='ffb-vol' class='seethrough'>
           mor nuthing <input type='range' name='pianoVolume' class='seethrough'>
         </div>
@@ -34,7 +34,7 @@
 
         function setValue(v){
           sound.piano.set({
-            "verb.mul": parseFloat(v),
+            "verb.mul": sound.line(parseFloat(v))
           });
         }
         initDrawing();

@@ -39,8 +39,9 @@
   }
 
   for(var i=0; i<10; i++){
-    // sound.chaos[i].calculatePhrase(sound.coordinates);
-    sound.chaos[i].calculateBufferedPhrase(sound.coordinates);
+    // sound.chaos[i].calculatePhrase(sound.coordinates, 10);
+    // sound.chaos[i].calculateBufferedPhrase(sound.coordinates, 10);
+    sound.chaos[i].calculateSequencedPhrase(sound.coordinates, 10);
 
     // sound.coordinates.b -= 0.002;
     sound.coordinates.b -= 0.2;
@@ -85,7 +86,8 @@
         //   }
         // }
 
-        var midiNote = sound.lockToScale( n + offset );
+        // var midiNote = sound.lockToScale( n + offset );
+        var midiNote = n + offset ;
         animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].phrase.length+1);
 
         // sound.playNote( 'synth', flock.midiFreq(midiNote) );

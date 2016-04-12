@@ -155,14 +155,18 @@
       return synths;
     }
 
-  var lastPos = 1;
+  var pianoStartVol = 0.5;
+  var lastPos = pianoStartVol;
   sound.line = function(goTo){
-    var env = {
-      levels: [lastPos, goTo],
-      times: [0.3],
+    var line = {
+      ugen: 'flock.ugen.xLine',
+      rate: 'control',
+      start: lastPos,
+      end: goTo,
+      duration: 0.03
     };
     lastPos = goTo;
-    return env;
+    return line;
   }
 
   sound.piano = flock.synth( {
@@ -170,21 +174,14 @@
       id: 'verb',
       ugen: 'flock.ugen.freeverb',
       // ugen: 'flock.ugen.distortion',
-      // mul: {
-      //     id: 'volEnv',
-      //     ugen: "flock.ugen.envGen",
-      //     rate: "control",
-      //     envelope: sound.line(1),
-      //     gate: 1
-      // },
+
+      mul: pianoStartVol,
       source: {
         ugen: 'flock.ugen.sum',
         sources: makePianoSamples(),
       }
     }
   })
-
-  console.log(sound.piano)
 
   sound.oboe = flock.synth( {
     synthDef: {
