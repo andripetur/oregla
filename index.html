@@ -12,7 +12,7 @@
         <script src="utilities.js"></script>
         <script src="schillinger_functions.js"></script>
         <script src="chaos.js"></script>
-        <script src="soundComposition.js"></script>
+        <script src="composition.js"></script>
         <script src="synthDefinitions.js"></script>
 
         <link rel="stylesheet" href="style.css"/>
@@ -24,8 +24,19 @@
       <!-- <div id=splash></div> -->
       <!-- <div id=memberCount></div> -->
         <canvas id="cvs"></canvas>
+        <div id="controls">
+          piano <input type='range' name='p-vol' class='seethrough' min=0 max=1 step=0.01 oninput="showVal(this.value)">
+          nuthing <input type='range' name='ffb-vol' class='seethrough'>
+          mor nuthing <input type='range' name='pianoVolume' class='seethrough'>
+        </div>
 
         <script>
+
+        function setValue(v){
+          sound.piano.set({
+            "verb.mul": parseFloat(v),
+          });
+        }
         initDrawing();
 
         var bPlaying = false;

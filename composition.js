@@ -95,8 +95,9 @@
       }
     });
 
-    console.log(sequenceId)
+    // console.log(sequenceId)
   }
+
   sound.startFfb = function(){
     // play filterbank
     clock.repeat(0.125, function() {
