@@ -10,46 +10,9 @@ body {
   height: 100%;
 }
 
-#splash {
-  min-width: 300px;
-  width: 50%;
-  min-height: 200px;
-  height: 25%;
-  position: fixed;
-  text-align: center;
-  align-self: center;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  -webkit-transform: translate(-50%, -50%);
-  background: white;
-  transition: background-color 0.2s ease;
-  transition: color 0.2s ease;
-
-  box-shadow: 10px 10px 5px #888888;
-  border:5px solid #000000;
-  overflow: scroll;
-}
-#memberCount {
-  min-width: 150px;
-  min-height: 100px;
-  position: fixed;
-  text-align: center;
-  align-self: center;
-  top: 50%; left: 10%;
-  /*transform: translate(-25%, -25%);
-  -webkit-transform: translate(-25%, -25%);*/
-  background: white;
-  transition: background-color 0.2s ease;
-  transition: color 0.2s ease;
-
-  /*box-shadow: 10px 10px 5px #888888;*/
-  border:5px solid #000000;
-  overflow: scroll;
-}
-
-.titleStyle {
-  /*background: url(./imgs/paper.jpg) repeat top left;*/
+#title {
   font-size: 30px;
+  font-weight: bold;
   top: 5%;
   left: 0;
   text-align: center;
@@ -83,6 +46,7 @@ input[type=range] {
   -webkit-appearance: none;
   margin: 10px 0;
   width: 100%;
+  background-color: transparent;
 }
 input[type=range]:focus {
   outline: none;
@@ -165,8 +129,4 @@ input[type=range]:focus::-ms-fill-lower {
 }
 input[type=range]:focus::-ms-fill-upper {
   background: url(./imgs/seamless-dark-wall.jpg) repeat top left;
-}
-
-.seethrough {
-  background-color: transparent;
 }

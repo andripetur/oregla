@@ -1,7 +1,8 @@
 // chaos sequencer note generator
-Chaos = function(_x, _y, _a, _t, _b, _o){
-  this.x=_x; this.y=_y; this.a=_a; this.t=_t; this.b=_b; this.o=_o;
-  this.lowest = 0; this.highest= 0;
+Chaos = function( coords ){
+  this.x=coords.x; this.y=coords.y; this.a=coords.a;
+  this.t=coords.t; this.b=coords.b; this.o=coords.o;
+  this.lowest = 0; this.highest = 0;
   this.phrase = [];
   this.rest = [];
   this.restCounter = 0;
@@ -37,7 +38,6 @@ Chaos.prototype.getNote = function(){
   if(this.restCounter === this.rest[this.pos % this.rest.length]){
     var n = this.phrase[this.pos%this.phrase.length]
     this.pos++;
-    // if(this.pos > this.phrase.length-1) this.pos = 0;
     this.restCounter=0;
     return n + 36;
   }
@@ -46,11 +46,7 @@ Chaos.prototype.getNote = function(){
 }
 
 Chaos.prototype.calculateBufferedPhrase = function( coords , phraseLength ) {
-  this.x=coords.x; this.y=coords.y; this.a=coords.a; this.t=coords.t; this.b=coords.b; this.o=coords.o;
-  this.phrase = [];
-  this.rest = [];
-  this.pos = 0;
-  this.restCounter = 0;
+  Chaos.call(this, coords); // reinitalize object
 
   var phrase = [];
   for(var i=0; i<phraseLength; i++){
@@ -72,11 +68,7 @@ Chaos.prototype.calculateBufferedPhrase = function( coords , phraseLength ) {
 }
 
 Chaos.prototype.calculateSequencedPhrase = function( coords, phraseLength ) {
-  this.x=coords.x; this.y=coords.y; this.a=coords.a; this.t=coords.t; this.b=coords.b; this.o=coords.o;
-  this.phrase = [];
-  this.rest = [];
-  this.pos = 0;
-  this.restCounter = 0;
+  Chaos.call(this, coords); // reinitalize object
 
   var phrase = [];
   for(var i=0; i<phraseLength ; i++){
@@ -136,11 +128,7 @@ Chaos.prototype.calculateSequencedPhrase = function( coords, phraseLength ) {
 }
 
 Chaos.prototype.calculatePhrase = function( coords, phraseLength ) {
-  this.x=coords.x; this.y=coords.y; this.a=coords.a; this.t=coords.t; this.b=coords.b; this.o=coords.o;
-  this.phrase = [];
-  this.rest = [];
-  this.pos = 0;
-  this.restCounter = 0;
+  Chaos.call(this, coords); // reinitalize object
 
   var phraseX = [];
   var phraseY = [];

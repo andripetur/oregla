@@ -20,14 +20,14 @@
     </head>
 
     <body>
-      <div class=titleStyle><br><b>(ó)regla<br>&nbsp;</b></div>
-      <!-- <div id=splash></div> -->
-      <!-- <div id=memberCount></div> -->
+      <div id='title'><br>(ó)regla<br>&nbsp;</div>
+
         <canvas id="cvs"></canvas>
+
         <div id="controls">
-          piano <input type='range' name='p-vol' class='seethrough' min=0 max=1 step=0.01 oninput="setValue(this.value)">
-          nuthing <input type='range' name='ffb-vol' class='seethrough'>
-          mor nuthing <input type='range' name='pianoVolume' class='seethrough'>
+          piano <input type='range' name='p-vol' min=0 max=1 step=0.01 oninput="setValue(this.value)">
+          nuthing <input type='range' name='ffb-vol'>
+          mor nuthing <input type='range' name='pianoVolume'>
         </div>
 
         <script>
@@ -49,30 +49,28 @@
 
             moveChaos(sound.chaos[sound.chaosToPlay].points);
           }
-          switch (event.keyCode) {
-            case 87: /*w*/  case 38: /*up*/
+
+          switch (event.code) {
+            case 'KeyW':  case 'ArrowUp':
               break;
-            case 83: /*s*/  case 40: /*down*/
+            case 'KeyS':  case 'ArrowDown':
               break;
-            case 65: /*a*/  case 37: /*left*/
+            case 'KeyA':  case 'ArrowLeft':
               break;
-            case 68: /*d*/  case 39: /*right*/
+            case 'KeyD':  case 'ArrowRight':
               break;
-            case 69: /*e*/
+            case 'KeyE':
               break;
-            case 80: /*p*/
+            case 'KeyP':
               break;
-            case 77: /*m*/
+            case 'KeyM':
               break;
-            case 13: /*enter*/
-            break;
-            case 32: /*spaceBar*/
-              !bPlaying ? sound.startSequence() : sound.stopSequence();
+            case 'Enter':
+              break;
+            case 'Space':
+              bPlaying ? sound.stopSequence() : sound.startSequence();
               bPlaying = !bPlaying;
               break;
-            // default:
-            //   console.log(event.keyCode)
-            //   break;
             }
         })
         </script>
