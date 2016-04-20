@@ -47,7 +47,7 @@
 
   for(var i=0; i<10; i++){
     // sound.chaos[i].calculatePhrase(sound.coordinates, 10);
-    sound.chaos[i].calculateBufferedPhrase(sound.coordinates, 10);
+    sound.chaos[i].calculateBufferedPhrase(sound.coordinates, 100);
     // sound.chaos[i].calculateSequencedPhrase(sound.coordinates, 10);
 
     // sound.coordinates.b -= 0.002;

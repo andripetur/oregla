@@ -16,7 +16,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         openConnections+=1
         print("     WebSocket connection openened.")
         print("     Nr of openConnections: {0}".format(openConnections))
-        print "\n$: "
+        print("\n$: ")
 
         clientsArr.append(self)
 
@@ -39,9 +39,9 @@ def serverThread() :
     while True:
         key = raw_input('$: ' )
         if key is 'h' :
-            print '   h: help, \n   m: send message, \n   l: list commands, \n   c: send command.'
+            print( '   h: help, \n   m: send message, \n   l: list commands, \n   c: send command.')
         elif key is 'l' :
-            print '   st: start_sequence, \n   sp: stop_sequence'
+            print( '   st: start_sequence, \n   sp: stop_sequence')
         elif key is 'c' :
             sendCommandFromServer( raw_input('send a command:' ) )
         elif key is 'm' :

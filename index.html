@@ -8,6 +8,7 @@
         <script src="libs/fabric.min.js"></script>
         <script src="draw.js"></script>
         <script src="libs/flocking-all.min.js"></script>
+        <script src="console.js"></script>
         <script src="websocket.js"></script>
         <script src="utilities.js"></script>
         <script src="schillinger_functions.js"></script>
@@ -16,6 +17,7 @@
         <script src="synthDefinitions.js"></script>
 
         <link rel="stylesheet" href="style.css"/>
+        <link rel="stylesheet" href="libs/ansi.css" type="text/css" media="all" />
 
     </head>
 
@@ -30,49 +32,27 @@
           mor nuthing <input type='range' name='pianoVolume'>
         </div>
 
-        <script>
+        <!-- Must be a better way to load this shiznit -->
+        <div id="console"></div>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="libs/jqconsole.js" type="text/javascript" charset="utf-8"></script>
 
+        <script>
         function setValue(v){
           sound.piano.set({
             "verb.mul": sound.line(parseFloat(v))
           });
         }
+        initConsole();
         initDrawing();
 
-        var bPlaying = false;
-        window.addEventListener("keydown", function (e) { // start keyboard listener
-
-          if( event.keyCode >= 49 && event.keyCode <= 57 ) { // if nr 1 - 9 is pressed select that melody
-            var n = event.keyCode - 48;
-            // document.getElementById('splash').innerHTML = '<br><br><br><br>'+n;
-            sound.chaosToPlay = n;
-
-            moveChaos(sound.chaos[sound.chaosToPlay].points);
+        function selectChaos(n) {
+          if( n < 0 || n > 9 ) {
+            return "nr out of bounds";
           }
-
-          switch (event.code) {
-            case 'KeyW':  case 'ArrowUp':
-              break;
-            case 'KeyS':  case 'ArrowDown':
-              break;
-            case 'KeyA':  case 'ArrowLeft':
-              break;
-            case 'KeyD':  case 'ArrowRight':
-              break;
-            case 'KeyE':
-              break;
-            case 'KeyP':
-              break;
-            case 'KeyM':
-              break;
-            case 'Enter':
-              break;
-            case 'Space':
-              bPlaying ? sound.stopSequence() : sound.startSequence();
-              bPlaying = !bPlaying;
-              break;
-            }
-        })
+          sound.chaosToPlay = n;
+          moveChaos(sound.chaos[sound.chaosToPlay].points);
+        }
         </script>
     </body>
 </html>

@@ -1,8 +1,10 @@
 body {
   font-family: Menlo;
   text-rendering: geometricPrecision;
+  background-color: black;
 
   font-size: 20px;
+  color: white;
   line-height: 100%;
   /*box-shadow: 10px 10px 5px #888888;*/
   overflow: hidden;
@@ -13,6 +15,7 @@ body {
 #title {
   font-size: 30px;
   font-weight: bold;
+  color: black;
   top: 5%;
   left: 0;
   text-align: center;
@@ -129,4 +132,53 @@ input[type=range]:focus::-ms-fill-lower {
 }
 input[type=range]:focus::-ms-fill-upper {
   background: url(./imgs/seamless-dark-wall.jpg) repeat top left;
+}
+
+/*jq console*/
+#console {
+  height: 200px;
+  width: 75%;
+  position:absolute;
+  background-color: black;
+  border: 2px solid #CCC;
+  top: 75%;
+  left: 12.5%;
+  z-index: -1;
+}
+
+.jqconsole {
+  padding: 10px;
+  padding-bottom: 10px;
+}
+.jqconsole-cursor {
+  background-color: #999;
+}
+.jqconsole-blurred .jqconsole-cursor {
+  background-color: #666;
+}
+.jqconsole-prompt {
+  color: #0d0;
+}
+.jqconsole-old-prompt {
+  color: #0b0;
+  font-weight: normal;
+}
+.jqconsole-input {
+  color: #dd0;
+}
+.jqconsole-old-input {
+  color: #bb0;
+  font-weight: normal;
+}
+.brace {
+  color: #00FFFF;
+}
+.paran {
+  color: #FF00FF;
+}
+.bracket {
+  color: #FFFF00;
+}
+.jqconsole-composition {
+  background-color: red;
 }

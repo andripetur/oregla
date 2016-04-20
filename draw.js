@@ -5,7 +5,7 @@ function initDrawing(){
     backgroundColor: 'black',
     renderOnAddRemove: false,
     width: window.innerWidth,
-    height: window.innerHeight,
+    height: window.innerHeight*0.75,
   });
 
   drawChaos(sound.chaos[0].points);
