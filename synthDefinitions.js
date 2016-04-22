@@ -272,4 +272,145 @@
 
   sound.addNoteToFfb.counter = 0;
 
+  sound.drum = {};
+
+  sound.drum.kick = flock.synth({
+    nickName: "kick",
+    synthDef: {
+      ugen: 'flock.ugen.distortion',
+        source: {
+         id: 'osc',
+         ugen: "flock.ugen.sinOsc",
+         mul: {
+           id: "volEnv",
+           ugen: "flock.ugen.asr",
+           attack: 0.001,
+           sustain: 0.5,
+           release: 0.4,
+           mul: 0.9,
+         },
+
+         freq: {
+           id: "pitchEnv",
+           ugen: "flock.ugen.asr",
+           attack: 0.001,
+           sustain: 0.1,
+           release: 0.2,
+           gate: 0,
+           mul: 1000,
+           add: 60,
+         },
+       },
+      //  gain: 2,
+     },
+  });
+
+  sound.drum.snare = flock.synth({
+    nickName: "snare",
+    synthDef: {
+      ugen: 'flock.ugen.distortion',
+      source: {
+        ugen: "flock.ugen.filter.biquad.bp",
+        source: {
+            ugen: "flock.ugen.whiteNoise",
+            mul: {
+              id: "volEnv",
+              ugen: "flock.ugen.asr",
+              attack: 0.001,
+              sustain: 1,
+              release: 0.4,
+              gate: 0,
+            },
+        },
+
+        freq: {
+          id: "pitchEnv",
+          ugen: "flock.ugen.asr",
+          attack: 0.001,
+          sustain: 0.1,
+          release: 0.2,
+          gate: 0,
+          mul: 18000,
+          add: 400,
+        },
+
+        q: 2.0
+      },
+      gain: 3
+    }
+  });
+
+  sound.drum.hh = flock.synth({
+    nickName: "hh",
+    synthDef: {
+        ugen: "flock.ugen.filter.biquad.bp",
+        source: {
+            ugen: "flock.ugen.whiteNoise",
+            mul: {
+              id: "volEnv",
+              ugen: "flock.ugen.asr",
+              attack: 0.001,
+              sustain: 1,
+              release: 0.02,
+              gate: 0,
+            },
+        },
+
+        freq: {
+          id: "pitchEnv",
+          ugen: "flock.ugen.asr",
+          attack: 0.001,
+          sustain: 1,
+          release: 0.02,
+          gate: 0,
+          mul: 9000,
+          add: 2000,
+        },
+
+        q: 3.0
+    }
+  });
+
+  sound.drum.perc = flock.synth({
+    nickName: "perc",
+    synthDef: {
+      ugen: 'flock.ugen.distortion',
+        source: {
+         ugen: "flock.ugen.sum",
+         sources: [
+           {
+             ugen: "flock.ugen.square",
+             mul: 0.5,
+             freq: 587
+           },
+           {
+             ugen: "flock.ugen.square",
+             mul: 0.5,
+             freq: 845
+           }
+         ],
+       },
+       mul: {
+         id: "volEnv",
+         ugen: "flock.ugen.asr",
+         attack: 0.001,
+         sustain: 0.5,
+         release: 0.2,
+         gate: 0,
+       },
+     },
+  });
+
+  sound.drum.play = function(which){
+    var on = { "volEnv.gate": 1 } , off = { "volEnv.gate": 0 };
+    if(which != 'perc') {
+      on["pitchEnv.gate"] = 0;
+      off["pitchEnv.gate"] = 0;
+    }
+    sound.drum[which].set( on );
+    setTimeout(function () {
+      sound.drum[which].set( off );
+    }, 10);
+  }
+
 }());

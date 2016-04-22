@@ -45,7 +45,7 @@ function textureColor(){
       },
       repeat: 'repeat'
     });
-  })
+  });
 }
 
 var smallRadius = 10;

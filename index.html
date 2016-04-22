@@ -8,6 +8,7 @@
         <script src="libs/fabric.min.js"></script>
         <script src="draw.js"></script>
         <script src="libs/flocking-all.min.js"></script>
+        <script src="libs/jqconsole.js" type="text/javascript" charset="utf-8"></script>
         <script src="console.js"></script>
         <script src="websocket.js"></script>
         <script src="utilities.js"></script>
@@ -15,6 +16,7 @@
         <script src="chaos.js"></script>
         <script src="composition.js"></script>
         <script src="synthDefinitions.js"></script>
+
 
         <link rel="stylesheet" href="style.css"/>
         <link rel="stylesheet" href="libs/ansi.css" type="text/css" media="all" />
@@ -32,10 +34,7 @@
           mor nuthing <input type='range' name='pianoVolume'>
         </div>
 
-        <!-- Must be a better way to load this shiznit -->
         <div id="console"></div>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="libs/jqconsole.js" type="text/javascript" charset="utf-8"></script>
 
         <script>
         function setValue(v){
@@ -45,6 +44,10 @@
         }
         initConsole();
         initDrawing();
+
+        function help(){
+          return "i will help you";
+        };
 
         function selectChaos(n) {
           if( n < 0 || n > 9 ) {

@@ -74,9 +74,9 @@ function initConsole() {
     var dot = null;
     // We'll only suggest things on the window object.
     if (dot = text.match(/\./)) {
-      console.log(text.slice(dot.index+1)) // behind dot
+      console.log(text.slice(dot.index+1)); // behind dot
 
-      console.log(text.slice(0, dot.index)) // in front of dot
+      console.log(text.slice(0, dot.index)); // in front of dot
 
       return;
     }
