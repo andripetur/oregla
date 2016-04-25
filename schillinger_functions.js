@@ -1,33 +1,3 @@
-function Sequence( seq ) {
-  this.notes = seq.notes || [];
-  this.rests = seq.rests || [];
-  this.playbar = 0;
-  this.restCount = 0;
-  this.metro = seq.metro || 500;
-  this.toId = 0;
-  this.bPlaying = seq.bPlying || false;
-  this.synth = seq.synth || 'synth';
-}
-
-Sequence.prototype.do = function(seq){
-  if (seq.restCount === seq.rests[seq.playbar % seq.rests.length]) {
-    sound.playNote( seq.synth, flock.midiFreq(sound.lockToScale( seq.notes[seq.playbar%seq.notes.length] )) );
-    seq.restCount = 0;
-    seq.playbar++;
-  }
-  seq.restCount++;
-}
-
-Sequence.prototype.play = function(){
-  this.bPlaying = true;
-  this.toId = setInterval( this.do, this.metro, this );
-}
-
-Sequence.prototype.stop = function(){
-  this.bPlaying = false;
-  clearInterval(this.toId);
-}
-
 fluid.registerNamespace("Schillinger");
 
 Schillinger.permutation = function(seq){
@@ -49,7 +19,7 @@ Schillinger.monomialPeriodicGroup = function(t, l) {
   return mpg;
 }
 
-// fills array with a "square wave" with a period of t
+// fills array with a "square wave" with a period of t(switches every t times)
 Schillinger.monomialPeriodicGroup2 = function(t, l) {
   var mpg = [];
   for (var i = 0; i < l; i++) mpg.push( (i % (t*2)) < t ? 1 : 0 );
@@ -60,9 +30,7 @@ Schillinger.interference = function(){ // takes two or more arguments
   var tab = [], io = 1;
   var args = utilities.argumentsToArray(arguments);
   var impulses = args.map(Schillinger.fromMonomialsToImpulse);
-  // var l = Math.min.apply(this, impulses.map(function(el){ return el.length; }));
   var l = Math.min(...impulses.map(function(el){ return el.length; }))
-  // console.log(l)
 
   for (var i = 0; i < l; i++) {
     for(var ai = 0; ai < impulses.length; ai++){
@@ -70,7 +38,6 @@ Schillinger.interference = function(){ // takes two or more arguments
          io^=1; //xor flips 1=>0 0=>1
          break;
        }
-      // io^=impulses[ai][i];
     }
     tab.push(io);
   }
@@ -121,6 +88,12 @@ Schillinger.seriesToNumerators = function( s ) {
   return numerators;
 }
 
+Schillinger.newRythm = function(type,monomials){
+  return Schillinger.seriesToNumerators(
+    type === 'slow' ? Schillinger.interferenceOfMonomials(...monomials)
+                    : Schillinger.generalInterferenceOfMonomials(...monomials));
+}
+
 Schillinger.fromMonomialsToImpulse = function(mono) {
   return mono.map(function(el,i,arr){
     return i == 0 ? 0 : Math.abs( arr[i-1] - el);
@@ -148,23 +121,4 @@ Schillinger.multiplyIntervals = function(seq, multi){
   });
 
   return Schillinger.fromIntervalsToNotes(intervals);
-}
-
-var somewhere = [0, 12, 11, 7, 9, 11, 12, 0, 9, 7];
-
-// melodie for testing
-var rainbow = new Sequence( {
-  notes: Schillinger.multiplyIntervals( somewhere, 2).map(function(a){return a + 60;}),
-  rests: Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5))
-});
-
-var rainbow2 = new Sequence( {
-  notes: somewhere.map(function(a){return a + 48;}),
-  rests: Schillinger.seriesToNumerators( Schillinger.interferenceOfMonomials(2,3,5)),
-  synth: 'synth2'
-});
-
-function st(){
-  rainbow.play();
-  rainbow2.play();
 }
