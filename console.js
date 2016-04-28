@@ -1,7 +1,10 @@
 
-// figure out a good way to do suggestion list
+// figure out a good way to genarate this
 var suggestions = {
-  drum: {kick: 0,
+  drum: {kick: {
+          mute: 0,
+          bacon: 0,
+          },
          snare:0,
          tom:0,
          hihat:0,
@@ -11,6 +14,7 @@ var suggestions = {
   generateNewMelodie: 0,
 }
 
+var isDotted = false;
 propStartingWith = function (obj, prefix) {
   var res = [];
   for(var m in obj) {
@@ -72,16 +76,24 @@ function initConsole() {
   jqconsole.SetKeyPressHandler(function(e) {
     var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
     var dot = null;
-    // We'll only suggest things on the window object.
-    if (dot = text.match(/\./)) {
-      console.log(text.slice(dot.index+1)); // behind dot
+    var suggestionObject = suggestions;
+    isDotted = false;
 
-      console.log(text.slice(0, dot.index)); // in front of dot
+    if (text.match(/\./)) { // to suggest nested objects
+      var objectNames = text.split('.');
+      var lastDotIndex = text.lastIndexOf('.');
+      isDotted = true;
+      var tempText = text.slice(lastDotIndex+1); // behind dot
 
-      return;
+      var suggString = "suggestions"
+      for (var i = 0; i < objectNames.length-1; i++) {
+        suggString+= '["' + objectNames[i] + '"]';
+      }
+      suggestionObject = eval(suggString);
+      text = tempText;
     }
 
-    var props = propStartingWith(suggestions, text); // or your namespace
+    var props = propStartingWith(suggestionObject, text); // or your namespace
     if (props.length) {
       if (!$('.suggest').length) {
         $('<div/>').addClass('suggest').appendTo($('.jqconsole'));
@@ -100,8 +112,16 @@ function initConsole() {
 
   jqconsole.SetControlKeyHandler(function(e) {
     $('.suggest').hide();
-    if (e.which === 9 && $('.suggest div').length) {
-      jqconsole.SetPromptText($('.suggest div').first().text());
+    if(e.which === 9 && $('.suggest div').length) {
+      if( isDotted ){
+        var text = $('.jqconsole-prompt-text').text();
+        jqconsole.SetPromptText(
+          text.slice(0, text.lastIndexOf('.') + 1) // erase everything after the last '.'
+          + $('.suggest div').first().text() // append suggestion
+        );
+      } else {
+        jqconsole.SetPromptText($('.suggest div').first().text());
+      }
       return false;
     }
   });

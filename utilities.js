@@ -51,6 +51,14 @@
     return Array.prototype.slice.call(args);
   }
 
+  utilities.getAllIndexesOf = function( str, char ){
+    var indices = [];
+    for(var i=0; i<str.length;i++) {
+        if (str[i] === char) indices.push(i);
+    }
+    return indices;
+  }
+
   var t1, t2;
   utilities.startTimer = function() {
     t1 = new Date().getTime();
