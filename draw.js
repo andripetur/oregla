@@ -171,13 +171,65 @@ function animatePoint(n){
 
 }
 
-// make html element blink
-function blink(){
-  var splash = document.getElementById('splash');
-  splash.style.background = 'black';
-  splash.style.color = 'white';
-  setTimeout(function(){
-    splash.style.background = 'white';
-    splash.style.color = 'black';
-  }, 200);
+// faderbox
+function createFader(i){
+  var f = new fabric.Rect({
+        name: 'slider'+(i+1),
+        width: sliderWidth, height: box.height*0.75,
+        originY: "bottom",
+        left: i * sliderWidth, top: box.height,
+        fill: 'maroon',
+        // padding: 0,
+        lockRotation: true,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingFlip: true,
+        hasControls: true,
+        transparentCorners: false,
+        cornerColor: 'white',
+        cornerSize: sliderWidth * 0.5,
+        hoverCursor: 'default',
+        borderScaleFactor: 2,
+        stroke: 'black',
+        borderColor: 'orange',
+    });
+
+    f.setControlsVisibility({
+      mt: true,
+      bl:false,br:false,mb:false,ml:false,
+      mr:false,tl:false,tr:false,mtr:false,
+    });
+
+    return f;
+}
+
+var nrOfFaders = 8;
+var box = {
+  height: window.innerHeight*0.25,
+  width: window.innerWidth*0.25,
+}
+var sliderWidth = box.width / nrOfFaders;
+
+function initFaderbox(){
+  var faderboxCanvas = new fabric.Canvas('faderbox', {
+    backgroundColor: 'black',
+    // renderOnAddRemove: false,
+    width: window.innerWidth*0.25,
+    height: box.height,
+    selection: false,
+  });
+
+  for (var i = 0; i < nrOfFaders; i++) {
+    faderboxCanvas.add( createFader(i) );
+  }
+
+  faderboxCanvas.on({
+   'object:scaling': function(options) {
+     console.log(options.target.name);
+     if( options.target.scaleY > 1.3 ) options.target.scaleY = 1.3;
+     var faderval = utilities.scale(options.target.scaleY, 0.03, 1.3, 0, 1);
+     console.log(faderval);
+   },
+  });
 }
