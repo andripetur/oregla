@@ -46,7 +46,7 @@ Schillinger.interference = function(){ // takes two or more arguments
 }
 
 Schillinger.interferenceOfMonomials = function(){ // as many as you want
-  var args = Array.prototype.slice.call(arguments);   // convert args to array
+  var args = utilities.argumentsToArray(arguments);
   var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
 
   var t = args.map( function(el){ return Schillinger.monomialPeriodicGroup(el, cd); } );
@@ -55,7 +55,7 @@ Schillinger.interferenceOfMonomials = function(){ // as many as you want
 }
 
 Schillinger.generalInterferenceOfMonomials = function(){ // as many as you want
-  var args = Array.prototype.slice.call(arguments);   // convert args to array
+  var args = utilities.argumentsToArray(arguments);
   var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
 
   var t = args.map( function(el){ return Schillinger.monomialPeriodicGroup2(el, cd); } );
@@ -66,26 +66,11 @@ Schillinger.generalInterferenceOfMonomials = function(){ // as many as you want
 // converts binary rythm to delta notations
 // example : 1 1 1 0 1 1 0 0 1 0 0 0 =>  3 1 2 2 1 3
 Schillinger.seriesToNumerators = function( s ) {
-  var cnt=0, numerators = [];
-
-  for (var i = 0; i < s.length; i++) {
-    for (var y = i; y < s.length; y++) {
-      if( s[y] == s[i] ){
-        cnt++;
-        if( y == s.length-1 ){ // we reached the end of possible comparisons
-          numerators.push( cnt );  //push counter
-          i = s.length; // 'break' outer loop
-          break;
-        }
-      } else {
-        numerators.push( cnt )
-        cnt = 0;
-        i = y-1; // start comparing again from the right place
-        break;
-      }
-    }
-  }
-  return numerators;
+  var indxs = [];
+   // find all indexes of a switch beetween 0 and 1
+  for (var i = 1; i < s.length; i++) if( s[i] !== s[i-1] ) indxs.push(i);
+  indxs.push(i); // add last index for the length of last chunk
+  return Schillinger.fromNotesToIntervals(indxs); // check distance beetween changes
 }
 
 Schillinger.newRythm = function(type,monomials){
@@ -100,6 +85,7 @@ Schillinger.fromMonomialsToImpulse = function(mono) {
   });
 }
 
+// - - - - - - - note domain
 Schillinger.fromNotesToIntervals = function(notes) {
   return notes.map(function(el,i,arr){
     return i == 0 ? el : el - arr[i-1];

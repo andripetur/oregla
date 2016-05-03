@@ -76,16 +76,18 @@ function initConsole() {
   jqconsole.SetKeyPressHandler(function(e) {
     var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
     var dot = null;
-    var suggestionObject = suggestions;
+    var suggestionObject = window;
     isDotted = false;
 
+     // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
+     
     if (text.match(/\./)) { // to suggest nested objects
       var objectNames = text.split('.');
       var lastDotIndex = text.lastIndexOf('.');
       isDotted = true;
       var tempText = text.slice(lastDotIndex+1); // behind dot
 
-      var suggString = "suggestions"
+      var suggString = "window";
       for (var i = 0; i < objectNames.length-1; i++) {
         suggString+= '["' + objectNames[i] + '"]';
       }
