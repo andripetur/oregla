@@ -175,6 +175,9 @@ function animatePoint(n){
 function createFader(i){
   var f = new fabric.Rect({
         name: 'slider'+(i+1),
+        controls: 'none',
+        onInstrument: 'none',
+        isExponential: false,
         width: sliderWidth, height: box.height*0.75,
         originY: "bottom",
         left: i * sliderWidth, top: box.height,
@@ -205,6 +208,7 @@ function createFader(i){
 }
 
 var nrOfFaders = 8;
+var faderboxCanvas = null;
 var box = {
   height: window.innerHeight*0.25,
   width: window.innerWidth*0.25,
@@ -212,10 +216,9 @@ var box = {
 var sliderWidth = box.width / nrOfFaders;
 
 function initFaderbox(){
-  var faderboxCanvas = new fabric.Canvas('faderbox', {
+  faderboxCanvas = new fabric.Canvas('faderbox', {
     backgroundColor: 'black',
-    // renderOnAddRemove: false,
-    width: window.innerWidth*0.25,
+    width: box.width,
     height: box.height,
     selection: false,
   });
@@ -226,10 +229,16 @@ function initFaderbox(){
 
   faderboxCanvas.on({
    'object:scaling': function(options) {
-     console.log(options.target.name);
-     if( options.target.scaleY > 1.3 ) options.target.scaleY = 1.3;
-     var faderval = utilities.scale(options.target.scaleY, 0.03, 1.3, 0, 1);
-     console.log(faderval);
+     var fdr = options.target;
+     if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
+     if ( fdr.controls !== 'none' ){
+       if( fdr.isExponential ) {
+         var faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, 0, 1);
+       } else {
+         var faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, 0, 1);
+       }
+       sound.setValue(faderval, fdr.onInstrument, fdr.controls);
+     }
    },
   });
 }

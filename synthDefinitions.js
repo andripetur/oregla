@@ -155,18 +155,22 @@
       return synths;
     }
 
-  var pianoStartVol = 0.5;
-  var lastPos = pianoStartVol;
-  sound.line = function(goTo){
+  var pianoStartVol = 0.7637795275590551;
+  sound.line = function(from, goTo){
     var line = {
       ugen: 'flock.ugen.xLine',
       rate: 'control',
-      start: lastPos,
+      start: from,
       end: goTo,
       duration: 0.03
     };
-    lastPos = goTo;
     return line;
+  }
+
+  sound.setValue = function(v,instrument,controls){
+    var fr = sound[instrument].get(controls);
+    fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
+    sound[instrument].set( controls, sound.line( fr, v ) );
   }
 
   sound.piano = flock.synth( {

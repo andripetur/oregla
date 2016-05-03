@@ -5,6 +5,10 @@
     return ((i - il) / (ih - il)) * (oh - ol) + ol;
   }
 
+  utilities.scaleExp = function(i,il,ih,ol,oh) {
+    return ((p = ((i - il) / (ih - il))) * p) * (oh - ol) + ol;
+  }
+
   utilities.limit = function(v, l, h ) {
      return ( v < l ) ? l : (( v > h ) ? h : v);
    }

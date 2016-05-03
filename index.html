@@ -27,25 +27,20 @@
       <div id='title'><br>(ó)regla<br>&nbsp;</div>
 
         <canvas id="cvs"></canvas>
-
-        <div id="controls">
-          piano <input type='range' name='p-vol' min=0 max=1 step=0.01 oninput="setValue(this.value)">
-          nuthing <input type='range' name='ffb-vol'>
-          mor nuthing <input type='range' name='pianoVolume'>
-        </div>
         <canvas id="faderbox"></canvas>
-
         <div id="console"></div>
 
         <script>
-        function setValue(v){
-          sound.piano.set({
-            "verb.mul": sound.line(parseFloat(v))
-          });
-        }
         initConsole();
         initDrawing();
         initFaderbox();
+
+        faderboxCanvas.item(0).set({
+          "name": "piano",
+          "onInstrument": "piano",
+          "controls": "verb.mul",
+          "isExponential": true,
+        });
 
         function help(){
           return "i will help you";
