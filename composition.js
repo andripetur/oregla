@@ -17,7 +17,6 @@
 
   var clock = flock.scheduler.async();
 
-  // var my_scale = [0, 2, 3, 5, 7, 9, 10];
   var my_scale = [0, 2, 4, 5, 7, 9, 11];
 
   sound.lockToScale = function(n){
@@ -34,11 +33,6 @@
     }));
   }
 
-  // sound.coordinates = {
-  //   x: 0.1, y: 0.1,
-  //   a: 0, t: -10,
-  //   b: -1.9, o: 1
-  // }
   sound.coordinates = {
     x: 0.1, y: 0.1,
     a: 0, t: -4.1,
@@ -46,11 +40,7 @@
   }
 
   for(var i=0; i<10; i++){
-    // sound.chaos[i].calculatePhrase(sound.coordinates, 10);
     sound.chaos[i].calculateBufferedPhrase(sound.coordinates, 100);
-    // sound.chaos[i].calculateSequencedPhrase(sound.coordinates, 10);
-
-    // sound.coordinates.b -= 0.002;
     sound.coordinates.b -= 0.2;
   }
 
@@ -103,8 +93,6 @@
         sound.piano.set( pNote , 1 );
       }
     });
-
-    // console.log(sequenceId)
   }
 
   sound.startFfb = function(){
