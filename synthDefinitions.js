@@ -167,12 +167,6 @@
     return line;
   }
 
-  sound.setValue = function(v,instrument,controls){
-    var fr = sound[instrument].get(controls);
-    fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
-    sound[instrument].set( controls, sound.line( fr, v ) );
-  }
-
   sound.piano = flock.synth( {
     synthDef: {
       id: 'verb',
@@ -418,3 +412,9 @@
   }
 
 }());
+
+function setSoundValue(v,instrument,controls){
+  var fr = sound[instrument].get(controls);
+  fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
+  sound[instrument].set( controls, sound.line( fr, v ) );
+}

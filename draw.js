@@ -174,15 +174,18 @@ function animatePoint(n){
 // faderbox
 function createFader(i){
   var f = new fabric.Rect({
+        // functionality
         name: 'slider'+(i+1),
         controls: 'none',
         onInstrument: 'none',
         isExponential: false,
+        range: { low: 0, high: 1 },
+        callbackFunction: "setSoundValue",
+        // look
         width: sliderWidth, height: box.height*0.75,
         originY: "bottom",
         left: i * sliderWidth, top: box.height,
         fill: 'maroon',
-        // padding: 0,
         lockRotation: true,
         lockMovementX: true,
         lockMovementY: true,
@@ -233,11 +236,11 @@ function initFaderbox(){
      if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
      if ( fdr.controls !== 'none' ){
        if( fdr.isExponential ) {
-         var faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, 0, 1);
+         var faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
        } else {
-         var faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, 0, 1);
+         var faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
        }
-       sound.setValue(faderval, fdr.onInstrument, fdr.controls);
+       window[fdr.callbackFunction](faderval, fdr.onInstrument, fdr.controls);
      }
    },
   });
