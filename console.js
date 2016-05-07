@@ -80,7 +80,10 @@ function initConsole() {
     isDotted = false;
 
      // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
-     
+    if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
+      return
+    }
+
     if (text.match(/\./)) { // to suggest nested objects
       var objectNames = text.split('.');
       var lastDotIndex = text.lastIndexOf('.');
