@@ -48,7 +48,7 @@ var Schillinger = null;
 
     var t = args.map( function(el){ return monomialPeriodicGroup(el, cd); } );
 
-    return this.interference(...t);
+    return interference(...t);
   };
 
   var generalInterferenceOfMonomials = function(){ // as many as you want
@@ -56,7 +56,7 @@ var Schillinger = null;
     var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
     var t = args.map( function(el){ return monomialPeriodicGroup2(el, cd); } );
 
-    return this.interference(...t);
+    return interference(...t);
   };
 
   var fromMonomialsToImpulse = function(mono) {
@@ -136,7 +136,7 @@ var Schillinger = null;
   };
 
   Schillinger.prototype.multiplyIntervals = function(multi){
-    var intervals = this.fromNotesToIntervals(this.notes);
+    var intervals = fromNotesToIntervals(this.notes);
 
     intervals = intervals.map(function(el, indx) {
       return indx != 0 ? (el * multi) : el;

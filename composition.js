@@ -40,7 +40,11 @@
   }
 
   for(var i=0; i<10; i++){
-    sound.chaos[i].calculateBufferedPhrase(sound.coordinates, 100);
+    sound.chaos[i].fillBuffer(
+      { coords: sound.coordinates,
+        length: 100,
+        reorder: "distanceFromEachother"
+      });
     sound.coordinates.b -= 0.2;
   }
 
@@ -59,37 +63,13 @@
         nArr[i] = sound.chaos[sound.chaosToPlay].getNote();
       }
 
-      noteAbove = nArr[(sound.chaosToPlay+1) % nArr.length];
       n = nArr[sound.chaosToPlay];
 
-      if( n >= 0 ){ // note is valid
-        // if(sound.chaosToPlay % 2 == 0){
-        //   s = 'synth';
-        // } else {
-        //   s = 'synth2';
-        //   offset += 12;
-        // }
-
-        // if( noteAbove > 0 ){ // if note above is valid check if it false
-        //   // check the space beetween playing note and the one above it.
-        //   var noteDelta = Math.abs( n - noteAbove);
-        //
-        //   if( noteDelta == 0 ) { // up an octave
-        //     offset += 12;
-        //   } else if ( noteDelta == 1) {
-        //     offset += 2
-        //   } else if ( noteDelta == 2) {
-        //     offset += 1
-        //   }
-        // }
-
-        // var midiNote = sound.lockToScale( n + offset );
-        var midiNote = n + offset ;
-        animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].phrase.length+1);
-
-        // sound.playNote( 'synth', flock.midiFreq(midiNote) );
-        // sound.playOboe( midiNote - 24 );
-        var pNote = "piano-"+midiNote+".trigger.source";
+      // sound.playNote( 'synth', flock.midiFreq(midiNote) );
+      // sound.playOboe( midiNote - 24 );
+      if(n > 0 && n < 128){
+        animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].notes.length+1);
+        var pNote = "piano-"+n+".trigger.source";
         sound.piano.set( pNote , 1 );
       }
     });

@@ -1,132 +1,124 @@
 // chaos sequencer note generator
-Chaos = function( coords ){
-  this.x=coords.x; this.y=coords.y; this.a=coords.a;
-  this.t=coords.t; this.b=coords.b; this.o=coords.o;
-  this.lowest = 0; this.highest = 0;
-  this.phrase = [];
-  this.rest = [];
-  this.restCounter = 0;
-  this.pos = 0;
-  this.points = [];
-}
+var Chaos = null;
 
-Chaos.prototype.higherOrLower = function(val){
-  val > this.highest ? this.highest = val : 0
-  val < this.lowest ? this.lowest = val : 0
-}
-
-Chaos.prototype.chaosFunc = function() {
-  var xx, yy;
-  xx = this.y - (this.x / Math.abs(this.x)) * Math.sqrt( Math.abs( (this.b * this.x) - this.o ) );
-  yy = this.t - this.x;
-
-  this.x = xx;
-  this.y = yy;
-}
-
-Chaos.prototype.calculate = function(){
-  this.chaosFunc();
-  this.higherOrLower(this.x);
-  this.higherOrLower(this.y);
-}
-
-Chaos.prototype.getNormalized= function(which, nLow, nHigh){
-  return utilities.scale(this[which], this.lowest, this.highest, nLow, nHigh);
-}
-
-Chaos.prototype.getNote = function(){
-  if(this.restCounter === this.rest[this.pos % this.rest.length]){
-    var n = this.phrase[this.pos%this.phrase.length]
-    this.pos++;
-    this.restCounter=0;
-    return n + 36;
-  }
-    this.restCounter++;
-    return -1;
-}
-
-Chaos.prototype.calculateBufferedPhrase = function( coords , phraseLength ) {
-  Chaos.call(this, coords); // reinitalize object
-
-  var phrase = [];
-  for(var i=0; i<phraseLength; i++){
-    phrase.push( { x: this.x, y: this.y, length: utilities.pythagoras(this.x, this.y) });
-    this.chaosFunc();
+(function(){
+  Chaos = function( coords ){
+    this.x=coords.x; this.y=coords.y; this.a=coords.a;
+    this.t=coords.t; this.b=coords.b; this.o=coords.o;
+    this.notes = [];
+    this.rhythm = [];
+    this.beatCounter = 0;
+    this.pos = 0;
+    this.buffer = [];
   }
 
-  // reorder by distance from point 0, 0
-  phrase.sort(function(a,b){
-    return a.length - b.length;
-  })
+  Chaos.prototype = new Schillinger(); // get modifier functions from schillinger
 
-  this.phrase = phrase.map(function(el){ return Math.abs(Math.floor(el.x)); } );
-  this.points = phrase;
-  // this.rest =   phrase.map(function(el){ return 2; })
-  // this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
-
-  console.log('Buffered phrase generated')
-}
-
-Chaos.prototype.calculateSequencedPhrase = function( coords, phraseLength ) {
-  Chaos.call(this, coords); // reinitalize object
-
-  var phrase = [];
-  for(var i=0; i<phraseLength ; i++){
-    phrase.push( { x: this.x, y: this.y, length: utilities.pythagoras(this.x, this.y)  });
-    this.chaosFunc();
+  Chaos.prototype.calculate = function(){
+    var xx, yy;
+    xx = this.y - (this.x / Math.abs(this.x)) * Math.sqrt( Math.abs( (this.b * this.x) - this.o ) );
+    yy = this.t - this.x;
+    this.x = xx;
+    this.y = yy;
   }
 
-  var distances = [];
-  for(var i=0; i<phrase.length; i++){
-    for (var y=i+1; y<phrase.length; y++) {
-      distances.push( { i1: i, i2: y,
-        length: utilities.pythagoras(
-          phrase[i].x - phrase[y].x,
-          phrase[i].y - phrase[y].y)
-        }
-      );
+  Chaos.prototype.getNote = function(){
+    if(this.beatCounter === this.rhythm[this.pos % this.rhythm.length]){
+      var n = this.notes[this.pos%this.notes.length]
+      this.pos++;
+      this.beatCounter=0;
+      return n + 36;
     }
+      this.beatCounter++;
+      return -1;
   }
 
-  distances.sort(function(a,b){
-    return a.length - b.length;
-  })
-
-  var reorder = [];
-  var foundIndxs = []
-  reorder.push( phrase[distances[0].i1] );
-  reorder.push( phrase[distances[0].i2] );
-
-  foundIndxs.push( distances[0].i1 );
-  var lookingFor = distances[0].i2;
-
-  var i = 0;
-  while ( reorder.length < phrase.length ) {
-    if ( foundIndxs.indexOf( distances[i].i1 ) > -1 || foundIndxs.indexOf( distances[i].i2 ) > -1 ) {
-      distances.splice(i,1);
-    } else if(distances[i].i1 === lookingFor) {
-      reorder.push( phrase[distances[i].i2] );
-      foundIndxs.push( distances[i].i1 );
-      lookingFor = distances[i].i2;
-      i = 0;
-    } else if (distances[i].i2 === lookingFor) {
-      reorder.push( phrase[distances[i].i1] );
-      foundIndxs.push( distances[i].i2 );
-      lookingFor = distances[i].i1;
-      i = 0;
-    } else {
-      i++;
+  var reorderByDistanceFromEachother = function(buffer){
+    var distances = [];
+    for(var i=0; i<buffer.length; i++){
+      for (var y=i+1; y<buffer.length; y++) {
+        distances.push( {
+          i1: i, i2: y,
+          length: utilities.pythagoras(
+            buffer[i].x - buffer[y].x,
+            buffer[i].y - buffer[y].y)
+          }
+        );
+      }
     }
+
+    distances.sort(function(a,b){
+      return a.length - b.length;
+    })
+
+    var reorder = [];
+    var foundIndxs = [];
+
+    reorder.push( buffer[distances[0].i1] );
+    reorder.push( buffer[distances[0].i2] );
+
+    foundIndxs.push( distances[0].i1 );
+    var lookingFor = distances[0].i2;
+
+    var i = 0;
+    while ( reorder.length < buffer.length ) {
+      if ( foundIndxs.indexOf( distances[i].i1 ) > -1 || foundIndxs.indexOf( distances[i].i2 ) > -1 ) {
+        distances.splice(i,1);
+      } else if(distances[i].i1 === lookingFor) {
+        reorder.push( buffer[distances[i].i2] );
+        foundIndxs.push( distances[i].i1 );
+        lookingFor = distances[i].i2;
+        i = 0;
+      } else if (distances[i].i2 === lookingFor) {
+        reorder.push( buffer[distances[i].i1] );
+        foundIndxs.push( distances[i].i2 );
+        lookingFor = distances[i].i1;
+        i = 0;
+      } else {
+        i++;
+      }
+    }
+    return reorder;
   }
 
-  this.phrase = reorder.map(function(el){ return Math.abs(Math.floor(el.x)); } );
-  this.points = reorder;
-  // this.rest =   phrase.map(function(el){ return 2; })
-  this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
+  var reorderByDistanceFromCenter = function(buffer){
+    return buffer.sort(function(a,b){
+      return a.length - b.length;
+    });
+  }
 
-  console.log('Buffered phrase generated')
-}
+  Chaos.prototype.fillBuffer = function( options ) {
+    Chaos.call(this, options.coords); // reinitalize object
 
+    if( typeof options.offset !== "undefined"){
+      for(var i=0; i<options.offset; i++) this.calculate();
+    }
+
+    var b = [];
+    for(var i=0; i<options.length; i++){
+      b.push( { x: this.x, y: this.y, length: utilities.pythagoras(this.x, this.y) });
+      this.calculate();
+    }
+
+    if( typeof options.reorder !== "undefined"){
+      switch (options.reorder) {
+        case "distanceFromCenter":
+          b = reorderByDistanceFromCenter(b);
+          break;
+        case "distanceFromEachother":
+          b = reorderByDistanceFromEachother(b);
+          break;
+      }
+    }
+
+    this.notes = b.map(function(el){ return Math.abs(Math.floor(el.x)); } );
+    this.buffer = b;
+    this.rhythm = schil.newRythm("fast",[3,7,11]);
+  }
+})();
+
+
+/* outcommented until/if i bother to modernize it
 Chaos.prototype.calculatePhrase = function( coords, phraseLength ) {
   Chaos.call(this, coords); // reinitalize object
 
@@ -177,7 +169,7 @@ Chaos.prototype.calculatePhrase = function( coords, phraseLength ) {
       front[front.length-1] == "" ? front.pop() : 0;
 
       var realIndx = front.length + i+nInM-1; // realINdx == startPosOfPattern
-      this.phrase = temp;
+      this.notes = temp;
 
       var high = utilities.max( tempY );
       var low = utilities.min( tempY );
@@ -187,8 +179,9 @@ Chaos.prototype.calculatePhrase = function( coords, phraseLength ) {
         tempY[idx] = rests[ Math.floor( utilities.scale(tempY[idx], low, high, 0, 3) )];
       }
 
-      this.rest = tempY;
+      this.rhythm = tempY;
     }
   }
   console.log('phrases generated')
 }
+*/
