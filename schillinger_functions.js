@@ -108,3 +108,22 @@ Schillinger.multiplyIntervals = function(seq, multi){
 
   return Schillinger.fromIntervalsToNotes(intervals);
 }
+
+var mirrorSequence = function(seq){
+  var sortedSeq = seq.slice(0,seq.length).sort(
+    function(a,b){
+      return a - b;
+  });
+
+  var revSortedSeq = sortedSeq.slice(0,sortedSeq.length).reverse();
+  var dict = {};
+
+  for (var i = 0; i < seq.length; i++) {
+    dict[sortedSeq[i]] = revSortedSeq[i];
+    dict[revSortedSeq[i]] = sortedSeq[i];
+  }
+
+  seq = seq.map(function(n){ return dict[n] });
+
+  return seq;
+}

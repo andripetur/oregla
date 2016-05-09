@@ -105,12 +105,12 @@ Chaos.prototype.calculateSequencedPhrase = function( coords, phraseLength ) {
     if ( foundIndxs.indexOf( distances[i].i1 ) > -1 || foundIndxs.indexOf( distances[i].i2 ) > -1 ) {
       distances.splice(i,1);
     } else if(distances[i].i1 === lookingFor) {
-      reorder.push( phrase[distances[i].i1] ); //i2
-      foundIndxs.push( distances[i].i1 ); //i1
-      lookingFor = distances[i].i2; //i2
+      reorder.push( phrase[distances[i].i2] );
+      foundIndxs.push( distances[i].i1 );
+      lookingFor = distances[i].i2;
       i = 0;
     } else if (distances[i].i2 === lookingFor) {
-      reorder.push( phrase[distances[i].i2] );
+      reorder.push( phrase[distances[i].i1] );
       foundIndxs.push( distances[i].i2 );
       lookingFor = distances[i].i1;
       i = 0;
