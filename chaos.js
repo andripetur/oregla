@@ -62,7 +62,7 @@ Chaos.prototype.calculateBufferedPhrase = function( coords , phraseLength ) {
   this.phrase = phrase.map(function(el){ return Math.abs(Math.floor(el.x)); } );
   this.points = phrase;
   // this.rest =   phrase.map(function(el){ return 2; })
-  this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
+  // this.rest =   Schillinger.seriesToNumerators( Schillinger.generalInterferenceOfMonomials(2,3,5));
 
   console.log('Buffered phrase generated')
 }
