@@ -1,11 +1,6 @@
 (function () {
   "use strict";
 
-  fluid.registerNamespace("sound");
-
-  var environment = flock.init();
-  environment.start();
-
   sound.set_coordinates = function (data) {
     sound.coordinates.x = parseFloat(data.x);
     sound.coordinates.y = parseFloat(data.y);
@@ -14,8 +9,6 @@
     sound.coordinates.b = parseFloat(data.b);
     sound.coordinates.o = parseInt(data.o);
   }
-
-  var clock = flock.scheduler.async();
 
   var my_scale = [0, 2, 4, 5, 7, 9, 11];
 
@@ -40,50 +33,49 @@
   }
 
   for(var i=0; i<10; i++){
-    sound.chaos[i].fillBuffer(
-      { coords: sound.coordinates,
-        length: 100,
-        reorder: "distanceFromEachother"
-      });
+    sound.chaos[i].fillBuffer({
+      coords: sound.coordinates,
+      length: 100,
+      reorder: "distanceFromEachother"
+    });
     sound.coordinates.b -= 0.2;
   }
 
   sound.chaosToPlay = 0;
 
-  // console.log(clock.clear)
-  sound.stopSequence = function() {
-    clock.clearAll();
-  }
-
-  sound.startSequence = function() {
-
-    var sequenceId = clock.repeat(0.25, function() {
-      var nArr = [], n, s, offset=0, noteAbove;
-      for(var i=0; i<10; i++) {
-        nArr[i] = sound.chaos[sound.chaosToPlay].getNote();
-      }
-
-      n = nArr[sound.chaosToPlay];
-
-      // sound.playNote( 'synth', flock.midiFreq(midiNote) );
-      // sound.playOboe( midiNote - 24 );
-      if(n > 0 && n < 128){
+  sound.band.piano.pause();
+  sound.band.scheduler.repeat(0.3, function () {
+    if(sound.piano.isPlaying()){
+      var n = sound.chaos[sound.chaosToPlay].getNote()
+      if(n > 0){
         animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].notes.length+1);
         var pNote = "piano-"+n+".trigger.source";
-        sound.piano.set( pNote , 1 );
+        sound.band.piano.set( pNote , 1 );
       }
-    });
+    }
+  });
+
+  sound.startSequence = function(){
+    sound.band.piano.play();
+  }
+  sound.stopSequence = function(){
+    sound.band.piano.pause();
   }
 
-  sound.startFfb = function(){
-    // play filterbank
-    clock.repeat(0.125, function() {
-        sound.chaos[1].calculate();
-        var n = Math.floor( sound.chaos[1].getNormalized('x', 20, 120));
-        n = utilities.limit( n , 20, 127 );
-        sound.addNoteToFfb( flock.midiFreq(sound.lockToScale( n )) );
-        blink();
-      })
-  }
+  sound.ffb.pause();
+  sound.band.scheduler.repeat(0.2, function() {
+    if(sound.ffb.isPlaying()) {
+      sound.chaos[1].calculate();
+      var n = Math.floor( sound.chaos[1].x * 1000 );
+      n = utilities.limit( n , 20, 127 );
+      sound.addNoteToFfb( flock.midiFreq(sound.lockToScale( n )) );
+    }
+  });
 
+  sound.startAmbient = function(){
+    sound.ffb.play();
+  }
+  sound.stopAmbient = function(){
+    sound.ffb.pause();
+  }
 }());
