@@ -32,6 +32,10 @@
   utilities.randInt = function(low, high) {
     return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
   }
+  
+  utilities.randFloat = function(low, high) {
+    return utilities.scale(Math.random(), 0, 1, low, high);
+  }
 
   utilities.range = function( arr ){
     var high = -Number.MAX_VALUE;

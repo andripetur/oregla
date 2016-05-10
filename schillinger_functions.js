@@ -116,7 +116,7 @@ var Schillinger = null;
   }
 
   // accesable to public
-  Schillinger.prototype.newRythm = function(type,monomials){
+  Schillinger.prototype.newRhythm = function(type,monomials){
     var r = seriesToNumerators(
       type === 'slow' ? interferenceOfMonomials(...monomials)
                       : generalInterferenceOfMonomials(...monomials));

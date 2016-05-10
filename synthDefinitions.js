@@ -171,20 +171,6 @@
     return line;
   }
 
-  // sound.piano = flock.synth( {
-  //   synthDef: {
-  //     id: 'verb',
-  //     ugen: 'flock.ugen.freeverb',
-  //     // ugen: 'flock.ugen.distortion',
-  //
-  //     mul: pianoStartVol,
-  //     source: {
-  //       ugen: 'flock.ugen.sum',
-  //       sources: makePianoSamples(),
-  //     }
-  //   }
-  // })
-
   sound.oboe = flock.synth( {
     synthDef: {
         ugen: "flock.ugen.playBuffer",
@@ -338,7 +324,7 @@
 
         q: 2.0
       },
-      gain: 3
+      gain: 2
     }
   });
 
