@@ -31,6 +31,11 @@
     none: new Scale()
   }
 
+  var tempo = 80;
+  var getBpm = function(bpm,smallestDivisor){
+    return (60 / bpm) / smallestDivisor;
+  }
+
   sound.chaos = [];
   for(var i=0; i<10; i++) {
     sound.chaos.push(new Sequencer());
@@ -59,54 +64,79 @@
   }
 
   sound.chaosToPlay = 0;
+  sound.startPiano = sound.band.piano.play;
+  (sound.stopPiano = sound.band.piano.pause)();
 
-  sound.band.piano.pause();
-  sound.band.scheduler.repeat(0.3, function () {
+  var pianoScheduler = function () {
     if(sound.piano.isPlaying()){
       var n = sound.chaos[sound.chaosToPlay].getNote()
       if(n > 0){
         animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].notes.length+1);
+        n = scales["ionian"].lockTo( n );
         var pNote = "piano-"+n+".trigger.source";
         sound.band.piano.set( pNote , 1 );
       }
     }
-  });
+  };
 
-  sound.startSequence = function(){
-    sound.band.piano.play();
-  }
-  sound.stopSequence = function(){
-    sound.band.piano.pause();
-  }
+  sound.startAmbient = sound.ffb.play;
+  (sound.stopAmbient = sound.ffb.pause)();
 
-  sound.ffb.pause();
-  sound.band.scheduler.repeat(0.25, function() {
+  var ambRange = utilities.range(sound.chaos[1].getAllFromBuffer("x"));
+  var ambientScheduler = function() {
     if(sound.ffb.isPlaying()) {
       sound.chaos[1].calculate();
-      var n = Math.floor( sound.chaos[1].x * 1000 );
-      n = utilities.limit( n , 20, 127 );
-      sound.addNoteToFfb( flock.midiFreq(sound.lockToScale( n )) );
+      var n = Math.floor( utilities.scale(
+        sound.chaos[1].get("x"),
+        ambRange.low, ambRange.high,
+        40, 90));
+      sound.addNoteToFfb( flock.midiFreq( scales["ionian"].lockTo( n )) );
     }
-  });
+  };
 
   var drumSeq = [];
   for (var drum in sound.drum){
      if(drum === "play") break;
      var l = drumSeq.length;
      drumSeq.push( { s: new Sequencer("rhythm"), d: drum });
-     drumSeq[l].s.newRhythm("fast",[l,Math.floor(l*1.3),Math.floor(l*1.9)]);
+     drumSeq[l].s.newRhythm("fast",[3,5,l+4]);
    }
 
-  sound.band.scheduler.repeat(0.125, function() {
-    for (var i = 0; i < drumSeq.length; i++) {
-      if(drumSeq[i].s.trigger()) sound.drum.play(drumSeq[i].d);
-    }
-  });
+   drumSeq.isPlaying = false;
+   sound.startDrums = function(){ drumSeq.isPlaying = true; }
+   sound.stopDrums = function(){ drumSeq.isPlaying = false; }
 
-  sound.startAmbient = function(){
-    sound.ffb.play();
+  var drumScheduler = function() {
+    if(drumSeq.isPlaying){
+      for (var i = 0; i < drumSeq.length; i++) {
+        if(drumSeq[i].s.trigger()) sound.drum.play(drumSeq[i].d);
+      }
+    }
+  };
+
+  var changeTempo = false;
+  sound.setTempo = function(t) {
+    if(t !== tempo){
+      tempo = t;
+      changeTempo = true;
+    }
   }
-  sound.stopAmbient = function(){
-    sound.ffb.pause();
+
+  var tempoChangeListener = function(){
+    if(changeTempo) {
+      changeTempo = false;
+      sound.band.scheduler.clearAll();
+      sound.band.scheduler.clearAll(); // <- called twice to make sure that everything gets cleared
+      scheduleSequences(tempo);
+    }
   }
+
+  var scheduleSequences = function(bpm) {
+    sound.band.scheduler.repeat(getBpm(tempo, 4), pianoScheduler);
+    sound.band.scheduler.repeat(getBpm(tempo, 8), ambientScheduler);
+    sound.band.scheduler.repeat(getBpm(tempo, 4), drumScheduler);
+    sound.band.scheduler.repeat(getBpm(tempo, 32),tempoChangeListener);
+  }
+  scheduleSequences();
+
 }());

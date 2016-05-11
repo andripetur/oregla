@@ -18,8 +18,12 @@ var Chaos = null;
       yy = coords.t - coords.x;
       coords.x = xx;
       coords.y = yy;
-    }
+    };
   }
+
+  Chaos.prototype.getAllFromBuffer = function (w) {
+    return this.buffer.map(function(el){ return el[w]; });
+  };
 
   var reorderByDistanceFromEachother = function(buffer){
     var distances = [];
@@ -148,7 +152,7 @@ var Sequencer = null;
   Sequencer.prototype.mapBufferToNotes = function(o) {
     var valueToMap = "length"
     var mapTo = {low: 0, high: 24};
-    var buffRange = utilities.range(this.buffer.map(function(n){ return n[valueToMap]; }));
+    var buffRange = utilities.range( this.getAllFromBuffer(valueToMap));
     this.notes = this.buffer.map(function(el){
       return Math.floor(utilities.scale(
         el[valueToMap], buffRange.low, buffRange.high, mapTo.low, mapTo.high));

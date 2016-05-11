@@ -239,18 +239,26 @@
       // ugen: 'flock.ugen.distortion',
       ugen: 'flock.ugen.sum',
       sources: fillFilterBank(),
+
     }
   })
 
   sound.addNoteToFfb = function ( freq ) {
     var fltr = "f"+sound.addNoteToFfb.counter;
     var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
+    // console.log(this.counter)
     var fCtoff = fltr + ".cutoff";
     var fMul = fltr + ".mul";
 
     sound.ffb.set(fCtoff, freq);
-    sound.ffb.set(nsMul, 1);
-    sound.ffb.set(fMul, 0.4);
+    sound.ffb.set(fMul, 0.8);
+    if(sound.ffb.get(nsMul) === 0) sound.ffb.set(nsMul, 1);
+
+    // sound.ffb.set({
+    //   fCtoff: freq,
+    //   nsMul: 1,
+    //   fMul: 0.4
+    // });
 
     sound.addNoteToFfb.counter++;
     if( sound.addNoteToFfb.counter > ffBankSize-1 ){
@@ -289,7 +297,7 @@
            add: 60,
          },
        },
-      //  gain: 2,
+       gain: 2,
      },
   });
 
@@ -308,6 +316,7 @@
               sustain: 1,
               release: 0.4,
               gate: 0,
+              mul: 0.5,
             },
         },
 

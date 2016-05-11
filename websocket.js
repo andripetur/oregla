@@ -44,7 +44,7 @@
      }
   };
 
-  window.onload = connectSocket;
+  // window.onload = connectSocket;
 
   function cancelRecon(){
     window.clearTimeout(timeoutIdToReconnect);
