@@ -1,135 +1,130 @@
+var initConsole = null;
 
-// figure out a good way to genarate this
-var suggestions = {
-  drum: {kick: {
-          mute: 0,
-          bacon: 0,
-          },
-         snare:0,
-         tom:0,
-         hihat:0,
-         perc:0,
-       },
-  modifySequence: 0,
-  generateNewMelodie: 0,
-}
-
-var isDotted = false;
-propStartingWith = function (obj, prefix) {
-  var res = [];
-  for(var m in obj) {
-    if(m.indexOf(prefix) === 0) {
-      res.push(m);
-    }
-  }
-  return res;
-};
-
-function initConsole() {
-  // Creating the console.
-  var header = 'Welcome to (ó)regla\n'+
-               'lets compose! \n';
-  window.jqconsole = $('#console').jqconsole(header, '>>> ');
-
-  // Abort prompt on Ctrl+Z.
-  jqconsole.RegisterShortcut('Z', function() {
-    jqconsole.AbortPrompt();
-    handler();
-  });
-  // Move to line start Ctrl+A.
-  jqconsole.RegisterShortcut('A', function() {
-    jqconsole.MoveToStart();
-    handler();
-  });
-  // Move to line end Ctrl+E.
-  jqconsole.RegisterShortcut('E', function() {
-    jqconsole.MoveToEnd();
-    handler();
-  });
-  jqconsole.RegisterMatching('{', '}', 'brace');
-  jqconsole.RegisterMatching('(', ')', 'paran');
-  jqconsole.RegisterMatching('[', ']', 'bracket');
-  // Handle a command.
-  var handler = function(command) {
-    if (command) {
-      try {
-        jqconsole.Write('==> ' + window.eval(command) + '\n');
-      } catch (e) {
-        jqconsole.Write('ERROR: ' + e.message + '\n');
+(function(){
+  var isDotted = false;
+  propStartingWith = function (obj, prefix) {
+    var res = [];
+    for(var m in obj) {
+      if(m.indexOf(prefix) === 0) {
+        res.push(m);
       }
     }
-    jqconsole.Prompt(true, handler, function(command) {
-      // Continue line if can't compile the command.
-      try {
-        Function(command);
-      } catch (e) {
-        if (/[\[\{\(]$/.test(command)) {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
-      return false;
-    });
+    return res;
   };
 
-  jqconsole.SetKeyPressHandler(function(e) {
-    var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
-    var dot = null;
-    var suggestionObject = window;
-    isDotted = false;
+  initConsole = function() {
+    // Creating the console.
+    var header = 'Welcome to (ó)regla\n'+
+                 'let\'s compose! \n';
+    window.jqconsole = $('#console').jqconsole(header, '>>> ');
 
-     // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
-    if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
-      return
-    }
+    // load history from cookies
+    if(document.cookie !== ""){
+       jqconsole.history = JSON.parse(document.cookie);
+       jqconsole.history_index = jqconsole.history.length;
+     }
 
-    if (text.match(/\./)) { // to suggest nested objects
-      var objectNames = text.split('.');
-      var lastDotIndex = text.lastIndexOf('.');
-      isDotted = true;
-      var tempText = text.slice(lastDotIndex+1); // behind dot
-
-      var suggString = "window";
-      for (var i = 0; i < objectNames.length-1; i++) {
-        suggString+= '["' + objectNames[i] + '"]';
+    // Abort prompt on Ctrl+Z.
+    jqconsole.RegisterShortcut('Z', function() {
+      jqconsole.AbortPrompt();
+      handler();
+    });
+    // Move to line start Ctrl+A.
+    jqconsole.RegisterShortcut('A', function() {
+      jqconsole.MoveToStart();
+      handler();
+    });
+    // Move to line end Ctrl+E.
+    jqconsole.RegisterShortcut('E', function() {
+      jqconsole.MoveToEnd();
+      handler();
+    });
+    jqconsole.RegisterMatching('{', '}', 'brace');
+    jqconsole.RegisterMatching('(', ')', 'paran');
+    jqconsole.RegisterMatching('[', ']', 'bracket');
+    // Handle a command.
+    var handler = function(command) {
+      if (command) {
+        try {
+          jqconsole.Write('==> ' + window.eval(command) + '\n');
+        } catch (e) {
+          jqconsole.Write('ERROR: ' + e.message + '\n');
+        }
+        document.cookie = JSON.stringify(jqconsole.history);
       }
-      suggestionObject = eval(suggString);
-      text = tempText;
-    }
-
-    var props = propStartingWith(suggestionObject, text); // or your namespace
-    if (props.length) {
-      if (!$('.suggest').length) {
-        $('<div/>').addClass('suggest').appendTo($('.jqconsole'));
-      }
-      $('.suggest').empty().show();
-      props.forEach(function(prop) {
-        $('.suggest').append('<div>' + prop + '</div>');
+      jqconsole.Prompt(true, handler, function(command) {
+        // Continue line if can't compile the command.
+        try {
+          Function(command);
+        } catch (e) {
+          if (/[\[\{\(]$/.test(command)) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }
+        return false;
       });
-      var pos = $('.jqconsole-cursor').offset();
-      pos.left += 20;
-      $('.suggest').offset(pos);
-    } else {
-      $('.suggest').hide();
-    }
-  });
+    };
 
-  jqconsole.SetControlKeyHandler(function(e) {
-    $('.suggest').hide();
-    if(e.which === 9 && $('.suggest div').length) {
-      if( isDotted ){
-        var text = $('.jqconsole-prompt-text').text();
-        jqconsole.SetPromptText(
-          text.slice(0, text.lastIndexOf('.') + 1) // erase everything after the last '.'
-          + $('.suggest div').first().text() // append suggestion
-        );
-      } else {
-        jqconsole.SetPromptText($('.suggest div').first().text());
+    jqconsole.SetKeyPressHandler(function(e) {
+      var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
+      var dot = null;
+      var suggestionObject = window;
+      isDotted = false;
+
+       // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
+      if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
+        return
       }
-      return false;
-    }
-  });
-  // Initiate the first prompt.
-  handler();
-}
+
+      if (text.match(/\./)) { // to suggest nested objects
+        var objectNames = text.split('.');
+        var lastDotIndex = text.lastIndexOf('.');
+        isDotted = true;
+        var tempText = text.slice(lastDotIndex+1); // behind dot
+
+        var suggString = "window";
+        for (var i = 0; i < objectNames.length-1; i++) {
+          suggString+= '["' + objectNames[i] + '"]';
+        }
+        suggestionObject = eval(suggString);
+        text = tempText;
+      }
+
+      var props = propStartingWith(suggestionObject, text); // or your namespace
+      if (props.length) {
+        if (!$('.suggest').length) {
+          $('<div/>').addClass('suggest').appendTo($('.jqconsole'));
+        }
+        $('.suggest').empty().show();
+        props.forEach(function(prop) {
+          $('.suggest').append('<div>' + prop + '</div>');
+        });
+        var pos = $('.jqconsole-cursor').offset();
+        pos.left += 20;
+        $('.suggest').offset(pos);
+      } else {
+        $('.suggest').hide();
+      }
+    });
+
+    jqconsole.SetControlKeyHandler(function(e) {
+      $('.suggest').hide();
+      if(e.which === 9 && $('.suggest div').length) {
+        if( isDotted ){
+          var text = $('.jqconsole-prompt-text').text();
+          jqconsole.SetPromptText(
+            text.slice(0, text.lastIndexOf('.') + 1) // erase everything after the last '.'
+            + $('.suggest div').first().text() // append suggestion
+          );
+        } else {
+          jqconsole.SetPromptText($('.suggest div').first().text());
+        }
+        return false;
+      }
+    });
+    // Initiate the first prompt.
+    handler();
+  }
+})();
