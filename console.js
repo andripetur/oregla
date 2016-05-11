@@ -1,7 +1,6 @@
 var initConsole = null;
 
 (function(){
-  var isDotted = false;
   propStartingWith = function (obj, prefix) {
     var res = [];
     for(var m in obj) {
@@ -14,8 +13,7 @@ var initConsole = null;
 
   initConsole = function() {
     // Creating the console.
-    var header = 'Welcome to (ó)regla\n'+
-                 'let\'s compose! \n';
+    var header = 'Welcome to (ó)regla\n';
     window.jqconsole = $('#console').jqconsole(header, '>>> ');
 
     // load history from cookies
@@ -67,11 +65,28 @@ var initConsole = null;
       });
     };
 
+    function canIshowHelp(beingTypedOrSuggested){
+      var obj = suggestionObject[beingTypedOrSuggested];
+      if (typeof obj !== "undefined") {
+        if (typeof obj.help !== "undefined") {
+          fillHelp(obj.help);
+        }
+      }
+    }
+
+    function fillHelp(hlp){
+      $('#help-title').text(hlp.title);
+      $('#help-content').html('> '+hlp.content);
+    }
+
+    var isDotted = false;
+    var suggestionObject = window;
+
     jqconsole.SetKeyPressHandler(function(e) {
       var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
       var dot = null;
-      var suggestionObject = window;
       isDotted = false;
+      suggestionObject = window;
 
        // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
       if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
@@ -90,6 +105,8 @@ var initConsole = null;
         }
         suggestionObject = eval(suggString);
         text = tempText;
+
+        canIshowHelp(objectNames[objectNames.length-1]);
       }
 
       var props = propStartingWith(suggestionObject, text); // or your namespace
@@ -112,15 +129,20 @@ var initConsole = null;
     jqconsole.SetControlKeyHandler(function(e) {
       $('.suggest').hide();
       if(e.which === 9 && $('.suggest div').length) {
+        var suggestion = $('.suggest div').first().text();
+
         if( isDotted ){
           var text = $('.jqconsole-prompt-text').text();
           jqconsole.SetPromptText(
             text.slice(0, text.lastIndexOf('.') + 1) // erase everything after the last '.'
-            + $('.suggest div').first().text() // append suggestion
+            + suggestion // append suggestion
           );
+
         } else {
-          jqconsole.SetPromptText($('.suggest div').first().text());
+          jqconsole.SetPromptText(suggestion);
         }
+        canIshowHelp(suggestion);
+
         return false;
       }
     });

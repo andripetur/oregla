@@ -3,7 +3,7 @@ body {
   text-rendering: geometricPrecision;
   background-color: black;
 
-  font-size: 20px;
+  font-size: 18px;
   color: white;
   line-height: 100%;
   /*box-shadow: 10px 10px 5px #888888;*/
@@ -139,15 +139,44 @@ input[type=range]:focus::-ms-fill-upper {
   background: url(./imgs/seamless-dark-wall.jpg) repeat top left;
 }
 
-/*jq console*/
-#console {
-  height: 200px;
-  width: 75%;
+#help {
+  height: 24%;
+  width: calc((100% / 4) - 25px);
   position:absolute;
   background-color: black;
   border: 2px solid #CCC;
   top: 75%;
-  left: 12.5%;
+  left: 12.5px;
+  z-index: -1;
+}
+
+.help{
+  font-family: monospace;
+  line-height: 100%;
+  /*white-space: pre-wrap;*/
+  display: block;
+  padding: 10px;
+  padding-bottom: 5px;
+
+  margin: 0px; position: relative;
+  box-sizing: border-box;
+}
+
+.h-content{
+  padding-top: 0px;
+  padding-left: 1em;
+  color: #0d0;
+}
+
+/*jq console*/
+#console {
+  height: 24%;
+  width: calc(((100% / 4) * 3) - 25px);
+  position:absolute;
+  background-color: black;
+  border: 2px solid #CCC;
+  top: 75%;
+  left: calc(25% + 12.5px);
   z-index: -1;
 }
 
