@@ -66,6 +66,7 @@ var initConsole = null;
     };
 
     function canIshowHelp(beingTypedOrSuggested){
+      if( typeof suggestionObject === "undefined" ) return;
       var obj = suggestionObject[beingTypedOrSuggested];
       if (typeof obj !== "undefined") {
         if (typeof obj.help !== "undefined") {
@@ -80,21 +81,24 @@ var initConsole = null;
     }
 
     var isDotted = false;
+    var isParenthesisd = false
     var suggestionObject = window;
 
     jqconsole.SetKeyPressHandler(function(e) {
       var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
       var dot = null;
       isDotted = false;
+      isParenthesisd = false;
       suggestionObject = window;
 
        // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
       if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
-        return
+        isParenthesisd = true;
+        return -1;
       }
 
-      if (text.match(/\./)) { // to suggest nested objects
-        var objectNames = text.split('.');
+      if (/\./.test(text)) { // to suggest nested objects
+        var objectNames = text.match(/[a-zA-Z\d]+/g);
         var lastDotIndex = text.lastIndexOf('.');
         isDotted = true;
         var tempText = text.slice(lastDotIndex+1); // behind dot
@@ -102,6 +106,10 @@ var initConsole = null;
         var suggString = "window";
         for (var i = 0; i < objectNames.length-1; i++) {
           suggString+= '["' + objectNames[i] + '"]';
+          if(/\b\d+/g.test(objectNames[i+1])){ // in case of array
+            i++;
+            suggString += '["' + objectNames[i] + '"]';
+          }
         }
         suggestionObject = eval(suggString);
         text = tempText;

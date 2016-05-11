@@ -12,13 +12,32 @@ var Chaos = null;
       return coords[w];
     };
 
-    this.calculate = function(){
+    this.calculate = function(){ // hopalong
       var xx, yy;
       xx = coords.y - (coords.x / Math.abs(coords.x)) * Math.sqrt( Math.abs( (coords.b * coords.x) - coords.o ) );
       yy = coords.t - coords.x;
       coords.x = xx;
       coords.y = yy;
     };
+
+    this.strangeAttractor = function(){
+      var a = 5, //sigma
+          b = 15, //rho
+          c = 1, // beta
+          interval = 0.05,
+          x = coords.x,
+          y = coords.y,
+          z = coords.z || 0.1,
+          xx, yy;
+
+      xx = x - (a * x) * interval + (a * y) * interval;
+      yy = y + (b * x) * interval - y * interval - (z * x) * interval;
+      zz = z - (c * z) * interval + (x * y) * interval;
+      coords.x = xx;
+      coords.y = yy;
+      coords.z = zz;
+    };
+
   }
 
   Chaos.prototype.getAllFromBuffer = function (w) {
@@ -115,12 +134,12 @@ var Sequencer = null;
 
 (function(){
   Sequencer = function(t){
-    this.type = t || "melodic";
+    this.seqType = t || "melodic";
     this.notes = [];
     this.rhythm = [];
     this.beatCounter = 0;
     this.pos = 0;
-    if (this.type !== "rhythm") {
+    if (this.seqType !== "rhythm") {
       var c = new Chaos({});
       for (var foo in c) this[foo] = c[foo];
     }

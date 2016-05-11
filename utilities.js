@@ -32,7 +32,7 @@
   utilities.randInt = function(low, high) {
     return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
   }
-  
+
   utilities.randFloat = function(low, high) {
     return utilities.scale(Math.random(), 0, 1, low, high);
   }
@@ -47,12 +47,22 @@
     return {low: low, high: high};
   }
 
+  utilities.intSeq = function( low, high, stepSize ){
+    var seq=[];
+    for (var i = low; i < high+stepSize; i+=stepSize) seq.push(i);
+    return seq;
+  }
+
   utilities.pythagoras = function(a,b) {
     return Math.sqrt((a*a) + (b*b));
   }
 
   utilities.round = function( toRound, val ) {
     return Math.floor(toRound / val) * val;
+  }
+
+  utilities.isFloat = function(nr){
+    return nr - Math.floor(nr) !== 0;
   }
 
   utilities.argumentsToArray = function(args){

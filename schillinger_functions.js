@@ -1,11 +1,7 @@
 var Schillinger = null;
 
 (function(){
-  Schillinger = function(){
-    // this.type = "rhythm";
-    // this.notes = [];
-    // this.rhythm = [];
-  }
+  Schillinger = function(){}
 
   // fills array with a "square wave" which switces t times in l length
   var monomialPeriodicGroup = function(t, l) {
@@ -42,19 +38,16 @@ var Schillinger = null;
     return tab;
   };
 
-  var interferenceOfMonomials = function(){ // as many as you want
+  var interferenceOfMonomials = function(){ // as many as you want, last determines type
     var args = utilities.argumentsToArray(arguments);
+    var type = args.pop();
     var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
 
-    var t = args.map( function(el){ return monomialPeriodicGroup(el, cd); } );
-
-    return interference(...t);
-  };
-
-  var generalInterferenceOfMonomials = function(){ // as many as you want
-    var args = utilities.argumentsToArray(arguments);
-    var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
-    var t = args.map( function(el){ return monomialPeriodicGroup2(el, cd); } );
+    if(type === 'slow' ) {
+      var t = args.map( function(el){ return monomialPeriodicGroup(el, cd); } ); // interference
+    } else {
+      var t = args.map( function(el){ return monomialPeriodicGroup2(el, cd); } ); // generalInterference
+    }
 
     return interference(...t);
   };
@@ -88,16 +81,6 @@ var Schillinger = null;
     });
   };
 
-  var multiplyIntervals = function(seq, multi){
-    var intervals = this.fromNotesToIntervals(seq);
-
-    intervals = intervals.map(function(el, indx) {
-      return indx != 0 ? (el * multi) : el;
-    });
-
-    return fromIntervalsToNotes(intervals);
-  };
-
   var mirror = function(arr){
     var sortedArr = arr.slice(0,arr.length).sort(
       function(a,b){
@@ -115,11 +98,9 @@ var Schillinger = null;
     return arr.map(function(n){ return dict[n] });
   }
 
-  // accesable to public
+  // accessable to public
   Schillinger.prototype.newRhythm = function(type,monomials){
-    var r = seriesToNumerators(
-      type === 'slow' ? interferenceOfMonomials(...monomials)
-                      : generalInterferenceOfMonomials(...monomials));
+    var r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
 
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
