@@ -98,7 +98,6 @@ var Schillinger = null;
   // accessable to public
   Schillinger.prototype.newRhythm = function(type,monomials){
     var r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
-
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
        return "new rhythm generated: " + r;

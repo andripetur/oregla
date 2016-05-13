@@ -13,6 +13,10 @@
      return ( v < l ) ? l : (( v > h ) ? h : v);
    }
 
+  utilities.round = function( toRound, val ) {
+    return Math.floor(toRound / val) * val;
+  }
+
   utilities.max = function( arr ) {
     var m = 0;
     for (var i = 0; i < arr.length; i++) {
@@ -29,14 +33,6 @@
     return m;
   }
 
-  utilities.randInt = function(low, high) {
-    return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
-  }
-
-  utilities.randFloat = function(low, high) {
-    return utilities.scale(Math.random(), 0, 1, low, high);
-  }
-
   utilities.range = function( arr ){
     var high = -Number.MAX_VALUE;
     var low = Number.MAX_VALUE;
@@ -45,6 +41,14 @@
       if( arr[i] > high ) high = arr[i];
     }
     return {low: low, high: high};
+  }
+  
+  utilities.randInt = function(low, high) {
+    return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
+  }
+
+  utilities.randFloat = function(low, high) {
+    return utilities.scale(Math.random(), 0, 1, low, high);
   }
 
   utilities.intSeq = function( low, high, stepSize ){
@@ -55,10 +59,6 @@
 
   utilities.pythagoras = function(a,b) {
     return Math.sqrt((a*a) + (b*b));
-  }
-
-  utilities.round = function( toRound, val ) {
-    return Math.floor(toRound / val) * val;
   }
 
   utilities.isFloat = function(nr){
@@ -72,7 +72,7 @@
   utilities.getAllIndexesOf = function( str, char ){
     var indices = [];
     for(var i=0; i<str.length;i++) {
-        if (str[i] === char) indices.push(i);
+      if (str[i] === char) indices.push(i);
     }
     return indices;
   }
