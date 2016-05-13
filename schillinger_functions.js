@@ -5,18 +5,16 @@ var Schillinger = null;
 
   // fills array with a "square wave" which switces t times in l length
   var monomialPeriodicGroup = function(t, l) {
-    var mpg = [], waveLength = l / t;
-    for (var i = 0; i < l; i++) {
-      mpg.push( (i % (waveLength*2)) < waveLength ? 1 : 0 );
-    }
-    return mpg;
+    var a = [], waveLength = l / t;
+    for (var i=0; i<l; i++) a.push( (i % (waveLength*2)) < waveLength ? 1 : 0 );
+    return a;
   };
 
   // fills array with a "square wave" with a period of t(switches every t times)
   var monomialPeriodicGroup2 = function(t, l) {
-    var mpg = [];
-    for (var i = 0; i < l; i++) mpg.push( (i % (t*2)) < t ? 1 : 0 );
-    return mpg;
+    var a = [];
+    for (var i = 0; i < l; i++) a.push( (i % (t*2)) < t ? 1 : 0 );
+    return a;
   };
 
   var interference = function(){ // takes two or more arguments
@@ -83,8 +81,7 @@ var Schillinger = null;
 
   var mirror = function(arr){
     var sortedArr = arr.slice(0,arr.length).sort(
-      function(a,b){
-        return a - b;
+      function(a,b){ return a - b;
     });
 
     var revSortedSeq = sortedArr.slice(0,sortedArr.length).reverse();
@@ -113,7 +110,7 @@ var Schillinger = null;
   Schillinger.prototype.reverse = function(){
     if( typeof this.rhythm !== "undefined") rhythm.reverse();
     if( typeof this.notes !== "undefined") notes.reverse();
-    return "sequence reversed";
+    return "Sequence reversed.";
   };
 
   Schillinger.prototype.multiplyIntervals = function(multi){
@@ -123,23 +120,45 @@ var Schillinger = null;
       return indx != 0 ? (el * multi) : el;
     });
 
-    return fromIntervalsToNotes(intervals);
+    this.notes = fromIntervalsToNotes(intervals);
+    return "Intervals multiplied by: " + multi + "amount.";
   };
 
   Schillinger.prototype.transpose = function(delta){
     this.notes = this.notes.map(function(n){ return n + delta; });
+    return "Transposed by: " + delta + " semitones";
   };
+
+  Schillinger.prototype.clampToRange = function(low, high){
+    //if note exceeds range, it's transposed an octave down until it reaches allowed range,
+    // if note is below range ,transpose it up, into range
+    this.notes = this.notes.map( function( el ) {
+      if( el < low ) {
+        var octavesToMove = Math.ceil((low - el) / 12);
+        return el + (12 * octavesToMove);
+      } else if ( el > high ) {
+        var octavesToMove = Math.ceil((el - high) / 12);
+        return el - (12 * octavesToMove);
+      } else {
+        return el;
+      }
+    });
+    return "Note range clamped to " + low + " and " + high + '.';
+  }
 
   Schillinger.prototype.mirrorNotes = function(){
     this.notes = mirror(this.notes);
+    return "Notes mirrored.";
   };
 
   Schillinger.prototype.mirrorIntervals = function(){
     this.notes = fromIntervalsToNotes(mirror(fromNotesToIntervals(this.notes)));
+    return "Intervals mirrored.";
   };
 
   Schillinger.prototype.mirrorRhythm = function(){
     this.rhythm = mirror(this.rhythm);
+    return "Rhythm mirrored."
   };
 
 })();
