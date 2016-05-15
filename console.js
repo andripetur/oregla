@@ -18,8 +18,12 @@ var initConsole = null;
 
     // load history from cookies
     if(document.cookie !== ""){
-       jqconsole.history = JSON.parse(document.cookie);
-       jqconsole.history_index = jqconsole.history.length;
+        try{
+         jqconsole.history = JSON.parse(document.cookie);
+         jqconsole.history_index = jqconsole.history.length;
+       } catch (e) {
+         document.cookie = ""; 
+       }
      }
 
     // Abort prompt on Ctrl+Z.
@@ -46,7 +50,13 @@ var initConsole = null;
         try {
           jqconsole.Write('==> ' + window.eval(command) + '\n');
         } catch (e) {
-          jqconsole.Write('ERROR: ' + e.message + '\n');
+          try { // if it fails check first if it will run on sound object
+            jqconsole.Write('==> ' + window.eval('sound.'+command) + '\n');
+            // TODO maybe add regex to handle if we are trying to compile
+            // something else than single function.
+          } catch (ee) {
+            jqconsole.Write('ERROR: ' + e.message + '\n');
+          }
         }
         document.cookie = JSON.stringify(jqconsole.history);
       }
@@ -82,10 +92,10 @@ var initConsole = null;
 
     var isDotted = false;
     var isParenthesisd = false
-    var suggestionObject = window;
+    var suggestionObject = null;
 
     jqconsole.SetKeyPressHandler(function(e) {
-      var text = jqconsole.GetPromptText() + String.fromCharCode(e.which);
+      var text = "sound." + jqconsole.GetPromptText() + String.fromCharCode(e.which);
       var dot = null;
       isDotted = false;
       isParenthesisd = false;

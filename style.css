@@ -154,7 +154,7 @@ input[type=range]:focus::-ms-fill-upper {
   font-family: monospace;
   line-height: 100%;
   /*white-space: pre-wrap;*/
-  display: block;
+  /*display: block;*/
   padding: 10px;
   padding-bottom: 5px;
 
