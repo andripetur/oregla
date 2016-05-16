@@ -180,6 +180,15 @@ input[type=range]:focus::-ms-fill-upper {
   z-index: -1;
 }
 
+.sel-sugg {
+  color: black;
+  background-color: #0d0;
+}
+
+.suggest {
+  width: 35%;
+}
+
 .jqconsole {
   padding: 10px;
   padding-bottom: 10px;

@@ -21,8 +21,8 @@ var initConsole = null;
         try{
          jqconsole.history = JSON.parse(document.cookie);
          jqconsole.history_index = jqconsole.history.length;
-       } catch (e) {
-         document.cookie = ""; 
+       } catch (e) { // if the json craps out we just nuke it.
+         document.cookie = "";
        }
      }
 
@@ -30,17 +30,54 @@ var initConsole = null;
     jqconsole.RegisterShortcut('Z', function() {
       jqconsole.AbortPrompt();
       handler();
+      $('.suggest').hide();
     });
     // Move to line start Ctrl+A.
     jqconsole.RegisterShortcut('A', function() {
       jqconsole.MoveToStart();
       handler();
+      $('.suggest').hide();
     });
     // Move to line end Ctrl+E.
     jqconsole.RegisterShortcut('E', function() {
       jqconsole.MoveToEnd();
       handler();
+      $('.suggest').hide();
     });
+
+    // Ctrl+W Move selected sugestion up
+    jqconsole.RegisterShortcut('w', function() {
+      selectedSuggestion--;
+      if(selectedSuggestion < 0) selectedSuggestion = 0;
+      handler();
+      $('.suggest').show();
+      highlightSelectedSuggestion();
+    });
+
+    // Ctrl+S Move selected sugestion up
+    jqconsole.RegisterShortcut('s', function() { // move suggestionDown
+      selectedSuggestion++;
+      if(selectedSuggestion > $('.suggest div').size()) selectedSuggestion = 0;
+      handler();
+      $('.suggest').show();
+      highlightSelectedSuggestion();
+    });
+
+    // tab or Ctrl+Enter inserts suggestion
+    jqconsole.RegisterShortcut(13, function(){
+      jqconsole.custom_control_key_handler({ which: 9 }); // call ctrl key handler as tab has been entered
+    });
+
+    var highlightSelectedSuggestion = function() {
+      $('.suggest div').each(function( index ) {
+        if(index == selectedSuggestion){
+           $( this ).addClass('sel-sugg');
+         } else {
+           $( this ).removeClass('sel-sugg');
+         }
+      });
+    }
+
     jqconsole.RegisterMatching('{', '}', 'brace');
     jqconsole.RegisterMatching('(', ')', 'paran');
     jqconsole.RegisterMatching('[', ']', 'bracket');
@@ -93,9 +130,12 @@ var initConsole = null;
     var isDotted = false;
     var isParenthesisd = false
     var suggestionObject = null;
+    var selectedSuggestion = 0;
 
     jqconsole.SetKeyPressHandler(function(e) {
       var text = "sound." + jqconsole.GetPromptText() + String.fromCharCode(e.which);
+      if( String.fromCharCode(e.which) === '.') return; // start typing before suggesting
+
       var dot = null;
       isDotted = false;
       isParenthesisd = false;
@@ -123,11 +163,11 @@ var initConsole = null;
         }
         suggestionObject = eval(suggString);
         text = tempText;
-
         canIshowHelp(objectNames[objectNames.length-1]);
       }
 
       var props = propStartingWith(suggestionObject, text); // or your namespace
+      var selectedSuggestion = 0;
       if (props.length) {
         if (!$('.suggest').length) {
           $('<div/>').addClass('suggest').appendTo($('.jqconsole'));
@@ -145,9 +185,10 @@ var initConsole = null;
     });
 
     jqconsole.SetControlKeyHandler(function(e) {
-      $('.suggest').hide();
-      if(e.which === 9 && $('.suggest div').length) {
-        var suggestion = $('.suggest div').first().text();
+      if(e.which !== 17) $('.suggest').hide(); // hide suggestions on non ctrl events
+
+      if(e.which === 9 && $('.suggest div').length) { // tab or ctr+enter
+        var suggestion = $('.suggest div').eq(selectedSuggestion).text();
 
         if( isDotted ){
           var text = $('.jqconsole-prompt-text').text();
