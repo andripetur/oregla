@@ -1,6 +1,7 @@
 (function () {
   fluid.registerNamespace("utilities");
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Scaling and modifing nrs
   utilities.scale = function(i,il,ih,ol,oh) {
     return ((i - il) / (ih - il)) * (oh - ol) + ol;
   }
@@ -17,8 +18,9 @@
     return Math.floor(toRound / val) * val;
   }
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Number range enquiries
   utilities.max = function( arr ) {
-    var m = 0;
+    var m = -Number.MAX_VALUE;
     for (var i = 0; i < arr.length; i++) {
       if( arr[i] > m ) m = arr[i];
     }
@@ -42,7 +44,8 @@
     }
     return {low: low, high: high};
   }
-  
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Random functions
   utilities.randInt = function(low, high) {
     return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
   }
@@ -51,12 +54,13 @@
     return utilities.scale(Math.random(), 0, 1, low, high);
   }
 
-  utilities.intSeq = function( low, high, stepSize ){
+  utilities.seq = function( low, high, stepSize ){
     var seq=[];
     for (var i = low; i < high+stepSize; i+=stepSize) seq.push(i);
     return seq;
   }
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Misc
   utilities.pythagoras = function(a,b) {
     return Math.sqrt((a*a) + (b*b));
   }
@@ -69,6 +73,7 @@
     return Array.prototype.slice.call(args);
   }
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - String stuff
   utilities.getAllIndexesOf = function( str, char ){
     var indices = [];
     for(var i=0; i<str.length;i++) {
@@ -77,6 +82,13 @@
     return indices;
   }
 
+  utilities.rightPad = function(str, length, padder) {
+    var p = padder || ' ';
+    for (var i = str.length; i < length; i++) str += p;
+    return str;
+  }
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Timer
   var t1, t2;
   utilities.startTimer = function() {
     t1 = new Date().getTime();

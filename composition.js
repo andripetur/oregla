@@ -32,14 +32,14 @@
   }
 
   var tempo = 80;
+  var divisor = {};
+  for (var i = 0.25; i < 64; i*=2) divisor[(i*4)+'n'] = i;
   var getBpm = function(bpm,smallestDivisor){
     return (60 / bpm) / smallestDivisor;
   }
 
   sound.chaos = [];
-  for(var i=0; i<10; i++) {
-    sound.chaos.push(new Sequencer());
-  }
+  for(var i=0; i<10; i++) sound.chaos.push(new Sequencer());
 
   function makeCoords(){
     return { x: 0.1, y: 0.1,
@@ -135,7 +135,7 @@
     sound.band.scheduler.repeat(getBpm(tempo, 4), pianoScheduler);
     sound.band.scheduler.repeat(getBpm(tempo, 8), ambientScheduler);
     sound.band.scheduler.repeat(getBpm(tempo, 4), drumScheduler);
-    sound.band.scheduler.repeat(getBpm(tempo, 32),tempoChangeListener);
+    sound.band.scheduler.repeat(getBpm(tempo, divisor['128n']),tempoChangeListener);
   }
   scheduleSequences();
 

@@ -4,8 +4,8 @@ function initDrawing(){
   canvas = new fabric.StaticCanvas('cvs', {
     backgroundColor: 'black',
     renderOnAddRemove: false,
-    width: window.innerWidth,
-    height: window.innerHeight*0.75,
+    width: window.innerWidth*0.75,
+    height: window.innerHeight*0.70,
   });
 
   drawChaos(sound.chaos[0].buffer);
@@ -214,7 +214,7 @@ var nrOfFaders = 8;
 var faderboxCanvas = null;
 var box = {
   height: window.innerHeight*0.25,
-  width: window.innerWidth*0.25,
+  width: (window.innerWidth*0.25) - 20,
 }
 var sliderWidth = box.width / nrOfFaders;
 

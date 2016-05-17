@@ -13,7 +13,7 @@ var initConsole = null;
 
   initConsole = function() {
     // Creating the console.
-    var header = 'Welcome to (ó)regla\n';
+    var header = 'Welcome to (ó)regla. Start typing for suggestions.\nPress ctrl+h for info on the console.\n';
     window.jqconsole = $('#console').jqconsole(header, '>>> ');
 
     // load history from cookies
@@ -26,26 +26,28 @@ var initConsole = null;
        }
      }
 
-    // Abort prompt on Ctrl+Z.
+     var shortcuts = {};
+
+    shortcuts['ctrl+z'] = "Abort prompt."
     jqconsole.RegisterShortcut('Z', function() {
       jqconsole.AbortPrompt();
       handler();
       $('.suggest').hide();
     });
-    // Move to line start Ctrl+A.
+    shortcuts['ctrl+a'] = "Move to line start."
     jqconsole.RegisterShortcut('A', function() {
       jqconsole.MoveToStart();
       handler();
       $('.suggest').hide();
     });
-    // Move to line end Ctrl+E.
+    shortcuts['ctrl+a'] = "Move to line end."
     jqconsole.RegisterShortcut('E', function() {
       jqconsole.MoveToEnd();
       handler();
       $('.suggest').hide();
     });
 
-    // Ctrl+W Move selected sugestion up
+    shortcuts['ctrl+w'] = "Move selected suggestion up."
     jqconsole.RegisterShortcut('w', function() {
       selectedSuggestion--;
       if(selectedSuggestion < 0) selectedSuggestion = 0;
@@ -54,7 +56,7 @@ var initConsole = null;
       highlightSelectedSuggestion();
     });
 
-    // Ctrl+S Move selected sugestion up
+    shortcuts['ctrl+w'] = "Move selected suggestion down."
     jqconsole.RegisterShortcut('s', function() { // move suggestionDown
       selectedSuggestion++;
       if(selectedSuggestion > $('.suggest div').size()) selectedSuggestion = 0;
@@ -63,20 +65,20 @@ var initConsole = null;
       highlightSelectedSuggestion();
     });
 
-    // tab or Ctrl+Enter inserts suggestion
+    shortcuts['tab'] = "Select suggestion."
+    shortcuts['ctrl+enter'] = "Select suggestion."
     jqconsole.RegisterShortcut(13, function(){
       jqconsole.custom_control_key_handler({ which: 9 }); // call ctrl key handler as tab has been entered
     });
 
-    var highlightSelectedSuggestion = function() {
-      $('.suggest div').each(function( index ) {
-        if(index == selectedSuggestion){
-           $( this ).addClass('sel-sugg');
-         } else {
-           $( this ).removeClass('sel-sugg');
-         }
-      });
-    }
+    shortcuts['ctrl+h'] = "Show shortcut list."
+    jqconsole.RegisterShortcut('H', function() {
+      jqconsole.Write('\n');
+      for (var key in shortcuts) {
+        jqconsole.Write('    '+utilities.rightPad(key,10) + ': ' + shortcuts[key] + '\n');
+      }
+      jqconsole.Write('\n');
+    });
 
     jqconsole.RegisterMatching('{', '}', 'brace');
     jqconsole.RegisterMatching('(', ')', 'paran');
@@ -125,6 +127,16 @@ var initConsole = null;
     function fillHelp(hlp){
       $('#help-title').text(hlp.title);
       $('#help-content').html('> '+hlp.content);
+    }
+
+    var highlightSelectedSuggestion = function() {
+      $('.suggest div').each(function( index ) {
+        if(index == selectedSuggestion){
+           $( this ).addClass('sel-sugg');
+         } else {
+           $( this ).removeClass('sel-sugg');
+         }
+      });
     }
 
     var isDotted = false;

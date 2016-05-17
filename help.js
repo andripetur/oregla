@@ -25,7 +25,6 @@
     content: 'Modifier.<br> Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high).'
   };
 
-
   var mirror = {
     title: 'Mirror',
     content: 'Modifier.<br> Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth.'
