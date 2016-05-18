@@ -31,6 +31,16 @@
     none: new Scale()
   }
 
+  var selectedScale = "ionian";
+  sound.selectScale = function(scale){
+    if( typeof scales[scale] !== "undefined"){
+  	  selectedScale = scale;
+      return scale + " scale is selected.";
+	  } else {
+      return "You've tried to pick an nonexisting scale.";
+	  }
+  }
+
   var tempo = 80;
   var divisor = {};
   for (var i = 0.25; i < 64; i*=2) divisor[(i*4)+'n'] = i;
@@ -56,7 +66,6 @@
       coords: sound.coordinates,
       offset: i*1000,
       length: 100,
-      // reorder: "distanceFromEachother"
     });
     sound.chaos[i].mapBufferToNotes();
     sound.chaos[i].newRhythm("fast",[ i+1, 3, 5]);
@@ -72,7 +81,7 @@
       var n = sound.chaos[sound.chaosToPlay].getNote()
       if(n > 0){
         animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].notes.length+1);
-        n = scales["ionian"].lockTo( n );
+        n = scales[selectedScale].lockTo( n );
         var pNote = "piano-"+n+".trigger.source";
         sound.band.piano.set( pNote , 1 );
       }
@@ -90,7 +99,7 @@
         sound.chaos[1].get("x"),
         ambRange.low, ambRange.high,
         40, 90));
-      sound.addNoteToFfb( flock.midiFreq( scales["ionian"].lockTo( n )) );
+      sound.addNoteToFfb( flock.midiFreq( scales[selectedScale].lockTo( n )) );
     }
   };
 
