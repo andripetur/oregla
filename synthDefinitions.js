@@ -5,7 +5,7 @@
   var environment = flock.init();
   environment.start();
 
-  sound.synth = flock.synth({
+  sound.bassSynth = flock.synth({
     nickName: "square-synth",
     synthDef: {
       ugen: "flock.ugen.filter.moog",
@@ -46,58 +46,6 @@
        },
       },
   });
-
-  sound.synth2 = flock.synth({
-    nickName: "square-synth",
-    synthDef: {
-      ugen: "flock.ugen.filter.moog",
-       cutoff: 8000,
-       resonance: 2,
-       source: {
-         ugen: 'flock.ugen.sum',
-         sources: [{
-           id: 'osc',
-           ugen: "flock.ugen.saw",
-           mul: {
-               id: "env",
-               ugen: "flock.ugen.asr",
-               attack: 0.001,
-               sustain: 0.5,
-               release: 0.4,
-               gate: 0,
-           }
-         },
-         {
-         id: 'osc2',
-         ugen: "flock.ugen.saw",
-         mul: {
-             id: "env2",
-             ugen: "flock.ugen.asr",
-             attack: 0.001,
-             sustain: 0.5,
-             release: 0.4,
-             gate: 0,
-         }
-       }
-         ],
-       },
-      },
-  });
-
-  sound.playNote = function (synth, f, _duration) {
-    var duration = duration || 200;
-    sound[synth].set({
-        "osc.freq": f,
-        "osc2.freq": f*1.02,
-        "env.gate":  1,
-        "env2.gate":  1,
-
-    }); //<<set note
-    setTimeout(function(){ // put note out
-      sound[synth].set("env.gate", 0);
-      sound[synth].set("env2.gate", 0);
-    }, duration)
-  }
 
   // - - - - samplers - - - -
 
@@ -239,11 +187,11 @@
       // ugen: 'flock.ugen.distortion',
       ugen: 'flock.ugen.sum',
       sources: fillFilterBank(),
-
     }
   })
 
-  sound.addNoteToFfb = function ( freq ) {
+  sound.addNoteToFfb = function ( mNote ) {
+    var freq = flock.midiFreq(mNote );
     var fltr = "f"+sound.addNoteToFfb.counter;
     var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
     // console.log(this.counter)
@@ -254,12 +202,6 @@
     sound.ffb.set(fMul, 0.8);
     if(sound.ffb.get(nsMul) === 0) sound.ffb.set(nsMul, 1);
 
-    // sound.ffb.set({
-    //   fCtoff: freq,
-    //   nsMul: 1,
-    //   fMul: 0.4
-    // });
-
     sound.addNoteToFfb.counter++;
     if( sound.addNoteToFfb.counter > ffBankSize-1 ){
       sound.addNoteToFfb.counter = 0;
@@ -268,9 +210,9 @@
 
   sound.addNoteToFfb.counter = 0;
 
-  sound.drum = {};
+  sound.drums = {};
 
-  sound.drum.kick = flock.synth({
+  sound.drums.kick = flock.synth({
     nickName: "kick",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -301,7 +243,7 @@
      },
   });
 
-  sound.drum.snare = flock.synth({
+  sound.drums.snare = flock.synth({
     nickName: "snare",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -337,7 +279,7 @@
     }
   });
 
-  sound.drum.hh = flock.synth({
+  sound.drums.hh = flock.synth({
     nickName: "hh",
     synthDef: {
         ugen: "flock.ugen.filter.biquad.bp",
@@ -368,7 +310,7 @@
     }
   });
 
-  sound.drum.perc = flock.synth({
+  sound.drums.perc = flock.synth({
     nickName: "perc",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -398,15 +340,15 @@
      },
   });
 
-  sound.drum.play = function(which){
+  sound.drums.play = function(which){
     var on = { "volEnv.gate": 1 } , off = { "volEnv.gate": 0 };
     if(which != 'perc') {
       on["pitchEnv.gate"] = 0;
       off["pitchEnv.gate"] = 0;
     }
-    sound.drum[which].set( on );
+    sound.drums[which].set( on );
     setTimeout(function () {
-      sound.drum[which].set( off );
+      sound.drums[which].set( off );
     }, 10);
   }
 

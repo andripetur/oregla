@@ -50,8 +50,8 @@
     content: 'Modifier.<br> Maps chaos buffer to note values. Making them playable.'
   };
     // Composition.js----------------------------------------------------------------------
-  sound.selectScale.help = {
-    title: 'Select scale',
+  sound.scales.set.help = {
+    title: 'Set scale',
     content: 'Modifier.<br> Selects the scale to tune notes too.',
     docLink: 'documentation.html#scales'
   };

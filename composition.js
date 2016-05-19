@@ -20,7 +20,7 @@
     return this.absolute.indexOf(n) >= 0 ? n : n+1;
   }
 
-  var scales = {
+  sound.scales = {
     ionian: new Scale(2,2,1,2,2,2,1),
     dorian: new Scale(2,1,2,2,2,1,2),
     phrygian: new Scale(1,2,2,2,1,2,2),
@@ -28,17 +28,17 @@
     mixolydian: new Scale(2,2,1,2,2,1,2),
     aeolian: new Scale(2,1,2,2,1,2,2),
     locrian: new Scale(1,2,2,1,2,2,2),
-    none: new Scale()
-  }
-
-  var selectedScale = "ionian";
-  sound.selectScale = function(scale){
-    if( typeof scales[scale] !== "undefined"){
-  	  selectedScale = scale;
-      return scale + " scale is selected.";
-	  } else {
-      return "You've tried to pick an nonexisting scale.";
-	  }
+    none: new Scale(),
+    selected: 'ionian',
+    get: function() { return this[this.selected]; },
+    set: function(scale){
+      if( typeof this[scale] !== "undefined"){
+    	  this.selected = scale;
+        return scale + " scale is selected.";
+  	  } else {
+        return "You've tried to pick an nonexisting scale.";
+  	  }
+    }
   }
 
   var tempo = 80;
@@ -72,56 +72,80 @@
     sound.coordinates.b -= 0.2;
   }
 
+  var Instrument = function( s ) {
+    this.synth = s;
+    this.start = this.synth.play;
+    (this.stop = this.synth.pause)();
+    var c = new Sequencer({});
+    for (var foo in c) this[foo] = c[foo];
+
+    this.quickStart = function(){
+      this.fillChaosBuffer();
+      this.mapBufferToNotes();
+      this.newRhythm('fast', [2,3,7,11]);
+    };
+    this.quickStart()
+  }
+
+  Instrument.prototype.noteOn = function( midi ) {
+    var duration = duration || 200;
+    var freq = flock.midiFreq(midi);
+    this.synth.set({
+        "osc.freq": freq,
+        "osc2.freq": freq*1.02,
+        "env.gate":  1,
+        "env2.gate":  1,
+    }); //<<set note
+    var onSynth = this.synth;
+    setTimeout(function(){ // put note out
+      onSynth.set("env.gate", 0);
+      onSynth.set("env2.gate", 0);
+    }, duration)
+  }
+
+  sound.bass = new Instrument( sound.bassSynth );
+  sound.piano = new Instrument( sound.band.piano )
+  sound.piano.noteOn = function( mNote ) {
+    var pNote = "piano-"+mNote+".trigger.source";
+    sound.band.piano.set( pNote , 1 );
+  }
+
+  sound.ambient = new Instrument( sound.ffb );
+  sound.ambient.noteOn = sound.addNoteToFfb;
+
+  var toSchedule = [];
+  toSchedule.push(sound.bass);
+  toSchedule.push(sound.piano);
+  toSchedule.push(sound.ambient);
+
   sound.chaosToPlay = 0;
-  sound.startPiano = sound.band.piano.play;
-  (sound.stopPiano = sound.band.piano.pause)();
-
-  var pianoScheduler = function () {
-    if(sound.piano.isPlaying()){
-      var n = sound.chaos[sound.chaosToPlay].getNote()
-      if(n > 0){
-        animatePoint(sound.chaos[sound.chaosToPlay].pos % sound.chaos[sound.chaosToPlay].notes.length+1);
-        n = scales[selectedScale].lockTo( n );
-        var pNote = "piano-"+n+".trigger.source";
-        sound.band.piano.set( pNote , 1 );
-      }
-    }
-  };
-
-  sound.startAmbient = sound.ffb.play;
-  (sound.stopAmbient = sound.ffb.pause)();
-
-  var ambRange = utilities.range(sound.chaos[1].getAllFromBuffer("x"));
-  var ambientScheduler = function() {
-    if(sound.ffb.isPlaying()) {
-      sound.chaos[1].calculate();
-      var n = Math.floor( utilities.scale(
-        sound.chaos[1].get("x"),
-        ambRange.low, ambRange.high,
-        40, 90));
-      sound.addNoteToFfb( flock.midiFreq( scales[selectedScale].lockTo( n )) );
-    }
-  };
 
   var drumSeq = [];
-  for (var drum in sound.drum){
-     if(drum === "play") break;
-     var l = drumSeq.length;
-     drumSeq.push( { s: new Sequencer("rhythm"), d: drum });
-     drumSeq[l].s.newRhythm("fast",[3,5,l+4]);
-   }
+  for (var drum in sound.drums){
+    if(drum === "play") break;
+    var l = drumSeq.length;
+    drumSeq.push( { s: new Sequencer("rhythm"), d: drum });
+    drumSeq[l].s.newRhythm("fast",[3,5,l+4]);
+    sound.drums[drum].isPlaying = sound.drums[drum].isPlaying;
+    (sound.drums[drum].start = sound.drums[drum].play)();
+    sound.drums[drum].stop = sound.drums[drum].pause;
+  }
 
-   drumSeq.isPlaying = false;
-   sound.startDrums = function(){ drumSeq.isPlaying = true; }
-   sound.stopDrums = function(){ drumSeq.isPlaying = false; }
+  drumSeq.isPlaying = false;
+  sound.drums.start = function(){ drumSeq.isPlaying = true; }
+  sound.drums.stop = function(){ drumSeq.isPlaying = false; }
 
-  var drumScheduler = function() {
+  sound.drums.do = function() {
     if(drumSeq.isPlaying){
       for (var i = 0; i < drumSeq.length; i++) {
-        if(drumSeq[i].s.trigger()) sound.drum.play(drumSeq[i].d);
+        if(drumSeq[i].s.trigger() && sound.drums[drumSeq[i].d].isPlaying()){
+          sound.drums.play(drumSeq[i].d);
+        }
       }
     }
   };
+
+  toSchedule.push(sound.drums)
 
   var changeTempo = false;
   sound.setTempo = function(t) {
@@ -141,11 +165,15 @@
   }
 
   var scheduleSequences = function(bpm) {
-    sound.band.scheduler.repeat(getBpm(tempo, 4), pianoScheduler);
-    sound.band.scheduler.repeat(getBpm(tempo, 8), ambientScheduler);
-    sound.band.scheduler.repeat(getBpm(tempo, 4), drumScheduler);
+    for (var i = 0; i < toSchedule.length; i++) {
+      (function() {
+        var temp = toSchedule[i];
+        sound.band.scheduler.repeat(getBpm(tempo, divisor['8n']), function(){ temp.do(); });
+      })();
+    }
     sound.band.scheduler.repeat(getBpm(tempo, divisor['128n']),tempoChangeListener);
   }
+
   scheduleSequences();
 
 }());

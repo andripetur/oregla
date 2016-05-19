@@ -98,7 +98,17 @@ var Chaos = null;
     });
   }
 
-  Chaos.prototype.fillChaosBuffer = function( options ) {
+  Chaos.prototype.fillChaosBuffer = function( o ) {
+    var options = o || {
+      coords: { x: 0.1, y: 0.1,
+        a: utilities.randFloat(-100,100),
+        t: utilities.randFloat(-100,100),
+        b: utilities.randFloat(-100,100),
+        o: utilities.randInt(-1,1),
+      },
+      length: 100,
+    };
+
     if( typeof options.coords !== "undefined"){
       Chaos.call(this, options.coords);
     }
@@ -125,8 +135,8 @@ var Chaos = null;
           break;
       }
     }
-
     this.buffer = b;
+    return "Chaos buffer filled!"
   }
 })();
 
@@ -157,6 +167,16 @@ var Sequencer = null;
       this.beatCounter++;
       return -1;
   }
+
+  Sequencer.prototype.do = function () {
+    if(this.synth.isPlaying()){
+      var n = this.getNote()
+      if(n > 0){
+        n = sound.scales.get().lockTo( n );
+        this.noteOn( n );
+      }
+    }
+  };
 
   Sequencer.prototype.trigger = function(){
     if(this.beatCounter === this.rhythm[this.pos % this.rhythm.length]){
