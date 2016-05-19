@@ -146,11 +146,6 @@ body {
   border: 2px solid #CCC;
 }
 
-ul {
-  background: none;
-  padding: 50px;
-  list-style-position: inside;
-}
 a:link, a:visited {
   font-family: Menlo;
   background-color: ghostwhite;
