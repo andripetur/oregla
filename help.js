@@ -52,6 +52,6 @@
     // Chaos----------------------------------------------------------------------
   sound.selectScale.help = {
     title: 'Select scale',
-    content: 'Modifier.<br> Selects a scale to tune notes too.'
+    content: 'Modifier.<br> Selects the scale to tune notes too.'
   };
 })();

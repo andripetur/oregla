@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title> (ó)regla documentation </title>
+
+        <link rel="stylesheet" href="style.css"/>
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+    </head>
+
+    <body class=docBody>
+      <div id='title' style="width: 24%;"><br>(ó)regla<br>&nbsp;</div>
+      <div id='docNav' class="jqconsole"> <ul> </ul> </div>
+      <div id='docContent' class="jqconsole">
+        <section id='about'>
+          <h1> About (ó)regla </h1>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> (ó)rekkgla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </section>
+        <section id='chaos'>
+          <h1> Chaos </h1>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </section>
+        <section id='sound'>
+          <h1> Sound </h1>
+            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </section>
+       </div>
+
+       <script>
+       (function() {
+         var getPageOffset = function() {
+           var doc = document.documentElement;
+           return (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+         }
+         $('#docContent section').each(function(index){
+           var link = window.location.pathname + '#'+this.id;
+           $('#docNav').first().append( '<li> <a href=' + link + '>' + this.id + '</a></li>' );
+         });
+
+         var docNavPlaceMent = (window.innerWidth*0.75);
+         var maxHeight = document.body.scrollHeight - docNavPlaceMent;
+         var longPos = 0;
+         var scrollEventCounter = 0;
+
+         setTimeout(function () { // scroll into view if we start at an offset
+           $('#docNav').css( 'top' , getPageOffset );
+          }, 10);
+
+         $( window ).scroll(function(scrll) {
+           var top = getPageOffset();
+           var currPos = parseInt($('#docNav').css('top').replace('px',''));
+           longPos += currPos;
+           longPos = longPos/2;
+
+           if( scrollEventCounter % 5 == 4){ // dont react on every scroll event
+             if( longPos > maxHeight ) {
+               $('#docNav').css( 'top' , maxHeight );
+             } else {
+               $('#docNav').css( 'top' , top );
+             }
+           }
+           scrollEventCounter++;
+          });
+        })();
+       </script>
+    </body>
+</html>

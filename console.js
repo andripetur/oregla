@@ -15,6 +15,7 @@ var initConsole = null;
     // Creating the console.
     var header = 'Welcome to (ó)regla. Start typing for suggestions.\nPress ctrl+h for info on the console.\n';
     window.jqconsole = $('#console').jqconsole(header, '>>> ');
+    // $('.jqconsole-header').append( '<a class=\'link\' href=documentation.html>Documentation</a>' );
 
     // load history from cookies
     if(document.cookie !== ""){

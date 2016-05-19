@@ -44,6 +44,8 @@ body {
   position:absolute;
   background-color: black;
   border: 2px solid #CCC;
+  overflow-y: auto;
+  overflow-x: hidden;
   top: 70%;
   left: 8px;
   z-index: -1;
@@ -52,11 +54,8 @@ body {
 .help{
   font-family: monospace;
   line-height: 100%;
-  /*white-space: pre-wrap;*/
-  /*display: block;*/
   padding: 10px;
   padding-bottom: 5px;
-
   margin: 0px; position: relative;
   box-sizing: border-box;
 }
@@ -77,6 +76,17 @@ body {
   top: 70%;
   left: 25%;
   z-index: -1;
+}
+
+.link {
+  font-family: Menlo;
+  background-color: ghostwhite;
+  color: black;
+  font-size: 1899;
+  /*padding: 15px 25px;*/
+  text-align: center;
+  text-decoration: none;
+  /*display: inline-block;*/
 }
 
 .sel-sugg {
@@ -120,4 +130,48 @@ body {
 }
 .jqconsole-composition {
   background-color: red;
+}
+
+/* - - - - - - - - - - - - - - - Documentation - - - - - - - - - - - - - - */
+.docBody {
+  font-style: normal;
+  font-size: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  line-height: normal;
+}
+
+#docNav {
+  position: absolute;
+  transition: top 0.5s;
+  top: 0;
+  left: 0%;
+  width: 20%;
+  height: 100%;
+}
+
+#docContent {
+  position: absolute;
+  left: 25%;
+  width: 70%;
+  border: 2px solid #CCC;
+}
+
+ul {
+  background: none;
+  padding: 50px;
+  list-style-position: inside;
+}
+a:link, a:visited {
+  font-family: Menlo;
+  background-color: ghostwhite;
+  color: black;
+  padding: 15px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+a:hover, a:active {
+    background-color: #0d0;
 }
