@@ -34,7 +34,7 @@
   Schillinger.prototype.mirrorIntervals.help = mirror;
   Schillinger.prototype.mirrorRhythm.help = mirror;
 
-  // Chaos----------------------------------------------------------------------
+  // Chaos.js----------------------------------------------------------------------
   Chaos.prototype.getAllFromBuffer.help = {
     title: 'Get all from buffer',
     content: 'Data.<br> Returns an array with all elements of requested value <string>arg1 from the chaos buffer.'
@@ -49,9 +49,10 @@
     title: 'Map buffer to notes',
     content: 'Modifier.<br> Maps chaos buffer to note values. Making them playable.'
   };
-    // Chaos----------------------------------------------------------------------
+    // Composition.js----------------------------------------------------------------------
   sound.selectScale.help = {
     title: 'Select scale',
-    content: 'Modifier.<br> Selects the scale to tune notes too.'
+    content: 'Modifier.<br> Selects the scale to tune notes too.',
+    docLink: 'documentation.html#scales'
   };
 })();

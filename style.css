@@ -78,17 +78,6 @@ body {
   z-index: -1;
 }
 
-.link {
-  font-family: Menlo;
-  background-color: ghostwhite;
-  color: black;
-  font-size: 1899;
-  /*padding: 15px 25px;*/
-  text-align: center;
-  text-decoration: none;
-  /*display: inline-block;*/
-}
-
 .sel-sugg {
   color: black;
   background-color: #0d0;
@@ -173,5 +162,19 @@ a:link, a:visited {
 }
 
 a:hover, a:active {
+    background-color: #0d0;
+}
+
+a.docLink {
+  line-height: normal;
+  font-size: inherit;
+  background-color: ghostwhite;
+  color: black;
+  padding: inherit;
+  text-align: left;
+  display: inline-block;
+}
+
+a:hover.docLink, a:active.docLink {
     background-color: #0d0;
 }

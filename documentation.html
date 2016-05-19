@@ -30,10 +30,23 @@
           <h1> Sound </h1>
             <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         </section>
+        <section id='scales'>
+          <h1> Scales </h1>
+            <p> There are number of scales to choose from. You can also create your own. There are a number of scales that come built in and you can ofcourse also choose to not adhere to any of them.
+            <ul>
+              <li> ionian </li>
+              <li> dorian </li>
+              <li> phrygian </li>
+              <li> logydian </li>
+              <li> mixolydian </li>
+              <li> aeolian </li>
+              <li> locrian </li>
+              <li> none </li>
+          </ul> </p>
        </div>
 
        <script>
-       (function() {
+       $(document).ready(function() {
          var getPageOffset = function() {
            var doc = document.documentElement;
            return (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
@@ -67,7 +80,7 @@
            }
            scrollEventCounter++;
           });
-        })();
+        });
        </script>
     </body>
 </html>

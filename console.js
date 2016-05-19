@@ -13,9 +13,9 @@ var initConsole = null;
 
   initConsole = function() {
     // Creating the console.
-    var header = 'Welcome to (ó)regla. Start typing for suggestions.\nPress ctrl+h for info on the console.\n';
+    var header = 'Welcome to (ó)regla. Start typing for suggestions.\nPress ctrl+h for info on the console.\nOr take a look at the ';
     window.jqconsole = $('#console').jqconsole(header, '>>> ');
-    // $('.jqconsole-header').append( '<a class=\'link\' href=documentation.html>Documentation</a>' );
+    $('.jqconsole-header').append( '<a class=docLink href=documentation.html target=_blank>Documentation</a>\n');
 
     // load history from cookies
     if(document.cookie !== ""){
@@ -70,6 +70,14 @@ var initConsole = null;
     shortcuts['ctrl+enter'] = "Select suggestion."
     jqconsole.RegisterShortcut(13, function(){
       jqconsole.custom_control_key_handler({ which: 9 }); // call ctrl key handler as tab has been entered
+    });
+
+    shortcuts['ctrl+d'] = "Open the docLink in helpwindow in a new tab.";
+    jqconsole.RegisterShortcut('D', function() {
+      if($('#help-content a' ).length > 0) {
+        var hash = $('#help-content a' )[0].hash;
+        window.open('documentation.html'+hash);
+      }
     });
 
     shortcuts['ctrl+h'] = "Show shortcut list."
@@ -128,8 +136,10 @@ var initConsole = null;
     function fillHelp(hlp){
       $('#help-title').text(hlp.title);
       $('#help-content').html('> '+hlp.content);
+      if( typeof hlp.docLink !== "undefined"){ // add link to documentation
+        $('#help-content').append( '</br><a class=docLink href=\"'+hlp.docLink+'\" target=_blank>DocLink</a>');
+      }
     }
-
     var highlightSelectedSuggestion = function() {
       $('.suggest div').each(function( index ) {
         if(index == selectedSuggestion){
