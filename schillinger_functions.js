@@ -100,6 +100,7 @@ var Schillinger = null;
     var r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
+       this.beatCounter = 0;
        return "new rhythm generated: " + r;
      } else {
        return r;
@@ -116,7 +117,8 @@ var Schillinger = null;
     var intervals = fromNotesToIntervals(this.notes);
 
     intervals = intervals.map(function(el, indx) {
-      return indx != 0 ? (el * multi) : el;
+      var res = indx != 0 ? (el * multi) : el;
+      return multi < 1 || utilities.isFloat(multi) ? Math.floor(res) : res;
     });
 
     this.notes = fromIntervalsToNotes(intervals);
@@ -161,5 +163,3 @@ var Schillinger = null;
   };
 
 })();
-
-var schil = new Schillinger();

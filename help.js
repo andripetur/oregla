@@ -49,7 +49,8 @@
     title: 'Map buffer to notes',
     content: 'Modifier.<br> Maps chaos buffer to note values. Making them playable.'
   };
-    // Composition.js----------------------------------------------------------------------
+
+  // Composition.js----------------------------------------------------------------------
   sound.scales.set.help = {
     title: 'Set scale',
     content: 'Modifier.<br> Selects the scale to tune notes too.',

@@ -1,11 +1,12 @@
 (function () {
   // - - - - synths - - - -
   fluid.registerNamespace("sound");
+  fluid.registerNamespace("synthDef")
 
   var environment = flock.init();
   environment.start();
 
-  sound.bassSynth = flock.synth({
+  synthDef.bassSynth = flock.synth({
     nickName: "square-synth",
     synthDef: {
       ugen: "flock.ugen.filter.moog",
@@ -60,7 +61,7 @@
     return defs;
   }
 
-  sound.loader = flock.bufferLoader({
+  synthDef.loader = flock.bufferLoader({
     bufferDefs: makeBufferDefs()
   });
 
@@ -136,7 +137,7 @@
     return ffb;
   }
 
-  sound.ffb = flock.synth( {
+  synthDef.ffb = flock.synth( {
     synthDef: {
       // ugen: 'flock.ugen.freeverb',
       // ugen: 'flock.ugen.distortion',
@@ -145,7 +146,7 @@
     }
   })
 
-  sound.addNoteToFfb = function ( mNote ) {
+  synthDef.addNoteToFfb = function ( mNote ) {
     var freq = flock.midiFreq(mNote );
     var fltr = "f"+sound.addNoteToFfb.counter;
     var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
@@ -162,7 +163,7 @@
     }
   }
 
-  sound.addNoteToFfb.counter = 0;
+  synthDef.addNoteToFfb.counter = 0;
 
   sound.drums = {};
 
@@ -310,7 +311,7 @@
     }, 10);
   }
 
-  sound.band = flock.band({
+  synthDef.band = flock.band({
     components: {
       piano: {
         type: "flock.synth",
@@ -353,7 +354,7 @@
   }
 });
 
-sound.piano = sound.band.piano;
+synthDef.piano = synthDef.band.piano;
 
 }());
 

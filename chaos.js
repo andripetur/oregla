@@ -20,7 +20,7 @@ var Chaos = null;
       coords.y = yy;
     };
 
-    this.strangeAttractor = function(){
+    var strangeAttractor = function(){
       var a = 5, //sigma
           b = 15, //rho
           c = 1, // beta
@@ -148,6 +148,7 @@ var Sequencer = null;
     this.rhythm = [];
     this.beatCounter = 0;
     this.pos = 0;
+    this.stepSize = 1;
     if (this.seqType !== "rhythm") {
       this.notes = [];
       var c = new Chaos({});
@@ -160,7 +161,7 @@ var Sequencer = null;
   Sequencer.prototype.getNote = function(){
     if(this.beatCounter === this.rhythm[this.pos % this.rhythm.length]){
       var n = this.notes[this.pos%this.notes.length];
-      this.pos++;
+      this.pos += this.stepSize;
       this.beatCounter=0;
       return n + 36;
     }
@@ -201,5 +202,3 @@ var Sequencer = null;
 
 
 })();
-
-var seq = new Sequencer();

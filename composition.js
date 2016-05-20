@@ -56,12 +56,14 @@
       o: utilities.randInt(-1,1),
     }
   }
-  
+
   sound.instruments = [ "bass", "piano", "ambient"];
   var Instrument = function( s ) {
     this.synth = s;
     this.start = this.synth.play;
     (this.stop = this.synth.pause)();
+    this.detune = 0; // 0 - 1
+    this.osc2Offset = 0;
     var c = new Sequencer({});
     for (var foo in c) this[foo] = c[foo];
 
@@ -76,12 +78,15 @@
   Instrument.prototype.noteOn = function( midi ) {
     var duration = duration || 200;
     var freq = flock.midiFreq(midi);
+    var freq2 = flock.midiFreq(midi+this.osc2Offset) * Math.pow(2, (this.detune*100)/1200);
+
     this.synth.set({
         "osc.freq": freq,
-        "osc2.freq": freq*1.02,
+        "osc2.freq": freq2,
         "env.gate":  1,
         "env2.gate":  1,
     }); //<<set note
+
     var onSynth = this.synth;
     setTimeout(function(){ // put note out
       onSynth.set("env.gate", 0);
@@ -89,15 +94,15 @@
     }, duration)
   }
 
-  sound.bass = new Instrument( sound.bassSynth );
-  sound.piano = new Instrument( sound.band.piano )
+  sound.bass = new Instrument( synthDef.bassSynth );
+  sound.piano = new Instrument( synthDef.band.piano )
   sound.piano.noteOn = function( mNote ) {
     var pNote = "piano-"+mNote+".trigger.source";
-    sound.band.piano.set( pNote , 1 );
+    synthDef.band.piano.set( pNote , 1 );
   }
 
-  sound.ambient = new Instrument( sound.ffb );
-  sound.ambient.noteOn = sound.addNoteToFfb;
+  sound.ambient = new Instrument( synthDef.ffb );
+  sound.ambient.noteOn = synthDef.addNoteToFfb;
 
   var toSchedule = [];
   toSchedule.push(sound.bass);
@@ -146,8 +151,8 @@
   var tempoChangeListener = function(){
     if(changeTempo) {
       changeTempo = false;
-      sound.band.scheduler.clearAll();
-      sound.band.scheduler.clearAll(); // <- called twice to make sure that everything gets cleared
+      synthDef.band.scheduler.clearAll();
+      synthDef.band.scheduler.clearAll(); // <- called twice to make sure that everything gets cleared
       scheduleSequences(tempo);
     }
   }
@@ -156,10 +161,10 @@
     for (var i = 0; i < toSchedule.length; i++) {
       (function() {
         var temp = toSchedule[i];
-        sound.band.scheduler.repeat(getBpm(tempo, divisor['8n']), function(){ temp.do(); });
+        synthDef.band.scheduler.repeat(getBpm(tempo, divisor['8n']), function(){ temp.do(); });
       })();
     }
-    sound.band.scheduler.repeat(getBpm(tempo, divisor['128n']),tempoChangeListener);
+    synthDef.band.scheduler.repeat(getBpm(tempo, divisor['128n']),tempoChangeListener);
   }
 
   scheduleSequences();
