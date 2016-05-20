@@ -48,9 +48,6 @@
     return (60 / bpm) / smallestDivisor;
   }
 
-  sound.chaos = [];
-  for(var i=0; i<10; i++) sound.chaos.push(new Sequencer());
-
   function makeCoords(){
     return { x: 0.1, y: 0.1,
       a: utilities.randFloat(-100,100),
@@ -59,19 +56,8 @@
       o: utilities.randInt(-1,1),
     }
   }
-  sound.coordinates = makeCoords();
-
-  for(var i=0; i<10; i++){
-    sound.chaos[i].fillChaosBuffer({
-      coords: sound.coordinates,
-      offset: i*1000,
-      length: 100,
-    });
-    sound.chaos[i].mapBufferToNotes();
-    sound.chaos[i].newRhythm("fast",[ i+1, 3, 5]);
-    sound.coordinates.b -= 0.2;
-  }
-
+  
+  sound.instruments = [ "bass", "piano", "ambient"];
   var Instrument = function( s ) {
     this.synth = s;
     this.start = this.synth.play;
@@ -118,34 +104,36 @@
   toSchedule.push(sound.piano);
   toSchedule.push(sound.ambient);
 
-  sound.chaosToPlay = 0;
-
-  var drumSeq = [];
+  var drumList = [];
   for (var drum in sound.drums){
     if(drum === "play") break;
-    var l = drumSeq.length;
-    drumSeq.push( { s: new Sequencer("rhythm"), d: drum });
-    drumSeq[l].s.newRhythm("fast",[3,5,l+4]);
-    sound.drums[drum].isPlaying = sound.drums[drum].isPlaying;
-    (sound.drums[drum].start = sound.drums[drum].play)();
-    sound.drums[drum].stop = sound.drums[drum].pause;
+    drumList.push(drum);
+
+    // copy sequencer
+    var c = new Sequencer("rhythm");
+    for (var foo in c) sound.drums[drum][foo] = c[foo];
+
+    sound.drums[drum].newRhythm("fast",[3,5,utilities.randInt(4,9)]);
+    sound.drums[drum].isPlaying = sound.drums[drum].synth.isPlaying;
+    (sound.drums[drum].start = sound.drums[drum].synth.play)();
+    sound.drums[drum].stop = sound.drums[drum].synth.pause;
   }
 
-  drumSeq.isPlaying = false;
-  sound.drums.start = function(){ drumSeq.isPlaying = true; }
-  sound.drums.stop = function(){ drumSeq.isPlaying = false; }
+  var drumsArePlaying = false;
+  sound.drums.start = function(){ drumsArePlaying = true; }
+  sound.drums.stop = function(){ drumsArePlaying = false; }
 
   sound.drums.do = function() {
-    if(drumSeq.isPlaying){
-      for (var i = 0; i < drumSeq.length; i++) {
-        if(drumSeq[i].s.trigger() && sound.drums[drumSeq[i].d].isPlaying()){
-          sound.drums.play(drumSeq[i].d);
+    if(drumsArePlaying){
+      for (var i = 0; i < drumList.length; i++) {
+        if( sound.drums[drumList[i]].trigger() && sound.drums[drumList[i]].isPlaying()){
+          sound.drums.play(drumList[i]);
         }
       }
     }
   };
 
-  toSchedule.push(sound.drums)
+  toSchedule.push(sound.drums);
 
   var changeTempo = false;
   sound.setTempo = function(t) {

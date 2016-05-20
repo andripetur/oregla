@@ -51,7 +51,7 @@
           "name": "chaos",
           "controls": "selectChaos",
           "callbackFunction": "selectChaos",
-          "range": {low: 0, high: 9}
+          "range": {low: 0, high: 3}
         });
 
         function help(){
@@ -61,9 +61,6 @@
         function selectChaos(n) {
           n = Math.floor(n);
           if( n != sound.chaosToPlay){
-            if( n < 0 || n > 9 ) {
-              return "nr out of bounds";
-            }
             sound.chaosToPlay = n;
             moveChaos(sound.chaos[sound.chaosToPlay].buffer);
           }

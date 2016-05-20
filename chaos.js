@@ -145,11 +145,11 @@ var Sequencer = null;
 (function(){
   Sequencer = function(t){
     this.seqType = t || "melodic";
-    this.notes = [];
     this.rhythm = [];
     this.beatCounter = 0;
     this.pos = 0;
     if (this.seqType !== "rhythm") {
+      this.notes = [];
       var c = new Chaos({});
       for (var foo in c) this[foo] = c[foo];
     }

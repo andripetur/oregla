@@ -56,17 +56,12 @@
       id = "pi-note-" + (i * 6);
       defs.push( { id: id, url: "./piano/" + note + ".wav" });
     }
-    defs.push( {id: 'oboe', url: "./audio/oboe_C4.wav"});
+    // defs.push( {id: 'oboe', url: "./audio/oboe_C4.wav"});
     return defs;
   }
 
   sound.loader = flock.bufferLoader({
-    bufferDefs: makeBufferDefs(),
-    listeners: {
-        afterBuffersLoaded: function () {
-            // console.log("buffers ready");
-        }
-    }
+    bufferDefs: makeBufferDefs()
   });
 
   var everySixUnder103 = [];
@@ -119,46 +114,6 @@
     return line;
   }
 
-  sound.oboe = flock.synth( {
-    synthDef: {
-        ugen: "flock.ugen.playBuffer",
-        id: "oboe",
-        buffer: "oboe",
-
-        trigger: {
-          id: "trig",
-          ugen: "flock.ugen.inputChangeTrigger",
-          source: 0,
-        },
-
-        mul: {
-            id: "env",
-            ugen: "flock.ugen.asr",
-            start: 0.0,
-            attack: 0.1,
-            sustain: 0.25,
-            release: 0.1,
-            gate: 0
-        },
-
-        speed: 1,
-        loop: 1,
-        start: 0,
-        end: 1,
-      }
-    });
-
-  sound.playOboe = function(n){
-    var c4 = 48;
-    var delta = n - c4;
-    sound.oboe.set( "oboe.speed" , Math.pow(2, delta/12));
-    sound.oboe.set( "trig.source" , 1);
-    sound.oboe.set( "env.gate" , 1);
-    setTimeout(function () {
-      sound.oboe.set( "env.gate" , 0);
-    }, 100);
-  }
-
   // - - - - filterbanks - - - -
 
   var ffBankSize = 10;
@@ -194,7 +149,6 @@
     var freq = flock.midiFreq(mNote );
     var fltr = "f"+sound.addNoteToFfb.counter;
     var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
-    // console.log(this.counter)
     var fCtoff = fltr + ".cutoff";
     var fMul = fltr + ".mul";
 
@@ -212,7 +166,8 @@
 
   sound.drums = {};
 
-  sound.drums.kick = flock.synth({
+  sound.drums.kick = {};
+  sound.drums.kick.synth = flock.synth({
     nickName: "kick",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -243,7 +198,8 @@
      },
   });
 
-  sound.drums.snare = flock.synth({
+  sound.drums.snare = {};
+  sound.drums.snare.synth = flock.synth({
     nickName: "snare",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -279,7 +235,8 @@
     }
   });
 
-  sound.drums.hh = flock.synth({
+  sound.drums.hh = {};
+  sound.drums.hh.synth = flock.synth({
     nickName: "hh",
     synthDef: {
         ugen: "flock.ugen.filter.biquad.bp",
@@ -310,7 +267,8 @@
     }
   });
 
-  sound.drums.perc = flock.synth({
+  sound.drums.perc = {};
+  sound.drums.perc.synth = flock.synth({
     nickName: "perc",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -346,9 +304,9 @@
       on["pitchEnv.gate"] = 0;
       off["pitchEnv.gate"] = 0;
     }
-    sound.drums[which].set( on );
+    sound.drums[which].synth.set( on );
     setTimeout(function () {
-      sound.drums[which].set( off );
+      sound.drums[which].synth.set( off );
     }, 10);
   }
 

@@ -8,7 +8,7 @@ function initDrawing(){
     height: window.innerHeight*0.70,
   });
 
-  drawChaos(sound.chaos[0].buffer);
+  drawChaos(sound[sound.instruments[0]].buffer);
 
   fabric.util.loadImage('./imgs/paper.jpg', function(img) {
     canvas.item(0).fill = new fabric.Pattern({
