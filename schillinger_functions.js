@@ -3,15 +3,15 @@ var Schillinger = null;
 (function(){
   Schillinger = function(){}
 
-  // fills array with a "square wave" which switces t times in l length
   var monomialPeriodicGroup = function(t, l) {
+  // fills array with a "square wave" which switces t times in l length
     var a = [], waveLength = l / t;
     for (var i=0; i<l; i++) a.push( (i % (waveLength*2)) < waveLength ? 1 : 0 );
     return a;
   };
 
-  // fills array with a "square wave" with a period of t(switches every t times)
   var monomialPeriodicGroup2 = function(t, l) {
+  // fills array with a "square wave" with a period of t(switches every t times)
     var a = [];
     for (var i = 0; i < l; i++) a.push( (i % (t*2)) < t ? 1 : 0 );
     return a;

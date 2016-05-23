@@ -102,7 +102,23 @@
   }
 
   sound.ambient = new Instrument( synthDef.ffb );
-  sound.ambient.noteOn = synthDef.addNoteToFfb;
+  sound.ambient.noteOn = synthDef.addNoteToFfb = function ( mNote ) {
+    var freq = flock.midiFreq(mNote );
+    var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
+    var fCtoff = fltr + ".cutoff";
+    var fMul = fltr + ".mul";
+
+    sound.ffb.set(fCtoff, freq);
+    sound.ffb.set(fMul, 0.8);
+    if(sound.ffb.get(nsMul) === 0) sound.ffb.set(nsMul, 1);
+
+    synthDef.addNoteToFfb.counter++;
+    if( synthDef.addNoteToFfb.counter > synthDef.fBankSize-1 ){
+      synthDef.addNoteToFfb.counter = 0;
+    }
+  }
+
+  synthDef.addNoteToFfb.counter = 0;
 
   var toSchedule = [];
   toSchedule.push(sound.bass);

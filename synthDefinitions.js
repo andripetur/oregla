@@ -117,10 +117,10 @@
 
   // - - - - filterbanks - - - -
 
-  var ffBankSize = 10;
+  synthDef.ffBankSize = 10;
   function fillFilterBank() {
     var ffb = [];
-    for(var i=0; i<ffBankSize; i++){
+    for(var i=0; i<synthDef.ffBankSize; i++){
       ffb.push( {
         id: "f"+i,
         ugen: "flock.ugen.filter.moog",
@@ -146,24 +146,6 @@
     }
   })
 
-  synthDef.addNoteToFfb = function ( mNote ) {
-    var freq = flock.midiFreq(mNote );
-    var fltr = "f"+sound.addNoteToFfb.counter;
-    var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
-    var fCtoff = fltr + ".cutoff";
-    var fMul = fltr + ".mul";
-
-    sound.ffb.set(fCtoff, freq);
-    sound.ffb.set(fMul, 0.8);
-    if(sound.ffb.get(nsMul) === 0) sound.ffb.set(nsMul, 1);
-
-    sound.addNoteToFfb.counter++;
-    if( sound.addNoteToFfb.counter > ffBankSize-1 ){
-      sound.addNoteToFfb.counter = 0;
-    }
-  }
-
-  synthDef.addNoteToFfb.counter = 0;
 
   sound.drums = {};
 
