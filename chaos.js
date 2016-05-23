@@ -107,6 +107,7 @@ var Chaos = null;
         o: utilities.randInt(-1,1),
       },
       length: 100,
+      reorder: "distanceFromEachother"
     };
 
     if( typeof options.coords !== "undefined"){

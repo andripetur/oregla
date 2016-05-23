@@ -1,4 +1,5 @@
 var canvas = null;
+var patterns = {};
 
 function initDrawing(){
   canvas = new fabric.StaticCanvas('cvs', {
@@ -8,94 +9,57 @@ function initDrawing(){
     height: window.innerHeight*0.70,
   });
 
-  drawChaos(sound[sound.instruments[0]].buffer);
+  var offsets = [ { l:0,               t:0,   c: [255,100,100]},
+                  { l:canvas.width/2 , t: 0,  c: [100,255,100]},
+                  { l:0 , t: canvas.height/2, c: [100,100,255]}  ];
 
-  fabric.util.loadImage('./imgs/paper.jpg', function(img) {
-    canvas.item(0).fill = new fabric.Pattern({
-      source: img,
-      repeat: 'repeat'
-    });
-  });
+  for (var i = 0; i < sound.instruments.length; i++) {
+    patterns[sound.instruments[i]] = makeGroup(sound[sound.instruments[i]].buffer, offsets[i]);
+    canvas.add(patterns[sound.instruments[i]]);
+  }
+
+  // fabric.util.loadImage('./imgs/paper.jpg', function(img) {
+  //   canvas.item(0).fill = new fabric.Pattern({
+  //     source: img,
+  //     repeat: 'repeat'
+  //   });
+  // });
 
   setInterval(function () {
     canvas.renderAll();
   }, 40);
 }
 
-function textureColor(){
-  fabric.Image.fromURL('./imgs/paper.jpg', function(img) {
-    img.scaleToWidth(100);
-
-    var patternSourceCanvas = new fabric.StaticCanvas();
-    patternSourceCanvas.add(img);
-
-    img.filters.push(new fabric.Image.filters.Tint({
-      color: "rgba(0,0,0,0.5)",
-    }));
-
-    img.applyFilters(patternSourceCanvas.renderAll.bind(patternSourceCanvas));
-
-    canvas.backgroundColor = new fabric.Pattern({
-      source: function() {
-        patternSourceCanvas.setDimensions({
-          width: img.getWidth(),
-          height: img.getHeight()
-        });
-        return patternSourceCanvas.getElement();
-      },
-      repeat: 'repeat'
-    });
-  });
-}
-
-var smallRadius = 10;
-function drawChaos(points){
-
+function makeGroup(points, offset){
   var bigRadious = utilities.max(points.map(function(p){ return p.length; }));
   var xrange = utilities.range(points.map(function(p){ return p.x; }));
   var yrange = utilities.range(points.map(function(p){ return p.y; }));
-
-  var padAmt = 0.25;
+  var padAmt = 0.025;
   var xPad = canvas.width * padAmt;
   var yPad = canvas.height * padAmt;
 
-  var color, clrVal, x, y, xavg=0, yavg=0;
+  var circleGroup = points.map(function(el,i,arr){
+    x = utilities.scale(points[i].x, xrange.low, xrange.high, 0+xPad, canvas.width/2-xPad);
+    y = utilities.scale(points[i].y, yrange.low, yrange.high, 0+yPad, canvas.height/2-yPad);
+    var clrVal = Math.floor(points[i].length * Math.floor(255/bigRadious));
+    var color = 'rgba('+offset.c.toString()+',0.5)';
+    var stroke = 'rgba('+offset.c.toString()+',1)';
 
-  for (var i = 0; i < points.length; i++) {
-    x = utilities.scale(points[i].x, xrange.low, xrange.high, 0+xPad, canvas.width-xPad);
-    y = utilities.scale(points[i].y, yrange.low, yrange.high, 0+yPad, canvas.height-yPad);
-    xavg += x;
-    yavg += y;
-
-    clrVal = Math.floor(points[i].length * Math.floor(255/bigRadious));
-    color = 'rgba('+clrVal+',100,100,0.5)';
-
-    canvas.add( new fabric.Circle({
+    return new fabric.Circle({
         originX: "center",
         originY: "center",
         left: x,
         top:  y,
         fill: color,
-        stroke: 'rgba('+clrVal+',100,100,1)',
-        radius: smallRadius,
-      }));
-    }
+        stroke: stroke,
+        radius: 5,
+      });
+  });
 
-    xavg /= points.length;
-    yavg /= points.length;
-
-    // big circle gets it middle point from avg x&y from small circles
-    var big = new fabric.Circle({
-      originX: "center",
-      originY: "center",
-      left: xavg ,
-      top:  yavg ,
-      fill: 'white',
-      radius: Math.floor( bigRadious * 10 * 0.75 ),
-    });
-
-    canvas.add(big);
-    big.sendToBack();
+  return new fabric.Group(circleGroup, {
+    left: offset.l,
+    top: offset.t,
+  });
 }
 
 function moveChaos(points){
