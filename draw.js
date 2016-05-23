@@ -1,4 +1,50 @@
 var canvas = null;
+var instrumentValues = {};
+var patterns = {
+  addGroup: function(inst, circles){
+    patterns[inst] = new fabric.Group(circles, instrumentValues[inst]);
+    canvas.add(patterns[inst]);
+}};
+
+function makeColors() {
+  var val1 = 100,
+      val2 = 255,
+      str = "",
+      combinations = [];
+
+  for (var i = 0; i < 4; i++) {
+    combinations.push(...utilities.getAnagrams(utilities.rightPad(str,3,'0')));
+    str += '1';
+  }
+
+  return combinations.map(function(el){ // binary to color values
+    var chars = el.split('')
+    return chars.map(function(el){
+      return el === '0' ? val1 : val2;
+    });
+  });
+}
+
+function makeGrid( colls, rows ) {
+  var colors = makeColors(),
+      offsets = [],
+      w = canvas.width / colls,
+      h = canvas.height/ rows;
+
+  for (var x = 0; x < colls; x++) {
+    for (var y = 0; y < rows; y++) {
+      offsets.push({
+        l: x * w,
+        t: y * h,
+        c: colors[(colls*y) + x]
+      });
+    }
+  }
+
+  makeGrid.colls = colls;
+  makeGrid.rows = rows;
+  return offsets;
+}
 
 function initDrawing(){
   canvas = new fabric.StaticCanvas('cvs', {
@@ -8,94 +54,66 @@ function initDrawing(){
     height: window.innerHeight*0.70,
   });
 
-  drawChaos(sound[sound.instruments[0]].buffer);
+  var offsets = makeGrid(2, 2);
 
-  fabric.util.loadImage('./imgs/paper.jpg', function(img) {
-    canvas.item(0).fill = new fabric.Pattern({
-      source: img,
-      repeat: 'repeat'
-    });
-  });
+  for (var i = 0; i < sound.instruments.length; i++) {
+    // make group settings
+    instrumentValues[sound.instruments[i]] = {
+      left: offsets[i].l,
+      top: offsets[i].t,
+      fill: 'rgba('+offsets[i].c.toString()+',0.5)',
+      stroke: 'rgba('+offsets[i].c.toString()+',1)',
+    };
+  }
+
+  for (var i = 0; i < sound.instruments.length; i++) {
+    // init the pattern groups
+    var circles = pointsToCircles(sound[sound.instruments[i]].buffer);
+    patterns.addGroup(sound.instruments[i], circles);
+
+    (function(){ // register buffer listener
+      var instrument = sound.instruments[i];
+      sound[instrument].watch("buffer", function(prop,oldval,newval){
+        var circles = pointsToCircles(newval);
+        canvas.remove(patterns[instrument]);
+        patterns.addGroup(instrument, circles);
+        return newval;
+      });
+    })();
+  }
 
   setInterval(function () {
     canvas.renderAll();
   }, 40);
 }
 
-function textureColor(){
-  fabric.Image.fromURL('./imgs/paper.jpg', function(img) {
-    img.scaleToWidth(100);
+function scalePoints(points){
+  var xrange = utilities.range(points.map(function(p){ return p.x; })),
+      yrange = utilities.range(points.map(function(p){ return p.y; })),
+      padAmt = 0.025,
+      w = canvas.width/makeGrid.colls,
+      h = canvas.height/makeGrid.rows,
+      xPad = w * padAmt,
+      yPad = h * padAmt;
 
-    var patternSourceCanvas = new fabric.StaticCanvas();
-    patternSourceCanvas.add(img);
-
-    img.filters.push(new fabric.Image.filters.Tint({
-      color: "rgba(0,0,0,0.5)",
-    }));
-
-    img.applyFilters(patternSourceCanvas.renderAll.bind(patternSourceCanvas));
-
-    canvas.backgroundColor = new fabric.Pattern({
-      source: function() {
-        patternSourceCanvas.setDimensions({
-          width: img.getWidth(),
-          height: img.getHeight()
-        });
-        return patternSourceCanvas.getElement();
-      },
-      repeat: 'repeat'
-    });
+  return points.map(function(el,i,arr){
+    return {
+      x : utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, w-xPad),
+      y : utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, h-yPad)
+    };
   });
 }
 
-var smallRadius = 10;
-function drawChaos(points){
-
-  var bigRadious = utilities.max(points.map(function(p){ return p.length; }));
-  var xrange = utilities.range(points.map(function(p){ return p.x; }));
-  var yrange = utilities.range(points.map(function(p){ return p.y; }));
-
-  var padAmt = 0.25;
-  var xPad = canvas.width * padAmt;
-  var yPad = canvas.height * padAmt;
-
-  var color, clrVal, x, y, xavg=0, yavg=0;
-
-  for (var i = 0; i < points.length; i++) {
-    x = utilities.scale(points[i].x, xrange.low, xrange.high, 0+xPad, canvas.width-xPad);
-    y = utilities.scale(points[i].y, yrange.low, yrange.high, 0+yPad, canvas.height-yPad);
-    xavg += x;
-    yavg += y;
-
-    clrVal = Math.floor(points[i].length * Math.floor(255/bigRadious));
-    color = 'rgba('+clrVal+',100,100,0.5)';
-
-    canvas.add( new fabric.Circle({
+function pointsToCircles(points){
+  return scalePoints(points).map(function(el){
+    return new fabric.Circle({
         originX: "center",
         originY: "center",
-        left: x,
-        top:  y,
-        fill: color,
-        stroke: 'rgba('+clrVal+',100,100,1)',
-        radius: smallRadius,
-      }));
-    }
-
-    xavg /= points.length;
-    yavg /= points.length;
-
-    // big circle gets it middle point from avg x&y from small circles
-    var big = new fabric.Circle({
-      originX: "center",
-      originY: "center",
-      left: xavg ,
-      top:  yavg ,
-      fill: 'white',
-      radius: Math.floor( bigRadious * 10 * 0.75 ),
-    });
-
-    canvas.add(big);
-    big.sendToBack();
+        left: el.x,
+        top:  el.y,
+        radius: 5,
+      });
+  });
 }
 
 function moveChaos(points){
@@ -174,40 +192,40 @@ function animatePoint(n){
 // faderbox
 function createFader(i){
   var f = new fabric.Rect({
-        // functionality
-        name: 'slider'+(i+1),
-        controls: 'none',
-        onInstrument: 'none',
-        isExponential: false,
-        range: { low: 0, high: 1 },
-        callbackFunction: "setSoundValue",
-        // look
-        width: sliderWidth, height: box.height*0.75,
-        originY: "bottom",
-        left: i * sliderWidth, top: box.height,
-        fill: 'maroon',
-        lockRotation: true,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockScalingX: true,
-        lockScalingFlip: true,
-        hasControls: true,
-        transparentCorners: false,
-        cornerColor: 'white',
-        cornerSize: sliderWidth * 0.5,
-        hoverCursor: 'default',
-        borderScaleFactor: 2,
-        stroke: 'black',
-        borderColor: 'orange',
-    });
+    // functionality
+    name: 'slider'+(i+1),
+    controls: 'none',
+    onInstrument: 'none',
+    isExponential: false,
+    range: { low: 0, high: 1 },
+    callbackFunction: "setSoundValue",
+    // look
+    width: sliderWidth, height: box.height*0.75,
+    originY: "bottom",
+    left: i * sliderWidth, top: box.height,
+    fill: 'maroon',
+    lockRotation: true,
+    lockMovementX: true,
+    lockMovementY: true,
+    lockScalingX: true,
+    lockScalingFlip: true,
+    hasControls: true,
+    transparentCorners: false,
+    cornerColor: 'white',
+    cornerSize: sliderWidth * 0.5,
+    hoverCursor: 'default',
+    borderScaleFactor: 2,
+    stroke: 'black',
+    borderColor: 'orange',
+  });
 
-    f.setControlsVisibility({
-      mt: true,
-      bl:false,br:false,mb:false,ml:false,
-      mr:false,tl:false,tr:false,mtr:false,
-    });
+  f.setControlsVisibility({
+    mt: true,
+    bl:false,br:false,mb:false,ml:false,
+    mr:false,tl:false,tr:false,mtr:false,
+  });
 
-    return f;
+  return f;
 }
 
 var nrOfFaders = 8;
