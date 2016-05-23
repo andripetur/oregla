@@ -11,6 +11,9 @@ var Chaos = null;
     this.get = function(w){
       return coords[w];
     };
+    this.set = function(w){
+      for (var v in w) coords[v] = w[v];
+    };
 
     this.calculate = function(){ // hopalong
       var xx, yy;
@@ -105,13 +108,18 @@ var Chaos = null;
         t: utilities.randFloat(-100,100),
         b: utilities.randFloat(-100,100),
         o: utilities.randInt(-1,1),
+        // a: 2,
+        // t: -100,
+        // b: 3,
+        // o: -1,
       },
       length: 100,
-      reorder: "distanceFromEachother"
+      // reorder: "distanceFromEachother"
     };
 
     if( typeof options.coords !== "undefined"){
-      Chaos.call(this, options.coords);
+      // Chaos.call(this, options.coords);
+      this.set(options.coords);
     }
 
     if( typeof options.offset !== "undefined"){
