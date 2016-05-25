@@ -1,10 +1,14 @@
 var canvas = null;
 var instrumentValues = {};
 var patterns = {
-  addGroup: function(inst, circles){
-    patterns[inst] = new fabric.Group(circles, instrumentValues[inst]);
-    canvas.add(patterns[inst]);
-}};
+  rm: function(name){
+    if(typeof patterns[name] !== "undefined") canvas.remove(patterns[name]);
+  },
+  add: function(name,objs,settings){
+    patterns[name] = new fabric.Group(objs, settings);
+    canvas.add(patterns[name]);
+  }
+};
 
 function makeColors() {
   var val1 = 100,
@@ -27,25 +31,24 @@ function makeColors() {
 
 var padAmt = 0.05;
 function makeGrid( colls, rows ) {
+  makeGrid.w = canvas.width / colls;
+  makeGrid.h = canvas.height / rows;
+  makeGrid.colls = colls;
+  makeGrid.rows = rows;
   var colors = makeColors(),
       offsets = [],
-      w = canvas.width / colls,
-      h = canvas.height/ rows,
-      xPad = w * padAmt,
-      yPad = h * padAmt;
+      xPad = makeGrid.w * padAmt,
+      yPad = makeGrid.h * padAmt;
 
   for (var x = 0; x < colls; x++) {
     for (var y = 0; y < rows; y++) {
       offsets.push({
-        l: (x * w) + xPad,
-        t: (y * h) + yPad,
+        l: (x * makeGrid.w) + xPad,
+        t: (y * makeGrid.h) + yPad,
         c: colors[(colls*y) + x]
       });
     }
   }
-
-  makeGrid.colls = colls;
-  makeGrid.rows = rows;
   return offsets;
 }
 
@@ -65,100 +68,80 @@ function initDrawing(){
       left: offsets[i].l,
       top: offsets[i].t,
       fill: 'rgba('+offsets[i].c.toString()+',0.5)',
-      stroke: 'rgba('+offsets[i].c.toString()+',1)',
+      stroke: 'rgba('+offsets[i].c.toString()+',1)'
     };
   }
 
   for (var i = 0; i < sound.instruments.length; i++) {
-    // init the pattern groups
     if( sound.instruments[i] !== "drums" ){
-      var circles = pointsToCircles(sound[sound.instruments[i]].buffer);
-      patterns.addGroup(sound.instruments[i], circles);
-
+      drawInstrument(sound.instruments[i]);
       (function(){ // register buffer listener
         var instrument = sound.instruments[i];
         sound[instrument].watch("buffer", function(prop,oldval,newval){
-          var circles = pointsToCircles(newval);
-          canvas.remove(patterns[instrument]);
-          patterns.addGroup(instrument, circles);
-          // var name = new fabric.Text(instrument, { originX: 'left', originY: 'bottom', left: 0, top: 0 , fill: 'white'});
-          // patterns[instrument].add(name);
+          drawInstrument(instrument, newval);
           return newval;
         });
       })();
     }
   }
 
-  drawDrums();
-  for (var i = 0; i < sound.drumList.length; i++) {
-    sound.drums[sound.drumList[i]].watch("rhythm", function(prop,oldval,newval){
-      setTimeout(function() { // dirty trick, execute after we return val from function
-        canvas.remove(patterns["drums"]);
-        drawDrums();
-      }, 10);
-      return newval;
-    });
-  }
+  for (var i=0; i<sound.drumList.length; i++){
+     drawDrum(sound.drumList[i]);
+     (function(){ // register buffer listener
+       var drum = sound.drumList[i];
+       sound.drums[drum].watch("rhythm", function(prop,oldval,newval){
+         drawDrum(drum, newval);
+         return newval;
+       });
+     })();
+   }
 
   setInterval(function () {
     canvas.renderAll();
   }, 40);
 }
 
-function drawDrums(){
-  var squares = [];
-  for (var i = 0; i < sound.drumList.length; i++) {
-    var r = sound.drums[sound.drumList[i]].rhythm,
-        rLength = r.reduce(function(a,b){ return a+b; }),
-        w = (canvas.width/makeGrid.colls),
-        h = canvas.height/makeGrid.rows/sound.drumList.length
-        pos = 0;
+function drawInstrument(instrument, _buffer){
+  var buffer = _buffer || sound[instrument].buffer,
+      xrange = utilities.range(buffer.map(function(p){ return p.x; })),
+      yrange = utilities.range(buffer.map(function(p){ return p.y; })),
+      p = padAmt * 1.5 //, 0.075
+      xPad = makeGrid.w * p,
+      yPad = makeGrid.h * p;
 
-    w -= (w * padAmt * 2);
-    w = w/rLength;
+  var circles = buffer.map(function(el){
+    return new fabric.Circle({
+        left: utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, makeGrid.w-xPad),
+        top:  utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, makeGrid.h-yPad),
+        radius: 5,
+      });
+  });
+
+  patterns.rm(instrument);
+  patterns.add(instrument, circles, instrumentValues[instrument]);
+}
+
+function drawDrum(drum, _r){ // optional to pass the rhythm values
+  var squares = [],
+      r = _r || sound.drums[drum].rhythm,
+      rLength = r.reduce(function(a,b){ return a+b; }),
+      w = makeGrid.w/rLength,
+      h = makeGrid.h/sound.drumList.length,
+      pos = 0,
+      groupValues = Object.assign({}, instrumentValues["drums"]);
+    groupValues.top += sound.drumList.indexOf(drum)*h;
 
     squares.push(...r.map(function(el,indx,arr){
-      if(indx != 0) pos += (w*arr[indx-1]);
+      if(indx !== 0) pos += (w*arr[indx-1]);
       return new fabric.Rect({
         left: pos,
-        top:  i*h,
+        top:  0,
         width: w,
         height: el*3,
       });
     }));
-  }
-
-  patterns["drums"] = new fabric.Group(squares, instrumentValues["drums"]);
-  canvas.add(patterns["drums"]);
-}
-
-function scalePoints(points){
-  var xrange = utilities.range(points.map(function(p){ return p.x; })),
-      yrange = utilities.range(points.map(function(p){ return p.y; })),
-      p = padAmt * 1.5 //, 0.075
-      w = canvas.width/makeGrid.colls,
-      h = canvas.height/makeGrid.rows,
-      xPad = w * p,
-      yPad = h * p;
-
-  return points.map(function(el,i,arr){
-    return {
-      x : utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, w-xPad),
-      y : utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, h-yPad)
-    };
-  });
-}
-
-function pointsToCircles(points){
-  return scalePoints(points).map(function(el){
-    return new fabric.Circle({
-        originX: "center",
-        originY: "center",
-        left: el.x,
-        top:  el.y,
-        radius: 5,
-      });
-  });
+  patterns.rm(drum);
+  patterns.add(drum, squares, groupValues);
 }
 
 // faderbox

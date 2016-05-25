@@ -117,7 +117,7 @@
       }
     }
 
-    var seen = {};
+    var seen = {}; // remove duplicates
     return anagrams.filter(function(item) {
       return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });

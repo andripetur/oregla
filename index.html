@@ -11,7 +11,6 @@
         <script src="libs/flocking-all.js"></script>
         <script src="libs/jqconsole.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="console.js"></script>
-        <script src="websocket.js"></script>
         <script src="utilities.js"></script>
         <script src="schillinger_functions.js"></script>
         <script src="chaos.js"></script>
@@ -48,20 +47,12 @@
           "isExponential": true,
         });
 
-        faderboxCanvas.item(1).set({
-          "name": "chaos",
-          "controls": "selectChaos",
-          "callbackFunction": "selectChaos",
-          "range": {low: 0, high: 3}
-        });
-
-        function selectChaos(n) {
-          n = Math.floor(n);
-          if( n != sound.chaosToPlay){
-            sound.chaosToPlay = n;
-            moveChaos(sound.chaos[sound.chaosToPlay].buffer);
-          }
-        }
+        // faderboxCanvas.item(1).set({
+        //   "name": "chaos",
+        //   "controls": "selectChaos",
+        //   "callbackFunction": "selectChaos",
+        //   "range": {low: 0, high: 3}
+        // });
         </script>
     </body>
 </html>
