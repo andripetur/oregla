@@ -57,7 +57,7 @@
     }
   }
 
-  sound.instruments = [ "bass", "piano", "ambient"];
+  sound.instruments = [ "bass", "piano", "ambient", "drums"];
   var Instrument = function( s ) {
     this.synth = s;
     this.start = this.synth.play;
@@ -125,16 +125,16 @@
   toSchedule.push(sound.piano);
   toSchedule.push(sound.ambient);
 
-  var drumList = [];
+  sound.drumList = [];
   for (var drum in sound.drums){
     if(drum === "play") break;
-    drumList.push(drum);
+    sound.drumList.push(drum);
 
     // copy sequencer
     var c = new Sequencer("rhythm");
     for (var foo in c) sound.drums[drum][foo] = c[foo];
 
-    sound.drums[drum].newRhythm("fast",[3,5,utilities.randInt(4,9)]);
+    sound.drums[drum].newRhythm("fast",[5,utilities.randInt(4,9)]);
     sound.drums[drum].isPlaying = sound.drums[drum].synth.isPlaying;
     (sound.drums[drum].start = sound.drums[drum].synth.play)();
     sound.drums[drum].stop = sound.drums[drum].synth.pause;
@@ -146,9 +146,9 @@
 
   sound.drums.do = function() {
     if(drumsArePlaying){
-      for (var i = 0; i < drumList.length; i++) {
-        if( sound.drums[drumList[i]].trigger() && sound.drums[drumList[i]].isPlaying()){
-          sound.drums.play(drumList[i]);
+      for (var i = 0; i < sound.drumList.length; i++) {
+        if( sound.drums[sound.drumList[i]].trigger() && sound.drums[sound.drumList[i]].isPlaying()){
+          sound.drums.play(sound.drumList[i]);
         }
       }
     }

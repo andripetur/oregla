@@ -25,17 +25,20 @@ function makeColors() {
   });
 }
 
+var padAmt = 0.05;
 function makeGrid( colls, rows ) {
   var colors = makeColors(),
       offsets = [],
       w = canvas.width / colls,
-      h = canvas.height/ rows;
+      h = canvas.height/ rows,
+      xPad = w * padAmt,
+      yPad = h * padAmt;
 
   for (var x = 0; x < colls; x++) {
     for (var y = 0; y < rows; y++) {
       offsets.push({
-        l: x * w,
-        t: y * h,
+        l: (x * w) + xPad,
+        t: (y * h) + yPad,
         c: colors[(colls*y) + x]
       });
     }
@@ -68,18 +71,33 @@ function initDrawing(){
 
   for (var i = 0; i < sound.instruments.length; i++) {
     // init the pattern groups
-    var circles = pointsToCircles(sound[sound.instruments[i]].buffer);
-    patterns.addGroup(sound.instruments[i], circles);
+    if( sound.instruments[i] !== "drums" ){
+      var circles = pointsToCircles(sound[sound.instruments[i]].buffer);
+      patterns.addGroup(sound.instruments[i], circles);
 
-    (function(){ // register buffer listener
-      var instrument = sound.instruments[i];
-      sound[instrument].watch("buffer", function(prop,oldval,newval){
-        var circles = pointsToCircles(newval);
-        canvas.remove(patterns[instrument]);
-        patterns.addGroup(instrument, circles);
-        return newval;
-      });
-    })();
+      (function(){ // register buffer listener
+        var instrument = sound.instruments[i];
+        sound[instrument].watch("buffer", function(prop,oldval,newval){
+          var circles = pointsToCircles(newval);
+          canvas.remove(patterns[instrument]);
+          patterns.addGroup(instrument, circles);
+          // var name = new fabric.Text(instrument, { originX: 'left', originY: 'bottom', left: 0, top: 0 , fill: 'white'});
+          // patterns[instrument].add(name);
+          return newval;
+        });
+      })();
+    }
+  }
+
+  drawDrums();
+  for (var i = 0; i < sound.drumList.length; i++) {
+    sound.drums[sound.drumList[i]].watch("rhythm", function(prop,oldval,newval){
+      setTimeout(function() { // dirty trick, execute after we return val from function
+        canvas.remove(patterns["drums"]);
+        drawDrums();
+      }, 10);
+      return newval;
+    });
   }
 
   setInterval(function () {
@@ -87,14 +105,41 @@ function initDrawing(){
   }, 40);
 }
 
+function drawDrums(){
+  var squares = [];
+  for (var i = 0; i < sound.drumList.length; i++) {
+    var r = sound.drums[sound.drumList[i]].rhythm,
+        rLength = r.reduce(function(a,b){ return a+b; }),
+        w = (canvas.width/makeGrid.colls),
+        h = canvas.height/makeGrid.rows/sound.drumList.length
+        pos = 0;
+
+    w -= (w * padAmt * 2);
+    w = w/rLength;
+
+    squares.push(...r.map(function(el,indx,arr){
+      if(indx != 0) pos += (w*arr[indx-1]);
+      return new fabric.Rect({
+        left: pos,
+        top:  i*h,
+        width: w,
+        height: el*3,
+      });
+    }));
+  }
+
+  patterns["drums"] = new fabric.Group(squares, instrumentValues["drums"]);
+  canvas.add(patterns["drums"]);
+}
+
 function scalePoints(points){
   var xrange = utilities.range(points.map(function(p){ return p.x; })),
       yrange = utilities.range(points.map(function(p){ return p.y; })),
-      padAmt = 0.025,
+      p = padAmt * 1.5 //, 0.075
       w = canvas.width/makeGrid.colls,
       h = canvas.height/makeGrid.rows,
-      xPad = w * padAmt,
-      yPad = h * padAmt;
+      xPad = w * p,
+      yPad = h * p;
 
   return points.map(function(el,i,arr){
     return {
@@ -114,79 +159,6 @@ function pointsToCircles(points){
         radius: 5,
       });
   });
-}
-
-function moveChaos(points){
-  var bigRadious = utilities.max(points.map(function(p){ return p.length; }));
-  var xrange = utilities.range(points.map(function(p){ return p.x; }));
-  var yrange = utilities.range(points.map(function(p){ return p.y; }));
-
-  var padAmt = 0.25;
-  var xPad = canvas.width * padAmt;
-  var yPad = canvas.height * padAmt;
-
-  var x, y, xavg=0, yavg=0;
-
-  for (var i = 0; i < points.length; i++) {
-    x = utilities.scale(points[i].x, xrange.low, xrange.high, 0+xPad, canvas.width-xPad);
-    y = utilities.scale(points[i].y, yrange.low, yrange.high, 0+yPad, canvas.height-yPad);
-    xavg += x;
-    yavg += y;
-
-    canvas.item(i+1).animate('top', ""+y, {
-      duration: aniDur+utilities.randInt(0,100),
-      easing: fabric.util.ease.easeOutBounce,
-    });
-    canvas.item(i+1).animate('left', ""+x, {
-      duration: aniDur+utilities.randInt(0,100),
-      easing: fabric.util.ease.easeOutBounce,
-    });
-  }
-
-  xavg /= points.length;
-  yavg /= points.length;
-
-  canvas.item(0).animate('top', ""+yavg, {
-    duration: aniDur,
-    easing: fabric.util.ease.easeOutBounce,
-  });
-  canvas.item(0).animate('left', ""+xavg, {
-    duration: aniDur,
-    easing: fabric.util.ease.easeOutBounce,
-  });
-  canvas.item(0).animate('radius', ""+(Math.floor( bigRadious * 10 * 0.75 )), {
-    duration: aniDur,
-    easing: fabric.util.ease.easeOutBounce,
-  });
-}
-
-var lastPoint = 0;
-var aniDur = 300;
-
-function animatePoint(n){
-  lastPoint = n+1;
-  canvas.item(n).animate('opacity', '0.1', {
-    duration: aniDur,
-    easing: fabric.util.ease.easeOutBounce,
-    onComplete: function(){
-      canvas.item(n).animate('opacity', '1', {
-        easing: fabric.util.ease.easeOutBounce,
-        duration: aniDur/2,
-      })
-    }
-  })
-
-  canvas.item(n).animate('radius', ""+(smallRadius*2), {
-    duration: aniDur,
-    easing: fabric.util.ease.easeOutBounce,
-    onComplete: function(){
-      canvas.item(n).animate('radius', ""+smallRadius, {
-        easing: fabric.util.ease.easeOutBounce,
-        duration: aniDur/2,
-      });
-    }
-  });
-
 }
 
 // faderbox
@@ -250,16 +222,17 @@ function initFaderbox(){
 
   faderboxCanvas.on({
    'object:scaling': function(options) {
-     var fdr = options.target;
-     if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
-     if ( fdr.controls !== 'none' ){
+      var fdr = options.target,
+          faderval;
+      if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
+      if ( fdr.controls !== 'none' ){
        if( fdr.isExponential ) {
-         var faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+         faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
        } else {
-         var faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+         faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
        }
        window[fdr.callbackFunction](faderval, fdr.onInstrument, fdr.controls);
-     }
+      }
    },
   });
 }

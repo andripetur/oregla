@@ -11,8 +11,8 @@
   };
 
   Schillinger.prototype.multiplyIntervals.help = {
-    title: 'Reverse',
-    content: 'Modifier.<br> Multiply all intervals of intervals with <int>arg1.'
+    title: 'Multiply intervals',
+    content: 'Modifier.<br> Multiply all intervals with scalar of <int>arg1.'
   };
 
   Schillinger.prototype.transpose.help = {
