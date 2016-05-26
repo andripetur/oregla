@@ -39,8 +39,9 @@
         initConsole();
         initDrawing();
         initFaderbox();
+        initResize();
 
-        faderboxCanvas.item(0).set({
+        setupFader(0, {
           "name": "piano",
           "onInstrument": "piano",
           "controls": "verb.mul",

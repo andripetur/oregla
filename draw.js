@@ -53,28 +53,11 @@ function makeGrid( colls, rows ) {
 }
 
 function initDrawing(){
-  canvas = new fabric.StaticCanvas('cvs', {
-    backgroundColor: 'black',
-    renderOnAddRemove: false,
-    width: window.innerWidth*0.75,
-    height: window.innerHeight*0.70,
-  });
 
-  var offsets = makeGrid(2, 2);
-
-  for (var i = 0; i < sound.instruments.length; i++) {
-    // make group settings
-    instrumentValues[sound.instruments[i]] = {
-      left: offsets[i].l,
-      top: offsets[i].t,
-      fill: 'rgba('+offsets[i].c.toString()+',0.5)',
-      stroke: 'rgba('+offsets[i].c.toString()+',1)'
-    };
-  }
+  calcAndDrawAllInstruments();
 
   for (var i = 0; i < sound.instruments.length; i++) {
     if( sound.instruments[i] !== "drums" ){
-      drawInstrument(sound.instruments[i]);
       (function(){ // register buffer listener
         var instrument = sound.instruments[i];
         sound[instrument].watch("buffer", function(prop,oldval,newval){
@@ -99,6 +82,36 @@ function initDrawing(){
   setInterval(function () {
     canvas.renderAll();
   }, 40);
+}
+
+function calcAndDrawAllInstruments(){
+  if(canvas === null) {
+    canvas = new fabric.StaticCanvas('cvs', {
+      backgroundColor: 'black',
+      renderOnAddRemove: false,
+    });
+  } else {
+    canvas.clear();
+  }
+
+  canvas.setWidth( window.innerWidth*0.75 );
+  canvas.setHeight( window.innerHeight*0.70 );
+  var offsets = makeGrid(2, 2);
+
+  for (var i = 0; i < sound.instruments.length; i++) {
+    instrumentValues[sound.instruments[i]] = { // make group settings
+      left: offsets[i].l,
+      top: offsets[i].t,
+      fill: 'rgba('+offsets[i].c.toString()+',0.5)',
+      stroke: 'rgba('+offsets[i].c.toString()+',1)'
+    };
+
+    if( sound.instruments[i] !== "drums"){ // draw instruments
+       drawInstrument(sound.instruments[i]);
+     }
+  }
+
+  for (var i=0; i<sound.drumList.length; i++) drawDrum(sound.drumList[i]);
 }
 
 function drawInstrument(instrument, _buffer){
@@ -155,9 +168,9 @@ function createFader(i){
     range: { low: 0, high: 1 },
     callbackFunction: "setSoundValue",
     // look
-    width: sliderWidth, height: box.height*0.75,
+    width: box.sliderWidth, height: box.height*0.75,
     originY: "bottom",
-    left: i * sliderWidth, top: box.height,
+    left: i * box.sliderWidth, top: box.height,
     fill: 'maroon',
     lockRotation: true,
     lockMovementX: true,
@@ -167,7 +180,7 @@ function createFader(i){
     hasControls: true,
     transparentCorners: false,
     cornerColor: 'white',
-    cornerSize: sliderWidth * 0.5,
+    cornerSize: box.sliderWidth * 0.5,
     hoverCursor: 'default',
     borderScaleFactor: 2,
     stroke: 'black',
@@ -185,37 +198,73 @@ function createFader(i){
 
 var nrOfFaders = 8;
 var faderboxCanvas = null;
-var box = {
-  height: window.innerHeight*0.25,
-  width: (window.innerWidth*0.25) - 20,
+var box = {}
+var faderSetups = [];
+for (var i = 0; i < nrOfFaders; i++) nrOfFaders[i] = { scaleY: 1 };
+function setupFader(which, settings) {
+  faderboxCanvas.item(which).set(settings);
+  faderSetups[which] = settings;
 }
-var sliderWidth = box.width / nrOfFaders;
 
 function initFaderbox(){
-  faderboxCanvas = new fabric.Canvas('faderbox', {
-    backgroundColor: 'black',
-    width: box.width,
-    height: box.height,
-    selection: false,
-  });
-
-  for (var i = 0; i < nrOfFaders; i++) {
-    faderboxCanvas.add( createFader(i) );
+  for (var i = 0; i < faderSetups.length; i++) {
+    faderSetups[i].scaleY = faderboxCanvas.item(i).scaleY;
   }
 
-  faderboxCanvas.on({
-   'object:scaling': function(options) {
-      var fdr = options.target,
-          faderval;
-      if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
-      if ( fdr.controls !== 'none' ){
-       if( fdr.isExponential ) {
-         faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
-       } else {
-         faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
-       }
-       window[fdr.callbackFunction](faderval, fdr.onInstrument, fdr.controls);
-      }
-   },
+  box.height = window.innerHeight*0.25;
+  box.width = (window.innerWidth*0.25) - 20;
+  box.sliderWidth = box.width / nrOfFaders;
+
+  if( faderboxCanvas === null ) {
+    faderboxCanvas = new fabric.Canvas('faderbox', {
+      backgroundColor: 'black',
+      selection: false,
+    });
+  } else {
+    faderboxCanvas.clear();
+  }
+
+  faderboxCanvas.setWidth( box.width );
+  faderboxCanvas.setHeight( box.height );
+
+  for (var i = 0; i < nrOfFaders; i++) faderboxCanvas.add( createFader(i) );
+
+  for (var i = 0; i < nrOfFaders; i++) {
+    faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
+    { left: (i+1) * box.sliderWidth, top: box.height-5 , fill: 'white', originY: 'bottom', angle: -90, fontSize: 20}));
+  }
+
+  for (var i = 0; i < faderSetups.length; i++) {
+    faderboxCanvas.item(i).set(faderSetups[i]);
+  }
+  faderboxCanvas.renderAll();
+
+  if(typeof faderboxCanvas.__eventListeners === "undefined"){//make functional
+    faderboxCanvas.on({
+     'object:scaling': function(options) {
+        var fdr = options.target,
+            faderval;
+        if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
+        if ( fdr.controls !== 'none' ){
+         if( fdr.isExponential ) {
+           faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+         } else {
+           faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+         }
+         window[fdr.callbackFunction](faderval, fdr.onInstrument, fdr.controls);
+        }
+     },
+    });
+  }
+}
+
+var resizeTimer;
+function initResize(){
+  $( window ).resize(function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() { // do when resize is finished
+      calcAndDrawAllInstruments();
+      initFaderbox();
+    }, 250);
   });
 }
