@@ -95,43 +95,34 @@
   }
 
   sound.bass = new Instrument( synthDef.bassSynth );
-  sound.piano = new Instrument( synthDef.band.piano )
+  sound.piano = new Instrument( synthDef.piano );
   sound.piano.noteOn = function( mNote ) {
     var pNote = "piano-"+mNote+".trigger.source";
-    synthDef.band.piano.set( pNote , 1 );
+    synthDef.piano.set( pNote , 1 );
   }
 
   sound.ambient = new Instrument( synthDef.ffb );
-  sound.ambient.noteOn = synthDef.addNoteToFfb = function ( mNote ) {
-    var freq = flock.midiFreq(mNote );
-    var nsMul = "n"+sound.addNoteToFfb.counter+".mul";
-    var fCtoff = fltr + ".cutoff";
-    var fMul = fltr + ".mul";
+  sound.ambient.noteOn = function ( mNote ) {
+    var freq = flock.midiFreq( mNote + 60 ),
+        fltr = "f"+this.noteOn.counter,
+        fCtoff = fltr + ".cutoff",
+        fMul = fltr + ".mul";
+    this.synth.set(fCtoff, freq);
+    this.synth.set(fMul, 0.2);
 
-    sound.ffb.set(fCtoff, freq);
-    sound.ffb.set(fMul, 0.8);
-    if(sound.ffb.get(nsMul) === 0) sound.ffb.set(nsMul, 1);
-
-    synthDef.addNoteToFfb.counter++;
-    if( synthDef.addNoteToFfb.counter > synthDef.fBankSize-1 ){
-      synthDef.addNoteToFfb.counter = 0;
-    }
+    this.noteOn.counter++;
+    if( this.noteOn.counter > synthDef.ffBankSize-1 ) this.noteOn.counter = 0;
   }
 
-  synthDef.addNoteToFfb.counter = 0;
+  sound.ambient.noteOn.counter = 0;
 
   var toSchedule = [];
   toSchedule.push(sound.bass);
   toSchedule.push(sound.piano);
   toSchedule.push(sound.ambient);
 
-  sound.drumList = [];
-  for (var drum in sound.drums){
-    if(drum === "play") break;
-    sound.drumList.push(drum);
-
-    // copy sequencer
-    var c = new Sequencer("rhythm");
+  for (var drum of sound.drums.list) {
+    var c = new Sequencer("rhythm");     // copy sequencer into object
     for (var foo in c) sound.drums[drum][foo] = c[foo];
 
     sound.drums[drum].newRhythm("fast",[5,utilities.randInt(4,9)]);
@@ -146,9 +137,9 @@
 
   sound.drums.do = function() {
     if(drumsArePlaying){
-      for (var i = 0; i < sound.drumList.length; i++) {
-        if( sound.drums[sound.drumList[i]].trigger() && sound.drums[sound.drumList[i]].isPlaying()){
-          sound.drums.play(sound.drumList[i]);
+      for (var i = 0; i < sound.drums.list.length; i++) {
+        if( sound.drums[sound.drums.list[i]].trigger() && sound.drums[sound.drums.list[i]].isPlaying()){
+          sound.drums.play(sound.drums.list[i]);
         }
       }
     }

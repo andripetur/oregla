@@ -68,10 +68,10 @@ function initDrawing(){
     }
   }
 
-  for (var i=0; i<sound.drumList.length; i++){
-     drawDrum(sound.drumList[i]);
+  for (var i=0; i<sound.drums.list.length; i++){
+     drawDrum(sound.drums.list[i]);
      (function(){ // register buffer listener
-       var drum = sound.drumList[i];
+       var drum = sound.drums.list[i];
        sound.drums[drum].watch("rhythm", function(prop,oldval,newval){
          drawDrum(drum, newval);
          return newval;
@@ -111,7 +111,7 @@ function calcAndDrawAllInstruments(){
      }
   }
 
-  for (var i=0; i<sound.drumList.length; i++) drawDrum(sound.drumList[i]);
+  for (d of sound.drums.list) drawDrum(d);
 }
 
 function drawInstrument(instrument, _buffer){
@@ -139,10 +139,10 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
       r = _r || sound.drums[drum].rhythm,
       rLength = r.reduce(function(a,b){ return a+b; }),
       w = makeGrid.w/rLength,
-      h = makeGrid.h/sound.drumList.length,
+      h = makeGrid.h/sound.drums.list.length,
       pos = 0,
       groupValues = Object.assign({}, instrumentValues["drums"]);
-    groupValues.top += sound.drumList.indexOf(drum)*h;
+    groupValues.top += sound.drums.list.indexOf(drum)*h;
 
     squares.push(...r.map(function(el,indx,arr){
       if(indx !== 0) pos += (w*arr[indx-1]);
@@ -231,7 +231,9 @@ function initFaderbox(){
 
   for (var i = 0; i < nrOfFaders; i++) {
     faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
-    { left: (i+1) * box.sliderWidth, top: box.height-5 , fill: 'white', originY: 'bottom', angle: -90, fontSize: 20}));
+    { left: (i+1) * box.sliderWidth, top: box.height-5 , angle: -90,
+      fill: 'white', originY: 'bottom', fontSize: 20, selectable: false
+    }));
   }
 
   for (var i = 0; i < faderSetups.length; i++) {

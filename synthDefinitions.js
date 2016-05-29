@@ -103,6 +103,18 @@
       return synths;
     }
 
+  synthDef.piano = flock.synth({
+    synthDef: {
+      // id: 'verb',
+      // ugen: 'flock.ugen.freeverb',
+      // mul: pianoStartVol,
+      // source: {
+        ugen: 'flock.ugen.sum',
+        sources: makePianoSamples(),
+      // }
+    }
+  });
+
   var pianoStartVol = 0.7637795275590551;
   sound.line = function(from, goTo){
     var line = {
@@ -125,14 +137,14 @@
         id: "f"+i,
         ugen: "flock.ugen.filter.moog",
         cutoff: 4000,
-        resonance: 3.6,
+        resonance: 8.6,
         source: {
          id: "n"+i,
          ugen: "flock.ugen.whiteNoise",
-         mul: 0,
+         mul: 1,
         },
         mul: 0
-      })
+      });
     }
     return ffb;
   }
@@ -148,8 +160,9 @@
 
 
   sound.drums = {};
+  sound.drums.list = [ "kick", "snare", "hh", "perc"];
+  for (d of sound.drums.list) sound.drums[d] = {};
 
-  sound.drums.kick = {};
   sound.drums.kick.synth = flock.synth({
     nickName: "kick",
     synthDef: {
@@ -181,7 +194,6 @@
      },
   });
 
-  sound.drums.snare = {};
   sound.drums.snare.synth = flock.synth({
     nickName: "snare",
     synthDef: {
@@ -218,7 +230,6 @@
     }
   });
 
-  sound.drums.hh = {};
   sound.drums.hh.synth = flock.synth({
     nickName: "hh",
     synthDef: {
@@ -250,7 +261,6 @@
     }
   });
 
-  sound.drums.perc = {};
   sound.drums.perc.synth = flock.synth({
     nickName: "perc",
     synthDef: {
@@ -295,48 +305,42 @@
 
   synthDef.band = flock.band({
     components: {
-      piano: {
+      pseudo: {
         type: "flock.synth",
         options: {
-          synthDef: {
-            id: 'verb',
-            ugen: 'flock.ugen.freeverb',
-            mul: pianoStartVol,
-            source: {
-              ugen: 'flock.ugen.sum',
-              sources: makePianoSamples(),
+          synthDef: {
+          id: 'osc',
+          ugen: "flock.ugen.saw",
+          mul: 0
+        }
+      }
+    },
+
+    scheduler: {
+      type: "flock.scheduler.async",
+      options: {
+          components: {
+              synthContext: "{pseudo}"
+          },
+
+          score: [{
+            interval: "once",
+            time: 1.0,
+            change: {
+                values: {
+                    "osc": {
+                        synthDef: {
+                            ugen: "flock.ugen.sequence",
+                            values: [0]
+                        }
+                    }
+                }
             }
-          }
-        }
-      },
-
-      scheduler: {
-        type: "flock.scheduler.async",
-        options: {
-            components: {
-                synthContext: "{piano}"
-            },
-
-            score: [{
-              interval: "once",
-              time: 1.0,
-              change: {
-                  values: {
-                      "piano-0.loop": {
-                          synthDef: {
-                              ugen: "flock.ugen.sequence",
-                              values: [0]
-                          }
-                      }
-                  }
-              }
-          }]
-        }
+        }]
+      }
     }
   }
 });
-
-synthDef.piano = synthDef.band.piano;
 
 }());
 

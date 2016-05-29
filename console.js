@@ -140,7 +140,7 @@ var initConsole = null;
         $('#help-content').append( '</br><a class=docLink href=\"'+hlp.docLink+'\" target=_blank>DocLink</a>');
       }
     }
-    
+
     var highlightSelectedSuggestion = function() {
       $('.suggest div').each(function( index ) {
         if(index == selectedSuggestion){
