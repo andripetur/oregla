@@ -24,7 +24,7 @@
     ionian: new Scale(2,2,1,2,2,2,1),
     dorian: new Scale(2,1,2,2,2,1,2),
     phrygian: new Scale(1,2,2,2,1,2,2),
-    logydian: new Scale(2,2,2,1,2,2,1),
+    lydian: new Scale(2,2,2,1,2,2,1),
     mixolydian: new Scale(2,2,1,2,2,1,2),
     aeolian: new Scale(2,1,2,2,1,2,2),
     locrian: new Scale(1,2,2,1,2,2,2),
@@ -45,7 +45,11 @@
   var divisor = {};
   var signature = { upper: 4, lower: '4n'};
 
-  for (var i = 0.25; i < 64; i*=2) divisor[(i*4)+'n'] = i;
+  for (var i = 0.25; i < 64; i*=2){
+    divisor[(i*4)+'nd'] = i*1.5;
+    divisor[(i*4)+'n'] = i;
+    divisor[(i*4)+'nt'] = (i*2)/3;
+   }
   var getBpm = function(bpm,smallestDivisor){
     return (60 / bpm) / divisor[smallestDivisor];
   }
@@ -145,45 +149,32 @@
     return options;
   }
 
+  function applyParameters(parm, options, args){
+    if( parm !== 't'){
+      if (options.hasOwnProperty('t')) args.push(options.t);
+      setSynthdefValue(...args);
+    }
+  }
+
   Instrument.prototype.envelope = function(){
     var options = argsToOptions(...arguments);
-
     for (var parm in options) {
-      if( parm !== 't'){
-        var args = [options[parm], this.synth, 'env.'+parm],
-            args2 = [options[parm], this.synth, 'env2.'+parm];
-        if (options.hasOwnProperty('t')){
-          args.push(options.t);
-          args2.push(options.t);
-        }
-        setSynthdefValue(...args);
-        setSynthdefValue(...args2);
-      }
+      applyParameters(parm, options, [options[parm], this.synth, 'env.'+parm]);
+      applyParameters(parm, options, [options[parm], this.synth, 'env2.'+parm]);
     }
   }
 
   Instrument.prototype.filter = function(){
     var options = argsToOptions(...arguments);
-
     for (var parm in options) {
-      if( parm !== 't'){
-        var args = [options[parm], this.synth, 'filter.'+parm];
-        if (options.hasOwnProperty('t')) args.push(options.t);
-        setSynthdefValue(...args);
-      }
+      applyParameters(parm, options, [options[parm], this.synth, 'filter.'+parm]);
     }
   }
 
   Instrument.prototype.oscillators = function(){
     var options = argsToOptions(...arguments);
-    // if (options.hasOwnProperty('detune')) options.detune += 100;
-
     for (var parm in options) {
-      if( parm !== 't'){
-        var args = [options[parm]+=100, this[parm], 'osc.freq'];
-        if (options.hasOwnProperty('t')) args.push(options.t);
-        setSynthdefValue(...args);
-      }
+      applyParameters(parm, options, [options[parm]+=100, this[parm], 'osc.freq']);
     }
   }
 

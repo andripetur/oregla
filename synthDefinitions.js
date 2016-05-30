@@ -112,7 +112,7 @@
   });
 
   var pianoStartVol = 0.7637795275590551;
-  sound.line = function(from, goTo, _t){
+  synthDef.line = function(from, goTo, _t){
     var t = _t || 0.03;
     return {
       ugen: 'flock.ugen.xLine',
@@ -343,10 +343,10 @@
 function setSoundValue(v,instrument,controls){
   var fr = sound[instrument].get(controls);
   fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
-  sound[instrument].set( controls, sound.line( fr, v ) );
+  sound[instrument].set( controls, synthDef.line( fr, v ) );
 }
 function setSynthdefValue(v,instrument,controls, t){
   var fr = instrument.get(controls);
   fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
-  instrument.set( controls, sound.line( fr, v, t ) );
+  instrument.set( controls, synthDef.line( fr, v, t ) );
 }

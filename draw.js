@@ -76,8 +76,6 @@ function initDrawing(){
        });
      })();
    }
-
-  canvas.renderAll();
 }
 
 function calcAndDrawAllInstruments(){
@@ -108,6 +106,8 @@ function calcAndDrawAllInstruments(){
 
   for (i of sound.instruments) drawInstrument(i);
   for (d of sound.drums.list) drawDrum(d);
+
+  canvas.renderAll();
 }
 
 function drawInstrument(instrument, _buffer){
