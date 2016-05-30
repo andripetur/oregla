@@ -141,7 +141,7 @@ var initConsole = null;
       }
     }
 
-    var highlightSelectedSuggestion = function() {
+    function highlightSelectedSuggestion() {
       $('.suggest div').each(function( index ) {
         if(index == selectedSuggestion){
            $( this ).addClass('sel-sugg');
@@ -191,7 +191,7 @@ var initConsole = null;
       }
 
       var props = propStartingWith(suggestionObject, text); // or your namespace
-      var selectedSuggestion = 0;
+      selectedSuggestion = 0;
       if (props.length) {
         if (!$('.suggest').length) {
           $('<div/>').addClass('suggest').appendTo($('.jqconsole'));

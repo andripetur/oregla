@@ -43,9 +43,23 @@
 
   var tempo = 80;
   var divisor = {};
+  var signature = { upper: 4, lower: '4n'};
+
   for (var i = 0.25; i < 64; i*=2) divisor[(i*4)+'n'] = i;
   var getBpm = function(bpm,smallestDivisor){
-    return (60 / bpm) / smallestDivisor;
+    return (60 / bpm) / divisor[smallestDivisor];
+  }
+
+  var timeUnitToSeconds = function(unit){
+    var val;
+    if (unit.includes('n')) {
+      val = getBpm(tempo, unit);
+    } else if (unit.includes('b')) { // convert bars to seconds
+      var barLength = getBpm(tempo, signature.lower) * signature.upper,
+          nrOfBars = parseFloat(unit.replace('b', ''));
+      val = barLength * nrOfBars;
+    }
+    return val;
   }
 
   function makeCoords(){
@@ -62,8 +76,24 @@
     this.synth = s;
     this.start = this.synth.play;
     (this.stop = this.synth.pause)();
-    this.detune = 0; // 0 - 1
-    this.osc2Offset = 0;
+    this.detune = flock.synth({
+      synthDef: {
+        id: 'osc',
+        ugen: "flock.ugen.saw",
+        rate: "control",
+        freq: 100, // we use range 100-200, and scale it to 0-100 because 0 is weird
+        mul: 0 // keep it silent
+      }
+    });
+    this.offset = flock.synth({
+      synthDef: {
+        id: 'osc',
+        ugen: "flock.ugen.sinOsc",
+        rate: "control",
+        freq: 100,
+        mul: 0
+      }
+    });
     var c = new Sequencer({});
     for (var foo in c) this[foo] = c[foo];
 
@@ -75,10 +105,17 @@
     this.quickStart()
   }
 
+  function getSynthValue(synth, val){
+    var v = synth.get(val);
+    return typeof v === 'object' ? v.model.value : v;
+  }
+
   Instrument.prototype.noteOn = function( midi ) {
-    var duration = duration || 200;
-    var freq = flock.midiFreq(midi);
-    var freq2 = flock.midiFreq(midi+this.osc2Offset) * Math.pow(2, (this.detune*100)/1200);
+    var duration = duration || 200,
+        freq = flock.midiFreq(midi),
+        detune = getSynthValue(this.detune, 'osc.freq') - 100,
+        osc2Offset = Math.round(getSynthValue(this.offset, 'osc.freq') - 100),
+        freq2 = flock.midiFreq(midi + osc2Offset) * Math.pow(2, (detune)/1200);
 
     this.synth.set({
         "osc.freq": freq,
@@ -92,6 +129,62 @@
       onSynth.set("env.gate", 0);
       onSynth.set("env2.gate", 0);
     }, duration)
+  }
+
+  function argsToOptions(){
+    var options = {};
+    if (arguments.length === 2 && typeof arguments[1] !== 'string'){ // args are 'parameter', value
+      options[arguments[0]] = arguments[1];
+    } else if( arguments.length === 3 ){ // args are 'parameter', value, time
+      options[arguments[0]] = arguments[1];
+      options['t'] = timeUnitToSeconds(arguments[2]);
+    } else { // args are 'options object', time
+      options = arguments[0];
+      if(typeof arguments[1] !== 'undefined') options['t'] = timeUnitToSeconds(arguments[1]);
+    }
+    return options;
+  }
+
+  Instrument.prototype.envelope = function(){
+    var options = argsToOptions(...arguments);
+
+    for (var parm in options) {
+      if( parm !== 't'){
+        var args = [options[parm], this.synth, 'env.'+parm],
+            args2 = [options[parm], this.synth, 'env2.'+parm];
+        if (options.hasOwnProperty('t')){
+          args.push(options.t);
+          args2.push(options.t);
+        }
+        setSynthdefValue(...args);
+        setSynthdefValue(...args2);
+      }
+    }
+  }
+
+  Instrument.prototype.filter = function(){
+    var options = argsToOptions(...arguments);
+
+    for (var parm in options) {
+      if( parm !== 't'){
+        var args = [options[parm], this.synth, 'filter.'+parm];
+        if (options.hasOwnProperty('t')) args.push(options.t);
+        setSynthdefValue(...args);
+      }
+    }
+  }
+
+  Instrument.prototype.oscillators = function(){
+    var options = argsToOptions(...arguments);
+    // if (options.hasOwnProperty('detune')) options.detune += 100;
+
+    for (var parm in options) {
+      if( parm !== 't'){
+        var args = [options[parm]+=100, this[parm], 'osc.freq'];
+        if (options.hasOwnProperty('t')) args.push(options.t);
+        setSynthdefValue(...args);
+      }
+    }
   }
 
   sound.bass = new Instrument( synthDef.bassSynth );
@@ -168,10 +261,10 @@
     for (var i = 0; i < toSchedule.length; i++) {
       (function() {
         var temp = toSchedule[i];
-        synthDef.band.scheduler.repeat(getBpm(tempo, divisor['8n']), function(){ temp.do(); });
+        synthDef.band.scheduler.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
       })();
     }
-    synthDef.band.scheduler.repeat(getBpm(tempo, divisor['128n']),tempoChangeListener);
+    synthDef.band.scheduler.repeat(getBpm(tempo, '128n'),tempoChangeListener);
   }
 
   scheduleSequences();

@@ -10,12 +10,8 @@
     nickName: "square-synth",
     synthDef: {
       ugen: "flock.ugen.filter.moog",
-       cutoff: {
-           ugen: "flock.ugen.sinOsc",
-           freq: 1/8,
-           mul: 5000,
-           add: 6000
-       },
+      id: 'filter',
+       cutoff: 8000,
        resonance: 2,
        source: {
          ugen: 'flock.ugen.sum',
@@ -116,15 +112,15 @@
   });
 
   var pianoStartVol = 0.7637795275590551;
-  sound.line = function(from, goTo){
-    var line = {
+  sound.line = function(from, goTo, _t){
+    var t = _t || 0.03;
+    return {
       ugen: 'flock.ugen.xLine',
       rate: 'control',
       start: from,
       end: goTo,
-      duration: 0.03
+      duration: t
     };
-    return line;
   }
 
   // - - - - filterbanks - - - -
@@ -348,4 +344,9 @@ function setSoundValue(v,instrument,controls){
   var fr = sound[instrument].get(controls);
   fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
   sound[instrument].set( controls, sound.line( fr, v ) );
+}
+function setSynthdefValue(v,instrument,controls, t){
+  var fr = instrument.get(controls);
+  fr = typeof fr === "object" ? fr.inputs.end.inputs.value : fr;
+  instrument.set( controls, sound.line( fr, v, t ) );
 }
