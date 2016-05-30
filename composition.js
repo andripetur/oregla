@@ -57,7 +57,7 @@
     }
   }
 
-  sound.instruments = [ "bass", "piano", "ambient", "drums"];
+  sound.instruments = [ "bass", "piano", "ambient"];
   var Instrument = function( s ) {
     this.synth = s;
     this.start = this.synth.play;

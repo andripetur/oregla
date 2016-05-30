@@ -53,35 +53,31 @@ function makeGrid( colls, rows ) {
 }
 
 function initDrawing(){
-
   calcAndDrawAllInstruments();
 
   for (var i = 0; i < sound.instruments.length; i++) {
-    if( sound.instruments[i] !== "drums" ){
-      (function(){ // register buffer listener
-        var instrument = sound.instruments[i];
-        sound[instrument].watch("buffer", function(prop,oldval,newval){
-          drawInstrument(instrument, newval);
-          return newval;
-        });
-      })();
-    }
+    (function(){ // register buffer listener
+      var instrument = sound.instruments[i];
+      sound[instrument].watch("buffer", function(prop,oldval,newval){
+        drawInstrument(instrument, newval);
+        canvas.renderAll();
+        return newval;
+      });
+    })();
   }
 
   for (var i=0; i<sound.drums.list.length; i++){
-     drawDrum(sound.drums.list[i]);
      (function(){ // register buffer listener
        var drum = sound.drums.list[i];
        sound.drums[drum].watch("rhythm", function(prop,oldval,newval){
          drawDrum(drum, newval);
+         canvas.renderAll();
          return newval;
        });
      })();
    }
 
-  setInterval(function () {
-    canvas.renderAll();
-  }, 40);
+  canvas.renderAll();
 }
 
 function calcAndDrawAllInstruments(){
@@ -97,6 +93,7 @@ function calcAndDrawAllInstruments(){
   canvas.setWidth( window.innerWidth*0.75 );
   canvas.setHeight( window.innerHeight*0.70 );
   var offsets = makeGrid(2, 2);
+  sound.instruments.push('drums');
 
   for (var i = 0; i < sound.instruments.length; i++) {
     instrumentValues[sound.instruments[i]] = { // make group settings
@@ -105,12 +102,11 @@ function calcAndDrawAllInstruments(){
       fill: 'rgba('+offsets[i].c.toString()+',0.5)',
       stroke: 'rgba('+offsets[i].c.toString()+',1)'
     };
-
-    if( sound.instruments[i] !== "drums"){ // draw instruments
-       drawInstrument(sound.instruments[i]);
-     }
   }
 
+  sound.instruments.pop();
+
+  for (i of sound.instruments) drawInstrument(i);
   for (d of sound.drums.list) drawDrum(d);
 }
 
