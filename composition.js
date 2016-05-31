@@ -49,7 +49,8 @@
     divisor[(i*4)+'nd'] = i*1.5;
     divisor[(i*4)+'n'] = i;
     divisor[(i*4)+'nt'] = (i*2)/3;
-   }
+  }
+
   var getBpm = function(bpm,smallestDivisor){
     return (60 / bpm) / divisor[smallestDivisor];
   }
@@ -76,11 +77,8 @@
   }
 
   sound.instruments = [ "bass", "piano", "ambient"];
-  var Instrument = function( s ) {
-    this.synth = s;
-    this.start = this.synth.play;
-    (this.stop = this.synth.pause)();
-    this.detune = flock.synth({
+  synthDef.pseudoSynth = function(){
+    return {
       synthDef: {
         id: 'osc',
         ugen: "flock.ugen.saw",
@@ -88,23 +86,22 @@
         freq: 100, // we use range 100-200, and scale it to 0-100 because 0 is weird
         mul: 0 // keep it silent
       }
-    });
-    this.offset = flock.synth({
-      synthDef: {
-        id: 'osc',
-        ugen: "flock.ugen.sinOsc",
-        rate: "control",
-        freq: 100,
-        mul: 0
-      }
-    });
+    }
+  };
+
+  var Instrument = function( s ) {
+    this.synth = s;
+    this.start = this.synth.play;
+    (this.stop = this.synth.pause)();
+    this.detune = synthDef.pseudoSynth();
+    this.offset = synthDef.pseudoSynth();
     var c = new Sequencer({});
     for (var foo in c) this[foo] = c[foo];
 
     this.quickStart = function(){
       this.fillChaosBuffer();
       this.mapBufferToNotes();
-      this.newRhythm('fast', [2,3,7,11]);
+      this.newRhythm('fast', [utilities.randPrime(5),utilities.randPrime(10)]);
     };
     this.quickStart()
   }

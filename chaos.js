@@ -113,7 +113,7 @@ var Chaos = null;
         // b: 3,
         // o: -1,
       },
-      length: 100,
+      length: 20,
       // reorder: "distanceFromEachother"
     };
 

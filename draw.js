@@ -162,7 +162,7 @@ function createFader(i){
     onInstrument: 'none',
     isExponential: false,
     range: { low: 0, high: 1 },
-    callbackFunction: "setSoundValue",
+    callbackFunction: "setSynthdefValue",
     // look
     width: box.sliderWidth, height: box.height*0.75,
     originY: "bottom",
@@ -249,7 +249,7 @@ function initFaderbox(){
          } else {
            faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
          }
-         window[fdr.callbackFunction](faderval, fdr.onInstrument, fdr.controls);
+         window[fdr.callbackFunction](faderval, fdr.instrument, fdr.controls);
         }
      },
     });
