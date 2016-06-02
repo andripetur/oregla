@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -15,24 +14,23 @@
       <div id='docContent' class="jqconsole">
         <section id='about'>
           <h1> About (ó)regla </h1>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p> (ó)rekkgla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        </section>
+            <p> (ó)regla is an interactive live coding environment. Intended do showcase the power of an algorithmic approach to composition, utilizing chaotic systems to generate melodic content, and Schillingers approach to generating rhythms.</p>
         <section id='chaos'>
           <h1> Chaos </h1>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>  Chaos is not random but deterministic. If you run a formula a hundred times with the same parameters, you get the same output every time. Chaos theory is a part of a math subject called dynamics, which deals with change and systems that evolve in time. The way a chaotic system constantly evolves, is by feeding back the output of the first iteration into the second, creating a non-linear feedback system. Although the output of chaos may appear random, if observed from a distance, patterns begin to emerge. </p>
         </section>
         <section id='sound'>
           <h1> Sound </h1>
-            <p> (ó)regla is an Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p> The (ó)regla sound engine is powered by <a class="docLink" href="https://github.com/colinbdclark/flocking">flocking.js</a>, a creative audio synthesis framework built ontop of the webaudio API. Through the command console you can generate/modify the sound and sequences. Please be aware of that (ó)regla is still in active developement, so it is very much still fluid in terms of interface and available features.</p>
         </section>
+      </section>
+
+      <section id="compose">
+        <h1> Composition </h1>
+          <p> Let's compose! To get started we need to generate some content to work with. Lets fill a "buffer" with iterations of a chaotic functions. <code>instrument.fillChaosBuffer()</code>. Then to hear the contents of the buffer we have map the contents of the buffer too melodic content, <code>instrument.mapBufferToNotes()</code>.  Nnow we just need some rhythm to get the groove going, either do <code>instrument.mapBufferToRhythm()</code> to map the chaos to rhythm as well, or genarate a rhythm using schillingers intereference of monomials ala: <code>instrument.newRhythm('fast', [2,3])</code>. Now type in <code>instrument.start()</code> and you'll hear a musical phrase!</p>
         <section id='scales'>
           <h1> Scales </h1>
-            <p> There are number of scales to choose from. You can also create your own. There are a number of scales that come built in and you can ofcourse also choose to not adhere to any of them.
+            <p> There are number of scales to choose from. You can create your own or use one of the scales that come outof the box and you can ofcourse also choose to not adhere to any of them.
             <ul>
               <li> ionian </li>
               <li> dorian </li>
@@ -67,12 +65,47 @@
                 <li><b>32n</b> - thirty-second note</li>
                 <li><b>32nt</b> - thirty-second-note triplet</li>
                 <li><b>64nd</b> - Dotted sixty-fourth note</li>
-                <li><b>64n</b> - Sixty-fourth note</li>
-                <li><b>1b</b> - One bar</li> </br>
+                <li><b>64n</b> - Sixty-fourth note</li> </br>
+                <li><b>1b</b> - One bar</li>
                 <li><b>2b...99b</b> - Two bars...ninety-nine bars</li>
                 <li><b>100b</b> - One hundred bars</li>
             </ul> </p>
+            <p>If you are one of the cool cats who likes to micromanage, and would rather like to do time conversions by hand you can type your desired amount and appending 'm' for minutes, 's' for seconds or 'ms' for milliseconds.
+              <ul>
+                <li><b>1m</b> - One minute</li>
+                <li><b>60s</b> - Sixty seconds</li>
+                <li><b>60000ms</b> - Sixty-thousand milliseconds</li>
+            </ul></p>
           </section>
+          <section id=generators>
+            <h1> Generators </h1>
+            <p><b>fillChaosBuffer</b> </br></p>
+            <p><b>newRhythm</b> </br></p>
+          </section>
+          <section id=modifiers>
+            <h1> Modifiers </h1>
+
+            <p><b>reverse</b> </br>
+              If called without an argument this function Reverses both the notes and rhythm. But you can call it with an argument, choosing which to reverse: notes or rhythm. </p>
+            <p><b>multiplyIntervals</b> </br>
+              Multiplies all note intervals with given argument 1, transforming it into a new melody.</p>
+            <p><b>transpose</b> </br>
+              Transpose all notes by amount given in argument 1.
+            <p><b>clampToRange</b> </br>
+              Rearrange the notes, so they keep the same note value, but the octave is shifted until the note falls in the into the given note range.
+            </p>
+            <p><b>mirrorNotes</b> </br>
+              Mirror the note values, so that the heighest becomes the lowest, the lowest highest and etc.
+            </p>
+            <p><b>mirrorIntervals</b> </br>
+              Mirror the note intervals, so that the heighest becomes the lowest, the lowest highest and etc.
+            </p>
+            <p><b>mirrorRhythm</b> </br>
+              Mirror the rhytmic intervals, so that the heighest becomes the lowest, the lowest highest and etc.
+            </p>
+          </section>
+        </section>
+
        </div>
 
        <script>

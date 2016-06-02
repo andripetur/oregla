@@ -1,4 +1,5 @@
 (function () {
+  "use strict";
   // - - - - synths - - - -
   fluid.registerNamespace("sound");
   fluid.registerNamespace("synthDef")
@@ -157,7 +158,7 @@
 
   sound.drums = {};
   sound.drums.list = [ "kick", "snare", "hh", "perc"];
-  for (d of sound.drums.list) sound.drums[d] = {};
+  for (var d of sound.drums.list) sound.drums[d] = {};
 
   sound.drums.kick.synth = flock.synth({
     nickName: "kick",

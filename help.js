@@ -2,32 +2,38 @@
   // schillinger.js
   Schillinger.prototype.newRhythm.help = {
     title:'New Rhythm',
-    content: 'Generator.<br> A new rhythm.<br> a1(str): fast,slow. arg2: an array of numbers '
+    type: 'Generator',
+    content: 'A new rhythm.<br> a1(str): fast,slow. arg2: an array of numbers.'
   };
 
   Schillinger.prototype.reverse.help = {
     title: 'Reverse',
-    content: 'Modifier.<br> Reverses the whole sequence.'
+    type: 'Modifier',
+    content: 'If called without an argument reverses the whole sequence. Optional <string>arg1 what you want reversed: notes or rhythm.'
   };
 
   Schillinger.prototype.multiplyIntervals.help = {
     title: 'Multiply intervals',
-    content: 'Modifier.<br> Multiply all intervals with scalar of <int>arg1.'
+    type: 'Modifier',
+    content: 'Multiply all intervals with scalar of <int>arg1.'
   };
 
   Schillinger.prototype.transpose.help = {
     title: 'Transpose',
-    content: 'Modifier.<br>Transpose the sequence horisontally by <int>arg1.'
+    type: 'Modifier',
+    content: 'Transpose the sequence horisontally by <int>arg1.'
   };
 
   Schillinger.prototype.clampToRange.help = {
     title: 'Clamp',
-    content: 'Modifier.<br> Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high).'
+    type: 'Modifier',
+    content: 'Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high).'
   };
 
   var mirror = {
     title: 'Mirror',
-    content: 'Modifier.<br> Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth.'
+    type: 'Modifier',
+    content: 'Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth.'
   };
 
   Schillinger.prototype.mirrorNotes.help = mirror;
@@ -37,23 +43,52 @@
   // Chaos.js----------------------------------------------------------------------
   Chaos.prototype.getAllFromBuffer.help = {
     title: 'Get all from buffer',
-    content: 'Data.<br> Returns an array with all elements of requested value <string>arg1 from the chaos buffer.'
+    type: 'Data',
+    content: 'Returns an array with all elements of requested value <string>arg1 from the chaos buffer.'
   };
 
   Chaos.prototype.fillChaosBuffer.help = {
     title: 'Fill Chaos Buffer',
-    content: 'Generator.<br> Fills a buffer with iterations from chaos. Takes an option object as argument.'
+    type: 'Generator',
+    content: 'Fills a buffer with iterations from chaos. Takes an option object as argument.'
   };
 
   Sequencer.prototype.mapBufferToNotes.help = {
     title: 'Map buffer to notes',
-    content: 'Modifier.<br> Maps chaos buffer to note values. Making them playable.'
+    type: 'Modifier',
+    content: 'Maps chaos buffer to note values. Making them playable.'
+  };
+
+  Sequencer.prototype.mapBufferToRhythm.help = {
+    title: 'Map buffer to rhythm',
+    type: 'Modifier',
+    content: 'Maps chaos buffer to rhytmic values. Making them playable.'
   };
 
   // Composition.js----------------------------------------------------------------------
   sound.scales.set.help = {
     title: 'Set scale',
-    content: 'Modifier.<br> Selects the scale to tune notes too.',
+    type: 'Modifier',
+    content: 'Selects the scale to tune notes too.',
     docLink: 'documentation.html#scales'
   };
+
+  Instrument.prototype.envelope.help = {
+    title: 'Envelope',
+    type: 'Sound',
+    content: 'Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object. <br> attack <br> decay <br> sustain <br> release ',
+  };
+
+  Instrument.prototype.filter.help = {
+    title: 'Filter',
+    type: 'Sound',
+    content: 'Edit the parameters of the filter.',
+  };
+
+  Instrument.prototype.oscillators.help = {
+    title: 'Oscillators',
+    type: 'Sound',
+    content: 'Edit the parameters of the oscillators.',
+  };
+
 })();

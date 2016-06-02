@@ -1,6 +1,7 @@
 var Schillinger = null;
 
 (function(){
+  "use strict";
   Schillinger = function(){}
 
   var monomialPeriodicGroup = function(t, l) {
@@ -107,10 +108,19 @@ var Schillinger = null;
      }
   };
 
-  Schillinger.prototype.reverse = function(){
-    if( typeof this.rhythm !== "undefined") rhythm.reverse();
-    if( typeof this.notes !== "undefined") notes.reverse();
-    return "Sequence reversed.";
+  Schillinger.prototype.reverse = function(which){
+    if (typeof which !== "undefined") {
+      if( typeof this[which] !== "undefined"){
+        this[which].reverse();
+        return which +" reversed.";
+      } else {
+        return "No "+ which +" to reverse.";
+      }
+    } else { // if no argument reverse whatever you have
+      if( typeof this.rhythm !== "undefined") this.rhythm.reverse();
+      if( typeof this.notes !== "undefined") this.notes.reverse();
+      return 'Sequence reversed.'
+    }
   };
 
   Schillinger.prototype.multiplyIntervals = function(multi){

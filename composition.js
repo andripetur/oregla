@@ -1,3 +1,4 @@
+var Instrument = null; // make accesible to help
 (function () {
   "use strict";
 
@@ -29,8 +30,9 @@
     aeolian: new Scale(2,1,2,2,1,2,2),
     locrian: new Scale(1,2,2,1,2,2,2),
     none: new Scale(),
-    selected: 'ionian',
+    selected: def.scale,
     get: function() { return this[this.selected]; },
+    see: function() { return this[this.selected].semitones; },
     set: function(scale){
       if( typeof this[scale] !== "undefined"){
     	  this.selected = scale;
@@ -38,12 +40,16 @@
   	  } else {
         return "You've tried to pick an nonexisting scale.";
   	  }
+    },
+    new: function(name,intervals) {
+      this[name] = new Scale(...intervals);
+      return "New scale " + name + " added."
     }
   }
 
-  var tempo = 80;
+  var tempo = def.tempo;
   var divisor = {};
-  var signature = { upper: 4, lower: '4n'};
+  var signature = def.signature;
 
   for (var i = 0.25; i < 64; i*=2){
     divisor[(i*4)+'nd'] = i*1.5;
@@ -63,6 +69,12 @@
       var barLength = getBpm(tempo, signature.lower) * signature.upper,
           nrOfBars = parseFloat(unit.replace('b', ''));
       val = barLength * nrOfBars;
+    } else if(unit.includes('s') && !unit.includes('m')) {
+      val = parseFloat(unit.replace('s', ''));
+    } else if(unit.includes('ms')) {
+      val = parseFloat(unit.replace('ms', ''))/1000;
+    } else if(unit.includes('m') && !unit.includes('s')) {
+      val = parseFloat(unit.replace('s', ''))*60;
     }
     return val;
   }
@@ -89,7 +101,7 @@
     }
   };
 
-  var Instrument = function( s ) {
+  Instrument = function( s ) {
     this.synth = s;
     this.start = this.synth.play;
     (this.stop = this.synth.pause)();

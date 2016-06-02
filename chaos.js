@@ -2,6 +2,8 @@
 var Chaos = null;
 
 (function(){
+  "use strict";
+
   Chaos = function( _coords ){
     var coords = _coords || { x: 0.1, y: 0.1, a: 0, t: -4.1, b: 15, o: 1 };
     this.buffer = [];
@@ -113,7 +115,7 @@ var Chaos = null;
         // b: 3,
         // o: -1,
       },
-      length: 20,
+      length: def.bufferLength,
       // reorder: "distanceFromEachother"
     };
 
@@ -178,7 +180,7 @@ var Sequencer = null;
       return -1;
   }
 
-  Sequencer.prototype.do = function () {
+  Sequencer.prototype.do = function() {
     if(this.synth.isPlaying()){
       var n = this.getNote()
       if(n > 0){
@@ -207,6 +209,16 @@ var Sequencer = null;
         el[valueToMap], buffRange.low, buffRange.high, mapTo.low, mapTo.high));
       } );
     // this.notes = this.buffer.map(function(el){ return Math.abs(Math.floor(el.x)); } );
+  };
+
+  Sequencer.prototype.mapBufferToRhythm = function(o) {
+    var valueToMap = "length"
+    var mapTo = {low: 1, high: 4};
+    var buffRange = utilities.range( this.getAllFromBuffer(valueToMap) );
+    this.rhythm = this.buffer.map(function(el){
+      return Math.floor(utilities.scale(
+        el[valueToMap], buffRange.low, buffRange.high, mapTo.low, mapTo.high));
+      } );
   };
 
 

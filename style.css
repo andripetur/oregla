@@ -17,7 +17,8 @@ body {
   top: 5%;
   left: 0%;
   text-align: center;
-  background: ghostwhite;
+  /*background: ghostwhite;*/
+  background: url(imgs/paper.jpg);
   width: calc(25% - 16px);
 }
 

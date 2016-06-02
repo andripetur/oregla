@@ -135,6 +135,7 @@ var initConsole = null;
 
     function fillHelp(hlp){
       $('#help-title').text(hlp.title);
+      if( typeof hlp.type !== "undefined") $('#help-title').append(" [" + hlp.type +"]");
       $('#help-content').html('> '+hlp.content);
       if( typeof hlp.docLink !== "undefined"){ // add link to documentation
         $('#help-content').append( '</br><a class=docLink href=\"'+hlp.docLink+'\" target=_blank>DocLink</a>');
