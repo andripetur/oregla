@@ -29,14 +29,18 @@ function makeColors() {
   });
 }
 
+function arrToColor(arr, _alpha) {
+  var alpha = _alpha || 1;
+  return 'rgba('+arr.toString()+','+alpha+')';
+}
+
 var padAmt = 0.05;
 function makeGrid( colls, rows ) {
   makeGrid.w = canvas.width / colls;
   makeGrid.h = canvas.height / rows;
   makeGrid.colls = colls;
   makeGrid.rows = rows;
-  var colors = makeColors(),
-      offsets = [],
+  var offsets = [],
       xPad = makeGrid.w * padAmt,
       yPad = makeGrid.h * padAmt;
 
@@ -53,6 +57,7 @@ function makeGrid( colls, rows ) {
 }
 
 function initDrawing(){
+  colors = makeColors();
   calcAndDrawAllInstruments();
 
   for (var i = 0; i < sound.instruments.length; i++) {
@@ -90,15 +95,16 @@ function calcAndDrawAllInstruments(){
 
   canvas.setWidth( window.innerWidth*0.75 );
   canvas.setHeight( window.innerHeight*0.70 );
-  var offsets = makeGrid(2, 2);
+  var offsets = makeGrid(3, 2);
   sound.instruments.push('drums');
 
   for (var i = 0; i < sound.instruments.length; i++) {
     instrumentValues[sound.instruments[i]] = { // make group settings
       left: offsets[i].l,
       top: offsets[i].t,
-      fill: 'rgba('+offsets[i].c.toString()+',0.5)',
-      stroke: 'rgba('+offsets[i].c.toString()+',1)'
+      fill: arrToColor(offsets[i].c, 0.5),
+      stroke: arrToColor(offsets[i].c),
+      text: arrToColor(offsets[i].c, 0.75)
     };
   }
 
@@ -106,8 +112,21 @@ function calcAndDrawAllInstruments(){
 
   for (i of sound.instruments) drawInstrument(i);
   for (d of sound.drums.list) drawDrum(d);
-
   canvas.renderAll();
+}
+
+function addName(instrument, _color){
+  var pos = { left: -patterns[instrument].width/2,
+              top: patterns[instrument].height/2*0.9 },
+      color = _color || instrumentValues[instrument].text;
+
+  patterns[instrument].add( new fabric.Text(instrument, {
+    left: pos.left,
+    top: pos.top,
+    fontFamily: "Menlo",
+    fontSize: 15,
+    fill: color
+  }));
 }
 
 function drawInstrument(instrument, _buffer){
@@ -128,6 +147,7 @@ function drawInstrument(instrument, _buffer){
 
   patterns.rm(instrument);
   patterns.add(instrument, circles, instrumentValues[instrument]);
+  addName(instrument);
 }
 
 function drawDrum(drum, _r){ // optional to pass the rhythm values
@@ -151,6 +171,7 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
     }));
   patterns.rm(drum);
   patterns.add(drum, squares, groupValues);
+  addName(drum,instrumentValues["drums"].text);
 }
 
 // faderbox
@@ -167,7 +188,7 @@ function createFader(i){
     width: box.sliderWidth, height: box.height*0.75,
     originY: "bottom",
     left: i * box.sliderWidth, top: box.height,
-    fill: 'maroon',
+    fill: arrToColor(colors[1], 0.75),
     lockRotation: true,
     lockMovementX: true,
     lockMovementY: true,
@@ -192,14 +213,53 @@ function createFader(i){
   return f;
 }
 
-var nrOfFaders = 8;
-var faderboxCanvas = null;
-var box = {}
-var faderSetups = [];
-for (var i = 0; i < nrOfFaders; i++) nrOfFaders[i] = { scaleY: 1 };
+// faderbox
+function createButton(i){
+  var b = new fabric.Rect({
+    // functionality
+    name: 'button'+(i+1),
+    state: false,
+    colors: [arrToColor(colors[1], 0.75), arrToColor(colors[2], 0.75) ],
+    onOn: null,
+    onOff: null,
+    // look
+    width: box.sliderWidth, height: box.sliderWidth,
+    left: i * box.sliderWidth, top: 0,
+    fill: arrToColor(colors[1], 0.75),
+    hasControls: false,
+    hoverCursor: 'default',
+    stroke: 'black',
+    borderColor: 'orange',
+  });
+
+  return b;
+}
+
+var nrOfUIelements = 8,
+    faderboxCanvas = null,
+    buttonBoxCanvas = null,
+    box = {},
+    faderSetups = [],
+    buttonSetups = [];
+
+for (var i = 0; i < nrOfUIelements; i++) nrOfUIelements[i] = { scaleY: 1 };
 function setupFader(which, settings) {
   faderboxCanvas.item(which).set(settings);
   faderSetups[which] = settings;
+}
+
+function setupButton(which, settings) {
+  buttonBoxCanvas.item(which).set(settings);
+  buttonSetups[which] = settings;
+  // register object listener
+  var nr = which;
+  sound[settings.instrument].watch('isPlaying', function(prop,oldval,newval){
+    var b = buttonBoxCanvas.item(nr);
+    b.state = newval;
+    b.fill = b.colors[ b.state ? 1 : 0 ];
+    buttonBoxCanvas.renderAll();
+    return newval;
+  });
 }
 
 function initFaderbox(){
@@ -209,7 +269,7 @@ function initFaderbox(){
 
   box.height = window.innerHeight*0.25;
   box.width = (window.innerWidth*0.25) - 20;
-  box.sliderWidth = box.width / nrOfFaders;
+  box.sliderWidth = box.width / nrOfUIelements;
 
   if( faderboxCanvas === null ) {
     faderboxCanvas = new fabric.Canvas('faderbox', {
@@ -223,12 +283,12 @@ function initFaderbox(){
   faderboxCanvas.setWidth( box.width );
   faderboxCanvas.setHeight( box.height );
 
-  for (var i = 0; i < nrOfFaders; i++) faderboxCanvas.add( createFader(i) );
+  for (var i = 0; i < nrOfUIelements; i++) faderboxCanvas.add( createFader(i) );
 
-  for (var i = 0; i < nrOfFaders; i++) {
+  for (var i = 0; i < nrOfUIelements; i++) {
     faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
     { left: (i+1) * box.sliderWidth, top: box.height-5 , angle: -90,
-      fill: 'white', originY: 'bottom', fontSize: 20, selectable: false
+      fill: 'white', originY: 'bottom', fontSize: 15, selectable: false, fontFamily: "Menlo",
     }));
   }
 
@@ -256,6 +316,52 @@ function initFaderbox(){
   }
 }
 
+function initButtonbox(){
+  for (var i = 0; i < buttonSetups.length; i++) { // rember state if resizing
+    buttonSetups[i].state = buttonBoxCanvas.item(i).state;
+  }
+
+  if( buttonBoxCanvas === null ) {
+    buttonBoxCanvas = new fabric.Canvas('buttonbox', {
+      backgroundColor: 'black',
+      selection: false,
+    });
+  } else {
+    buttonBoxCanvas.clear();
+  }
+
+  buttonBoxCanvas.setWidth( box.width );
+  buttonBoxCanvas.setHeight( box.sliderWidth );
+
+  for (var i = 0; i < nrOfUIelements; i++) buttonBoxCanvas.add( createButton(i) );
+
+  for (var i = 0; i < faderSetups.length; i++) {
+    var b = buttonBoxCanvas.item(i);
+    b.set(buttonSetups[i]);
+    b.fill = b.colors[ b.state ? 1 : 0 ];
+  }
+
+  buttonBoxCanvas.renderAll();
+
+  if(typeof buttonBoxCanvas.__eventListeners === "undefined"){//make functional
+    buttonBoxCanvas.on({
+     'mouse:down': function(options) {
+       if(options.target !== "undefined"){
+        var b = options.target;
+        b.state = !b.state;
+        b.fill = b.colors[ b.state ? 1 : 0 ];
+        buttonBoxCanvas.renderAll();
+        if (b.state && b.onOn !== null) {
+          b.onOn();
+        } else if (!b.state && b.onOff !== null){
+          b.onOff();
+        }
+      }
+     },
+    });
+  }
+}
+
 var resizeTimer;
 function initResize(){
   $( window ).resize(function() {
@@ -263,6 +369,7 @@ function initResize(){
     resizeTimer = setTimeout(function() { // do when resize is finished
       calcAndDrawAllInstruments();
       initFaderbox();
+      initButtonbox();
     }, 250);
   });
 }

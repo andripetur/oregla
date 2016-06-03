@@ -7,7 +7,8 @@
   var environment = flock.init();
   environment.start();
 
-  synthDef.bassSynth = flock.synth({
+  synthDef.synth = function(){
+    return flock.synth({
     nickName: "square-synth",
     synthDef: {
       ugen: "flock.ugen.filter.moog",
@@ -43,7 +44,8 @@
          ],
        },
       },
-  });
+    });
+  }
 
   // - - - - samplers - - - -
 

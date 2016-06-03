@@ -50,19 +50,29 @@
   Chaos.prototype.fillChaosBuffer.help = {
     title: 'Fill Chaos Buffer',
     type: 'Generator',
-    content: 'Fills a buffer with iterations from chaos. Takes an option object as argument.'
+    content: 'Fills a buffer with iterations from chaos. Takes an option object as argument.',
+    options: [ ['length', 'int'],
+              ['offset', 'int'],
+              ['coords', 'object { a: f, t: f, b: f, o: f}'],
+              ['reorder', 'string'],
+              ['release', 'float'],
+              ['t', 'time value'] ],
   };
 
   Sequencer.prototype.mapBufferToNotes.help = {
     title: 'Map buffer to notes',
     type: 'Modifier',
-    content: 'Maps chaos buffer to note values. Making them playable.'
+    content: 'Maps chaos buffer to note values. Making them playable.',
+    options: [ ['valueToMap', 'x, y, length'],
+              ['mapTo', 'object { low: i, high: i }']],
   };
 
   Sequencer.prototype.mapBufferToRhythm.help = {
     title: 'Map buffer to rhythm',
     type: 'Modifier',
-    content: 'Maps chaos buffer to rhytmic values. Making them playable.'
+    content: 'Maps chaos buffer to rhytmic values. Making them playable.',
+    options: [ ['valueToMap', 'x, y, length'],
+              ['mapTo', 'object { low: i, high: i }']],
   };
 
   // Composition.js----------------------------------------------------------------------
@@ -76,19 +86,30 @@
   Instrument.prototype.envelope.help = {
     title: 'Envelope',
     type: 'Sound',
-    content: 'Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object. <br> attack <br> decay <br> sustain <br> release ',
+    content: 'Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.',
+    options: [ ['attack', 'float'],
+              ['decay', 'float'],
+              ['sustain', 'float 0-1'],
+              ['release', 'float'],
+              ['t', 'time value'] ],
   };
 
   Instrument.prototype.filter.help = {
     title: 'Filter',
     type: 'Sound',
     content: 'Edit the parameters of the filter.',
+    options: [ ['cutoff', 'frequence'],
+              ['resonance', 'float'],
+              ['t', 'time value'] ],
   };
 
   Instrument.prototype.oscillators.help = {
     title: 'Oscillators',
     type: 'Sound',
     content: 'Edit the parameters of the oscillators.',
+    options: [ ['detune', 'float 0-100'],
+              ['offset', 'int'],
+              ['t', 'time value'] ],
   };
 
 })();

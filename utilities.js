@@ -8,6 +8,7 @@
   }
 
   utilities.scaleExp = function(i,il,ih,ol,oh) {
+    var p = 0;
     return ((p = ((i - il) / (ih - il))) * p) * (oh - ol) + ol;
   }
 

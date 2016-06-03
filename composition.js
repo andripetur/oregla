@@ -88,9 +88,9 @@ var Instrument = null; // make accesible to help
     }
   }
 
-  sound.instruments = [ "bass", "piano", "ambient"];
+  sound.instruments = [ "bass", "mel1", "mel2", "piano", "ambient"];
   synthDef.pseudoSynth = function(){
-    return {
+    return flock.synth({
       synthDef: {
         id: 'osc',
         ugen: "flock.ugen.saw",
@@ -98,13 +98,23 @@ var Instrument = null; // make accesible to help
         freq: 100, // we use range 100-200, and scale it to 0-100 because 0 is weird
         mul: 0 // keep it silent
       }
-    }
+    });
   };
 
   Instrument = function( s ) {
     this.synth = s;
-    this.start = this.synth.play;
-    (this.stop = this.synth.pause)();
+    this.isPlaying = false;
+    var that = this;
+    this.start = function(){
+      that.isPlaying = true;
+      that.synth.play();
+    };
+    this.stop = function(){
+      that.isPlaying = false;
+      that.synth.pause();
+    };
+    this.synth.pause();
+
     this.detune = synthDef.pseudoSynth();
     this.offset = synthDef.pseudoSynth();
     var c = new Sequencer({});
@@ -187,7 +197,10 @@ var Instrument = null; // make accesible to help
     }
   }
 
-  sound.bass = new Instrument( synthDef.bassSynth );
+  sound.bass = new Instrument( synthDef.synth() );
+  sound.mel1 = new Instrument( synthDef.synth() );
+  sound.mel2 = new Instrument( synthDef.synth() );
+
   sound.piano = new Instrument( synthDef.piano );
   sound.piano.noteOn = function( mNote ) {
     var pNote = "piano-"+mNote+".trigger.source";
@@ -211,8 +224,15 @@ var Instrument = null; // make accesible to help
 
   var toSchedule = [];
   toSchedule.push(sound.bass);
+  toSchedule.push(sound.mel1);
+  toSchedule.push(sound.mel2);
   toSchedule.push(sound.piano);
   toSchedule.push(sound.ambient);
+
+  sound.stopAll = function(){
+    for (var i of sound.instruments) sound[i].stop();
+    sound.drums.stop();
+  }
 
   for (var drum of sound.drums.list) {
     var c = new Sequencer("rhythm");     // copy sequencer into object
@@ -224,12 +244,12 @@ var Instrument = null; // make accesible to help
     sound.drums[drum].stop = sound.drums[drum].synth.pause;
   }
 
-  var drumsArePlaying = false;
-  sound.drums.start = function(){ drumsArePlaying = true; }
-  sound.drums.stop = function(){ drumsArePlaying = false; }
+  sound.drums.isPlaying = false;
+  sound.drums.start = function(){ sound.drums.isPlaying = true; }
+  sound.drums.stop = function(){ sound.drums.isPlaying = false; }
 
   sound.drums.do = function() {
-    if(drumsArePlaying){
+    if(sound.drums.isPlaying){
       for (var i = 0; i < sound.drums.list.length; i++) {
         if( sound.drums[sound.drums.list[i]].trigger() && sound.drums[sound.drums.list[i]].isPlaying()){
           sound.drums.play(sound.drums.list[i]);

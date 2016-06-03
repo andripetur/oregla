@@ -181,7 +181,7 @@ var Sequencer = null;
   }
 
   Sequencer.prototype.do = function() {
-    if(this.synth.isPlaying()){
+    if(this.isPlaying){
       var n = this.getNote()
       if(n > 0){
         n = sound.scales.get().lockTo( n );

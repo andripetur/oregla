@@ -28,11 +28,14 @@
       <div id='title'><br>(ó)regla<br>&nbsp;</div>
 
         <canvas id="cvs"></canvas>
-        <canvas id="faderbox"></canvas>
+        <canvas id="faderbox" class="uibox"></canvas>
+        <canvas id="buttonbox" class="uibox"></canvas>
         <div id="help">
           <div id=help-title class="help">Hi there!</div>
           <div id=help-content class="help h-content">> I'm the help window! I'll do my best to present you with useful suggestions and not go all paperclip on your ass...
           </div>
+          <div id=help-options class="help"></div>
+          <div id=help-options-cont class="help h-content"></div>
         </div>
         <div id="console"></div>
 
@@ -40,6 +43,7 @@
         initConsole();
         initDrawing();
         initFaderbox();
+        initButtonbox();
         initResize();
 
         setupFader(0, {
@@ -49,12 +53,13 @@
           "isExponential": true,
         });
 
-        // faderboxCanvas.item(1).set({
-        //   "name": "chaos",
-        //   "controls": "selectChaos",
-        //   "callbackFunction": "selectChaos",
-        //   "range": {low: 0, high: 3}
-        // });
+        for (var i = 0; i < sound.instruments.length; i++) {
+          setupButton(i, {
+            instrument: sound.instruments[i],
+            onOn: sound[sound.instruments[i]].start,
+            onOff: sound[sound.instruments[i]].stop,
+          });
+        }
         </script>
     </body>
 </html>

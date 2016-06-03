@@ -137,6 +137,15 @@ var initConsole = null;
       $('#help-title').text(hlp.title);
       if( typeof hlp.type !== "undefined") $('#help-title').append(" [" + hlp.type +"]");
       $('#help-content').html('> '+hlp.content);
+      if( typeof hlp.options !== "undefined") {
+        $('#help-options').text( 'Options object: ');
+        hlp.options.map(function(el){
+          $('#help-options-cont').append( el[0] + ': '+ el[1] + '</br>');
+        });
+      } else {
+        $('#help-options').text('');
+        $('#help-options-cont').text('');
+      }
       if( typeof hlp.docLink !== "undefined"){ // add link to documentation
         $('#help-content').append( '</br><a class=docLink href=\"'+hlp.docLink+'\" target=_blank>DocLink</a>');
       }

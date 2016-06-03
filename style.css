@@ -22,7 +22,7 @@ body {
   width: calc(25% - 16px);
 }
 
-#faderbox{
+.uibox{
   width: calc(25% - 12px);
   border: 2px solid #CCC;
 }
