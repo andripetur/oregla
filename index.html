@@ -10,7 +10,7 @@
         <script src="defaults.js"></script>
         <script src="libs/fabric.min.js"></script>
         <script src="draw.js"></script>
-        <script src="libs/flocking-all.js"></script>
+        <script src="libs/flocking-all.min.js"></script>
         <script src="libs/jqconsole.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="console.js"></script>
         <script src="utilities.js"></script>
@@ -41,9 +41,9 @@
 
         <script>
         initConsole();
-        initDrawing();
-        initFaderbox();
-        initButtonbox();
+        initDrawingAndUI();
+        drawFaderbox();
+        drawButtonbox();
         initResize();
 
         setupFader(0, {

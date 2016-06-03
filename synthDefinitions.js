@@ -11,10 +11,10 @@
     return flock.synth({
     nickName: "square-synth",
     synthDef: {
-      ugen: "flock.ugen.amplitude",
-      id: 'volume',
-      mul: 1,
-      source: {
+      // ugen: "flock.ugen.amplitude",
+      // id: 'volume',
+      // mul: 1,
+      // source: {
         ugen: "flock.ugen.filter.moog",
         id: 'filter',
          cutoff: 8000,
@@ -28,7 +28,7 @@
                id: "env",
                ugen: "flock.ugen.asr",
                attack: 0.001,
-               sustain: 1,
+               sustain: 0.5,
                release: 0.4,
                gate: 0,
              }
@@ -48,7 +48,7 @@
            ],
          },
         },
-      }
+      // }
     });
   }
 

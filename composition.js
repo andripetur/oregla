@@ -107,13 +107,10 @@ var Instrument = null; // make accesible to help
     var that = this;
     this.start = function(){
       that.isPlaying = true;
-      // that.synth.play();
     };
     this.stop = function(){
       that.isPlaying = false;
-      // that.synth.pause();
     };
-    // this.synth.pause();
 
     this.detune = synthDef.pseudoSynth();
     this.offset = synthDef.pseudoSynth();
@@ -213,18 +210,10 @@ var Instrument = null; // make accesible to help
         fltr = "f"+this.noteOn.counter,
         fCtoff = fltr + ".cutoff",
         fMul = fltr + ".mul";
-        // envGate = 'env'+this.noteOn.counter+'.gate';
-
-    // this.synth.set(envGate, 1);
     this.synth.set(fCtoff, freq);
-    this.synth.set(fMul, 0.2);
 
-    // (function(){
-    //   var that = this.synth;
-    //   setTimeout(function () {
-    //     that.set(envGate, 0);
-    //   }, 40);
-    // })();
+    this.synth.set(fMul, synthDef.line(0.0001, 0.2));
+    this.synth.set(fMul, synthDef.line(0.2, 0.0001, timeUnitToSeconds('4n')));
 
     this.noteOn.counter++;
     if( this.noteOn.counter > synthDef.ffBankSize-1 ) this.noteOn.counter = 0;

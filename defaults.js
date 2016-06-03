@@ -4,4 +4,6 @@ var def = {
   tempo: 80,
   signature: { upper: 4, lower: '4n'},
   bufferLength: 20,
+
+  quickStartEnabled: true,
 }

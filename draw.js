@@ -22,7 +22,7 @@ function makeColors() {
   }
 
   return combinations.map(function(el){ // binary to color values
-    var chars = el.split('')
+    var chars = el.split('');
     return chars.map(function(el){
       return el === '0' ? val1 : val2;
     });
@@ -56,10 +56,22 @@ function makeGrid( colls, rows ) {
   return offsets;
 }
 
-function initDrawing(){
-  colors = makeColors();
-  calcAndDrawAllInstruments();
+var canvasSettings = {
+  backgroundColor: 'black',
+  renderOnAddRemove: false,
+  selection: false
+}
 
+function initDrawingAndUI(){
+  colors = makeColors();
+
+  canvas = new fabric.StaticCanvas('cvs', canvasSettings);
+  faderboxCanvas = new fabric.Canvas('faderbox',canvasSettings);
+  buttonBoxCanvas = new fabric.Canvas('buttonbox',canvasSettings);
+
+  calcAndDrawAllInstruments();
+  faderboxFunctionality();
+  buttonBoxFunctionality();
   for (var i = 0; i < sound.instruments.length; i++) {
     (function(){ // register buffer listener
       var instrument = sound.instruments[i];
@@ -84,14 +96,7 @@ function initDrawing(){
 }
 
 function calcAndDrawAllInstruments(){
-  if(canvas === null) {
-    canvas = new fabric.StaticCanvas('cvs', {
-      backgroundColor: 'black',
-      renderOnAddRemove: false,
-    });
-  } else {
-    canvas.clear();
-  }
+  canvas.clear();
 
   canvas.setWidth( window.innerWidth*0.75 );
   canvas.setHeight( window.innerHeight*0.70 );
@@ -262,7 +267,7 @@ function setupButton(which, settings) {
   });
 }
 
-function initFaderbox(){
+function drawFaderbox(){
   for (var i = 0; i < faderSetups.length; i++) {
     faderSetups[i].scaleY = faderboxCanvas.item(i).scaleY;
   }
@@ -271,14 +276,7 @@ function initFaderbox(){
   box.width = (window.innerWidth*0.25) - 20;
   box.sliderWidth = box.width / nrOfUIelements;
 
-  if( faderboxCanvas === null ) {
-    faderboxCanvas = new fabric.Canvas('faderbox', {
-      backgroundColor: 'black',
-      selection: false,
-    });
-  } else {
-    faderboxCanvas.clear();
-  }
+  faderboxCanvas.clear();
 
   faderboxCanvas.setWidth( box.width );
   faderboxCanvas.setHeight( box.height );
@@ -296,39 +294,32 @@ function initFaderbox(){
     faderboxCanvas.item(i).set(faderSetups[i]);
   }
   faderboxCanvas.renderAll();
-
-  if(typeof faderboxCanvas.__eventListeners === "undefined"){//make functional
-    faderboxCanvas.on({
-     'object:scaling': function(options) {
-        var fdr = options.target,
-            faderval;
-        if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
-        if ( fdr.controls !== 'none' ){
-         if( fdr.isExponential ) {
-           faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
-         } else {
-           faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
-         }
-         window[fdr.callbackFunction](faderval, fdr.instrument, fdr.controls);
-        }
-     },
-    });
-  }
 }
 
-function initButtonbox(){
+function faderboxFunctionality(){
+  faderboxCanvas.on({
+   'object:scaling': function(options) {
+      var fdr = options.target,
+          faderval;
+      if( fdr.scaleY > 1.3 ) fdr.scaleY = 1.3;
+      if ( fdr.controls !== 'none' ){
+       if( fdr.isExponential ) {
+         faderval = utilities.scaleExp(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+       } else {
+         faderval = utilities.scale(fdr.scaleY, 0.03, 1.3, fdr.range.low, fdr.range.high);
+       }
+       window[fdr.callbackFunction](faderval, fdr.instrument, fdr.controls);
+      }
+   },
+  });
+}
+
+function drawButtonbox(){
   for (var i = 0; i < buttonSetups.length; i++) { // rember state if resizing
     buttonSetups[i].state = buttonBoxCanvas.item(i).state;
   }
 
-  if( buttonBoxCanvas === null ) {
-    buttonBoxCanvas = new fabric.Canvas('buttonbox', {
-      backgroundColor: 'black',
-      selection: false,
-    });
-  } else {
-    buttonBoxCanvas.clear();
-  }
+  buttonBoxCanvas.clear();
 
   buttonBoxCanvas.setWidth( box.width );
   buttonBoxCanvas.setHeight( box.sliderWidth );
@@ -342,24 +333,24 @@ function initButtonbox(){
   }
 
   buttonBoxCanvas.renderAll();
+}
 
-  if(typeof buttonBoxCanvas.__eventListeners === "undefined"){//make functional
-    buttonBoxCanvas.on({
-     'mouse:down': function(options) {
-       if(options.target !== "undefined"){
-        var b = options.target;
-        b.state = !b.state;
-        b.fill = b.colors[ b.state ? 1 : 0 ];
-        buttonBoxCanvas.renderAll();
-        if (b.state && b.onOn !== null) {
-          b.onOn();
-        } else if (!b.state && b.onOff !== null){
-          b.onOff();
-        }
+function buttonBoxFunctionality(){
+  buttonBoxCanvas.on({
+   'mouse:down': function(options) {
+     if(options.target !== "undefined"){
+      var b = options.target;
+      b.state = !b.state;
+      b.fill = b.colors[ b.state ? 1 : 0 ];
+      buttonBoxCanvas.renderAll();
+      if (b.state && b.onOn !== null) {
+        b.onOn();
+      } else if (!b.state && b.onOff !== null){
+        b.onOff();
       }
-     },
-    });
-  }
+    }
+   },
+  });
 }
 
 var resizeTimer;
@@ -368,8 +359,8 @@ function initResize(){
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() { // do when resize is finished
       calcAndDrawAllInstruments();
-      initFaderbox();
-      initButtonbox();
+      drawFaderbox();
+      drawButtonbox();
     }, 250);
   });
 }
