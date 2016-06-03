@@ -107,13 +107,13 @@ var Instrument = null; // make accesible to help
     var that = this;
     this.start = function(){
       that.isPlaying = true;
-      that.synth.play();
+      // that.synth.play();
     };
     this.stop = function(){
       that.isPlaying = false;
-      that.synth.pause();
+      // that.synth.pause();
     };
-    this.synth.pause();
+    // this.synth.pause();
 
     this.detune = synthDef.pseudoSynth();
     this.offset = synthDef.pseudoSynth();
@@ -213,8 +213,18 @@ var Instrument = null; // make accesible to help
         fltr = "f"+this.noteOn.counter,
         fCtoff = fltr + ".cutoff",
         fMul = fltr + ".mul";
+        // envGate = 'env'+this.noteOn.counter+'.gate';
+
+    // this.synth.set(envGate, 1);
     this.synth.set(fCtoff, freq);
     this.synth.set(fMul, 0.2);
+
+    // (function(){
+    //   var that = this.synth;
+    //   setTimeout(function () {
+    //     that.set(envGate, 0);
+    //   }, 40);
+    // })();
 
     this.noteOn.counter++;
     if( this.noteOn.counter > synthDef.ffBankSize-1 ) this.noteOn.counter = 0;
@@ -271,8 +281,8 @@ var Instrument = null; // make accesible to help
   var tempoChangeListener = function(){
     if(changeTempo) {
       changeTempo = false;
-      synthDef.band.scheduler.clearAll();
-      synthDef.band.scheduler.clearAll(); // <- called twice to make sure that everything gets cleared
+      synthDef.clock.clearAll();
+      synthDef.clock.clearAll(); // <- called twice to make sure that everything gets cleared
       scheduleSequences(tempo);
     }
   }
@@ -281,10 +291,10 @@ var Instrument = null; // make accesible to help
     for (var i = 0; i < toSchedule.length; i++) {
       (function() {
         var temp = toSchedule[i];
-        synthDef.band.scheduler.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
+        synthDef.clock.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
       })();
     }
-    synthDef.band.scheduler.repeat(getBpm(tempo, '128n'),tempoChangeListener);
+    synthDef.clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
   }
 
   scheduleSequences();

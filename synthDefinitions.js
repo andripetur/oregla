@@ -11,39 +11,44 @@
     return flock.synth({
     nickName: "square-synth",
     synthDef: {
-      ugen: "flock.ugen.filter.moog",
-      id: 'filter',
-       cutoff: 8000,
-       resonance: 2,
-       source: {
-         ugen: 'flock.ugen.sum',
-         sources: [{
-           id: 'osc',
+      ugen: "flock.ugen.amplitude",
+      id: 'volume',
+      mul: 1,
+      source: {
+        ugen: "flock.ugen.filter.moog",
+        id: 'filter',
+         cutoff: 8000,
+         resonance: 2,
+         source: {
+           ugen: 'flock.ugen.sum',
+           sources: [{
+             id: 'osc',
+             ugen: "flock.ugen.saw",
+             mul: {
+               id: "env",
+               ugen: "flock.ugen.asr",
+               attack: 0.001,
+               sustain: 1,
+               release: 0.4,
+               gate: 0,
+             }
+           },
+           {
+           id: 'osc2',
            ugen: "flock.ugen.saw",
            mul: {
-             id: "env",
+             id: "env2",
              ugen: "flock.ugen.asr",
              attack: 0.001,
              sustain: 0.5,
              release: 0.4,
              gate: 0,
            }
-         },
-         {
-         id: 'osc2',
-         ugen: "flock.ugen.saw",
-         mul: {
-           id: "env2",
-           ugen: "flock.ugen.asr",
-           attack: 0.001,
-           sustain: 0.5,
-           release: 0.4,
-           gate: 0,
          }
-       }
-         ],
-       },
-      },
+           ],
+         },
+        },
+      }
     });
   }
 
@@ -136,7 +141,7 @@
         id: "f"+i,
         ugen: "flock.ugen.filter.moog",
         cutoff: 4000,
-        resonance: 8.6,
+        resonance: 8.9,
         source: {
          id: "n"+i,
          ugen: "flock.ugen.whiteNoise",
@@ -300,44 +305,7 @@
     }, 10);
   }
 
-  synthDef.band = flock.band({
-    components: {
-      pseudo: {
-        type: "flock.synth",
-        options: {
-          synthDef: {
-          id: 'osc',
-          ugen: "flock.ugen.saw",
-          mul: 0
-        }
-      }
-    },
-
-    scheduler: {
-      type: "flock.scheduler.async",
-      options: {
-        components: {
-          synthContext: "{pseudo}"
-        },
-
-        score: [{
-          interval: "once",
-          time: 1.0,
-          change: {
-            values: {
-              "osc": {
-                synthDef: {
-                  ugen: "flock.ugen.sequence",
-                  values: [0]
-                }
-              }
-            }
-          }
-        }]
-      }
-    }
-  }
-});
+  synthDef.clock = flock.scheduler.async();
 
 }());
 

@@ -88,7 +88,6 @@
     type: 'Sound',
     content: 'Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.',
     options: [ ['attack', 'float'],
-              ['decay', 'float'],
               ['sustain', 'float 0-1'],
               ['release', 'float'],
               ['t', 'time value'] ],
