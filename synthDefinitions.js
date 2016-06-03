@@ -162,12 +162,7 @@
     }
   })
 
-
-  sound.drums = {};
-  sound.drums.list = [ "kick", "snare", "hh", "perc"];
-  for (var d of sound.drums.list) sound.drums[d] = {};
-
-  sound.drums.kick.synth = flock.synth({
+  synthDef.kick = flock.synth({
     nickName: "kick",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -198,7 +193,7 @@
      },
   });
 
-  sound.drums.snare.synth = flock.synth({
+  synthDef.snare = flock.synth({
     nickName: "snare",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -234,7 +229,7 @@
     }
   });
 
-  sound.drums.hh.synth = flock.synth({
+  synthDef.hh = flock.synth({
     nickName: "hh",
     synthDef: {
       ugen: "flock.ugen.filter.biquad.bp",
@@ -265,7 +260,7 @@
     }
   });
 
-  sound.drums.perc.synth = flock.synth({
+  synthDef.perc = flock.synth({
     nickName: "perc",
     synthDef: {
       ugen: 'flock.ugen.distortion',
@@ -292,20 +287,6 @@
        },
      },
   });
-
-  sound.drums.play = function(which){
-    var on = { "volEnv.gate": 1 } , off = { "volEnv.gate": 0 };
-    if(which !== 'perc') {
-      on["pitchEnv.gate"] = 0;
-      off["pitchEnv.gate"] = 0;
-    }
-    sound.drums[which].synth.set( on );
-    setTimeout(function () {
-      sound.drums[which].synth.set( off );
-    }, 10);
-  }
-
-  synthDef.clock = flock.scheduler.async();
 
 }());
 
