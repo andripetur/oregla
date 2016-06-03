@@ -233,31 +233,76 @@ var Instrument = null; // make accesible to help
     sound.drums.stop();
   }
 
-  for (var drum of sound.drums.list) {
-    var c = new Sequencer("rhythm");     // copy sequencer into object
-    for (var foo in c) sound.drums[drum][foo] = c[foo];
+  sound.drums = {
+    isPlaying: false,
+    list: [ "kick", "snare", "hh", "perc"],
 
-    sound.drums[drum].newRhythm("fast",[5,utilities.randInt(4,9)]);
-    sound.drums[drum].isPlaying = sound.drums[drum].synth.isPlaying;
-    (sound.drums[drum].start = sound.drums[drum].synth.play)();
-    sound.drums[drum].stop = sound.drums[drum].synth.pause;
-  }
-
-  sound.drums.isPlaying = false;
-  sound.drums.start = function(){ sound.drums.isPlaying = true; }
-  sound.drums.stop = function(){ sound.drums.isPlaying = false; }
-
-  sound.drums.do = function() {
-    if(sound.drums.isPlaying){
-      for (var i = 0; i < sound.drums.list.length; i++) {
-        if( sound.drums[sound.drums.list[i]].trigger() && sound.drums[sound.drums.list[i]].isPlaying()){
-          sound.drums.play(sound.drums.list[i]);
+    start: function(){
+      sound.drums.isPlaying = true;
+    },
+    stop: function(){
+      sound.drums.isPlaying = false;
+    },
+    stopAll: function(){
+      for (var drum of sound.drums.list) sound.drums[drum].stop();
+      sound.drums.stop();
+    },
+    startAll: function(){
+      for (var drum of sound.drums.list) sound.drums[drum].start();
+      sound.drums.start();
+    },
+    play: function(which){
+      var on = { "volEnv.gate": 1 } , off = { "volEnv.gate": 0 };
+      if(which !== 'perc') {
+        on["pitchEnv.gate"] = 0;
+        off["pitchEnv.gate"] = 0;
+      }
+      sound.drums[which].synth.set( on );
+      setTimeout(function () {
+        sound.drums[which].synth.set( off );
+      }, 10);
+    },
+    do: function() {
+      if(sound.drums.isPlaying){
+        for (var i = 0; i < sound.drums.list.length; i++) {
+          if( sound.drums[sound.drums.list[i]].trigger() && sound.drums[sound.drums.list[i]].isPlaying){
+            sound.drums.play(sound.drums.list[i]);
+          }
         }
       }
     }
   };
 
+  function Drum(s){
+    this.synth = s;
+
+    var c = new Sequencer("rhythm");     // copy sequencer into object
+    for (var foo in c) this[foo] = c[foo];
+
+    this.newRhythm("fast",[5,utilities.randInt(4,9)]);
+    this.isPlaying = false;
+
+    var that = this; // so it can be called from other classes
+    this.start = function() {
+      if (!sound.drums.isPlaying){
+       for (var d of sound.drums.list) sound.drums[d].stop();
+       sound.drums.start();
+      }
+      that.isPlaying = true;
+    };
+
+    this.stop = function() {
+      that.isPlaying = false;
+    }
+  }
+
+  for (var drum of sound.drums.list) {
+    sound.drums[drum] = new Drum(synthDef[drum]);
+  }
+
   toSchedule.push(sound.drums);
+
+  var clock = flock.scheduler.async();
 
   var changeTempo = false;
   sound.setTempo = function(t) {
@@ -270,8 +315,8 @@ var Instrument = null; // make accesible to help
   var tempoChangeListener = function(){
     if(changeTempo) {
       changeTempo = false;
-      synthDef.clock.clearAll();
-      synthDef.clock.clearAll(); // <- called twice to make sure that everything gets cleared
+      clock.clearAll();
+      clock.clearAll(); // <- called twice to make sure that everything gets cleared
       scheduleSequences(tempo);
     }
   }
@@ -280,10 +325,10 @@ var Instrument = null; // make accesible to help
     for (var i = 0; i < toSchedule.length; i++) {
       (function() {
         var temp = toSchedule[i];
-        synthDef.clock.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
+        clock.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
       })();
     }
-    synthDef.clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
+    clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
   }
 
   scheduleSequences();
