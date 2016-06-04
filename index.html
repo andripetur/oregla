@@ -46,12 +46,15 @@
         drawButtonbox();
         initResize();
 
-        setupFader(0, {
-          "name": "piano",
-          "instrument": synthDef.piano,
-          "controls": "verb.mul",
-          "isExponential": true,
-        });
+        for (var i = 0; i < sound.instruments.length; i++) {
+          var synth = sound.instruments[i];
+          setupFader(i, {
+            "name": synth,
+            "instrument": sound[synth].synth,
+            "controls": 'vol.mul',
+            "isExponential": true,
+          });
+        }
 
         for (var i = 0; i < sound.instruments.length; i++) {
           setupButton(i, {
@@ -60,6 +63,7 @@
             onOff: sound[sound.instruments[i]].stop,
           });
         }
+        addFaderNames();
         </script>
     </body>
 </html>

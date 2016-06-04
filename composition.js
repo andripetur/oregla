@@ -79,46 +79,54 @@ var Instrument = null; // make accesible to help
     return val;
   }
 
-  function makeCoords(){
-    return { x: 0.1, y: 0.1,
-      a: utilities.randFloat(-100,100),
-      t: utilities.randFloat(-100,100),
-      b: utilities.randFloat(-100,100),
+  sound.makeCoords = function(){
+    return { x: 0.00001, y: 0.000001,
+      a: utilities.randFloat(-1000,1000),
+      t: utilities.randFloat(-1000,1000),
+      b: utilities.randFloat(-1000,1000),
       o: utilities.randInt(-1,1),
     }
   }
 
-  sound.instruments = [ "bass", "mel1", "mel2", "piano", "ambient"];
-  synthDef.pseudoSynth = function(){
-    return flock.synth({
-      synthDef: {
-        id: 'osc',
-        ugen: "flock.ugen.saw",
-        rate: "control",
-        freq: 100, // we use range 100-200, and scale it to 0-100 because 0 is weird
-        mul: 0 // keep it silent
+  sound.instruments = ["bass", "mel1", "mel2", "piano", "ambient"];
+
+  var instrumentDo = function() {
+    for (var i = 0; i < sound.instruments.length; i++) {
+      var instr = sound.instruments[i];
+      if( sound[instr].isPlaying ){
+        var n = sound[instr].getNote();
+        if(n > 0){
+          n = sound.scales.get().lockTo( n );
+          sound[instr].noteOn( n );
+        }
       }
-    });
+    }
   };
 
   Instrument = function( s ) {
     this.synth = s;
-    this.isPlaying = false;
-    var that = this;
+    var that = this,
+        pauseID = null;
+    that.isPlaying = false;
     this.start = function(){
+      clearTimeout(pauseID);
+      that.synth.play();
       that.isPlaying = true;
     };
     this.stop = function(){
       that.isPlaying = false;
+      pauseID = setTimeout(function(){
+        that.synth.pause() ; // give last note a chance to finish
+      }, timeUnitToSeconds('8n') * 1000);
     };
+    that.synth.pause();
 
     this.detune = synthDef.pseudoSynth();
     this.offset = synthDef.pseudoSynth();
-    var c = new Sequencer({});
-    for (var foo in c) this[foo] = c[foo];
 
     this.quickStart = function(){
-      this.fillChaosBuffer();
+      this.set(sound.makeCoords());
+      this.fillChaosBuffer({offset: utilities.randInt(0,1000)});
       this.mapBufferToNotes();
       this.newRhythm('fast', [utilities.randPrime(5),utilities.randPrime(10)]);
     };
@@ -129,6 +137,8 @@ var Instrument = null; // make accesible to help
     var v = synth.get(val);
     return typeof v === 'object' ? v.model.value : v;
   }
+
+  Instrument.prototype = new Sequencer();
 
   Instrument.prototype.noteOn = function( midi ) {
     var duration = duration || 200,
@@ -221,18 +231,12 @@ var Instrument = null; // make accesible to help
 
   sound.ambient.noteOn.counter = 0;
 
-  var toSchedule = [];
-  toSchedule.push(sound.bass);
-  toSchedule.push(sound.mel1);
-  toSchedule.push(sound.mel2);
-  toSchedule.push(sound.piano);
-  toSchedule.push(sound.ambient);
-
   sound.stopAll = function(){
     for (var i of sound.instruments) sound[i].stop();
     sound.drums.stop();
   }
 
+  var drumTimeouts = {};
   sound.drums = {
     isPlaying: false,
     list: [ "kick", "snare", "hh", "perc"],
@@ -248,24 +252,33 @@ var Instrument = null; // make accesible to help
       sound.drums.stop();
     },
     startAll: function(){
-      for (var drum of sound.drums.list) sound.drums[drum].start();
       sound.drums.start();
+      for (var drum of sound.drums.list) sound.drums[drum].start();
     },
+
     play: function(which){
-      var on = { "volEnv.gate": 1 } , off = { "volEnv.gate": 0 };
-      if(which !== 'perc') {
-        on["pitchEnv.gate"] = 0;
-        off["pitchEnv.gate"] = 0;
+      if (drumTimeouts.hasOwnProperty(which)) clearTimeout(drumTimeouts[which]);
+      var duration = getSynthValue(sound.drums[which].duration, 'osc.freq') - 100,
+          on = { "volEnv.gate": 1 , "pitchEnv.gate": 1} , off = { "volEnv.gate": 0 , "pitchEnv.gate": 0};
+
+      if(duration < 25) duration = 25;
+
+      if(which === 'perc') {
+        on["pitchEnv2.gate"] = 1;
+        off["pitchEnv2.gate"] = 0;
       }
+
       sound.drums[which].synth.set( on );
-      setTimeout(function () {
+
+      drumTimeouts[which] = setTimeout(function () {
         sound.drums[which].synth.set( off );
-      }, 10);
+      }, duration);
     },
+
     do: function() {
       if(sound.drums.isPlaying){
         for (var i = 0; i < sound.drums.list.length; i++) {
-          if( sound.drums[sound.drums.list[i]].trigger() && sound.drums[sound.drums.list[i]].isPlaying){
+          if( sound.drums[sound.drums.list[i]].isPlaying && sound.drums[sound.drums.list[i]].trigger()){
             sound.drums.play(sound.drums.list[i]);
           }
         }
@@ -274,14 +287,6 @@ var Instrument = null; // make accesible to help
   };
 
   function Drum(s){
-    this.synth = s;
-
-    var c = new Sequencer("rhythm");     // copy sequencer into object
-    for (var foo in c) this[foo] = c[foo];
-
-    this.newRhythm("fast",[5,utilities.randInt(4,9)]);
-    this.isPlaying = false;
-
     var that = this; // so it can be called from other classes
     this.start = function() {
       if (!sound.drums.isPlaying){
@@ -294,13 +299,44 @@ var Instrument = null; // make accesible to help
     this.stop = function() {
       that.isPlaying = false;
     }
+
+    this.synth = s;
+    this.duration = synthDef.pseudoSynth(20);
+
+    this.newRhythm("fast",[5,utilities.randInt(4,9)]);
+    this.isPlaying = false;
   }
+
+  Drum.prototype = new Sequencer("rhythm");
+
+  Drum.prototype.ampEnv = function(){
+    var options = argsToOptions(...arguments);
+    for (var parm in options) {
+      applyParameters(parm, options, [options[parm], this.synth, 'ampEnv.'+parm]);
+    }
+  };
+
+  Drum.prototype.pitchEnv = function(){
+    var options = argsToOptions(...arguments);
+    for (var parm in options) {
+      applyParameters(parm, options, [options[parm], this.synth, 'pitchEnv.'+parm]);
+      if(this.synth.options.nickName === "perc") {
+        applyParameters(parm, options, [options[parm], this.synth, 'pitchEnv2.'+parm]);
+      }
+    }
+  };
+
+  Drum.prototype.set = function(){
+    var options = argsToOptions(...arguments);
+    for (var parm in options) {
+      applyParameters(parm, options, [options[parm]+=100, this[parm], 'osc.freq']);
+    }
+  };
 
   for (var drum of sound.drums.list) {
     sound.drums[drum] = new Drum(synthDef[drum]);
+    sound[drum] = sound.drums[drum];
   }
-
-  toSchedule.push(sound.drums);
 
   var clock = flock.scheduler.async();
 
@@ -322,15 +358,10 @@ var Instrument = null; // make accesible to help
   }
 
   var scheduleSequences = function(bpm) {
-    for (var i = 0; i < toSchedule.length; i++) {
-      (function() {
-        var temp = toSchedule[i];
-        clock.repeat(getBpm(tempo, '8n'), function(){ temp.do(); });
-      })();
-    }
+    clock.repeat(getBpm(tempo, '8n'), sound.drums.do );
+    clock.repeat(getBpm(tempo, '8n'), instrumentDo );
     clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
   }
 
   scheduleSequences();
-
 }());

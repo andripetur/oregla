@@ -100,11 +100,12 @@ function calcAndDrawAllInstruments(){
 
   canvas.setWidth( window.innerWidth*0.75 );
   canvas.setHeight( window.innerHeight*0.70 );
-  var offsets = makeGrid(3, 2);
-  sound.instruments.push('drums');
+  var offsets = makeGrid(3, 2),
+      instCopy = sound.instruments.slice(0, sound.instruments.length);
+  instCopy.push('drums');
 
-  for (var i = 0; i < sound.instruments.length; i++) {
-    instrumentValues[sound.instruments[i]] = { // make group settings
+  for (var i = 0; i < instCopy.length; i++) {
+    instrumentValues[instCopy[i]] = { // make group settings
       left: offsets[i].l,
       top: offsets[i].t,
       fill: arrToColor(offsets[i].c, 0.5),
@@ -112,8 +113,6 @@ function calcAndDrawAllInstruments(){
       text: arrToColor(offsets[i].c, 0.75)
     };
   }
-
-  sound.instruments.pop();
 
   for (i of sound.instruments) drawInstrument(i);
   for (d of sound.drums.list) drawDrum(d);
@@ -232,6 +231,8 @@ function createButton(i){
     left: i * box.sliderWidth, top: 0,
     fill: arrToColor(colors[1], 0.75),
     hasControls: false,
+    lockMovementX: true,
+    lockMovementY: true,
     hoverCursor: 'default',
     stroke: 'black',
     borderColor: 'orange',
@@ -283,15 +284,21 @@ function drawFaderbox(){
 
   for (var i = 0; i < nrOfUIelements; i++) faderboxCanvas.add( createFader(i) );
 
+  for (var i = 0; i < faderSetups.length; i++) {
+    faderboxCanvas.item(i).set(faderSetups[i]);
+  }
+
+  if(faderSetups.length !== 0) addFaderNames();
+
+  faderboxCanvas.renderAll();
+}
+
+function addFaderNames(){
   for (var i = 0; i < nrOfUIelements; i++) {
     faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
     { left: (i+1) * box.sliderWidth, top: box.height-5 , angle: -90,
       fill: 'white', originY: 'bottom', fontSize: 15, selectable: false, fontFamily: "Menlo",
     }));
-  }
-
-  for (var i = 0; i < faderSetups.length; i++) {
-    faderboxCanvas.item(i).set(faderSetups[i]);
   }
   faderboxCanvas.renderAll();
 }

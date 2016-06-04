@@ -2,6 +2,9 @@
   "use strict";
   fluid.registerNamespace("utilities");
 
+  var randomStream = new Random(parseInt(Date().split(' ')[4].split(':').join(''))),
+      random = function(){ return randomStream.random(); };
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - Scaling and modifing nrs
   utilities.scale = function(i,il,ih,ol,oh) {
     return ((i - il) / (ih - il)) * (oh - ol) + ol;
@@ -49,11 +52,11 @@
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - Random functions
   utilities.randInt = function(low, high) {
-    return Math.floor(utilities.scale(Math.random(), 0, 1, low, high));
+    return Math.floor(utilities.scale(random(), 0, 1, low, high));
   }
 
   utilities.randFloat = function(low, high) {
-    return utilities.scale(Math.random(), 0, 1, low, high);
+    return utilities.scale(random(), 0, 1, low, high);
   }
 
   utilities.seq = function( low, high, stepSize ){

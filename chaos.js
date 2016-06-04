@@ -104,29 +104,17 @@ var Chaos = null;
   }
 
   Chaos.prototype.fillChaosBuffer = function( o ) {
-    var options = o || {
-      coords: { x: 0.1, y: 0.1,
-        a: utilities.randFloat(-100,100),
-        t: utilities.randFloat(-100,100),
-        b: utilities.randFloat(-100,100),
-        o: utilities.randInt(-1,1),
-        // a: 2,
-        // t: -100,
-        // b: 3,
-        // o: -1,
-      },
-      length: def.bufferLength,
-      // reorder: "distanceFromEachother"
-    };
+    var options = Object.assign({}, def.fillBufferSettings); // copy defaults
 
-    if( typeof options.coords !== "undefined"){
-      // Chaos.call(this, options.coords);
-      this.set(options.coords);
+    if( typeof o !== "undefined"){
+      for (var v in o) options[v] = o[v];
     }
 
-    if( typeof options.offset !== "undefined"){
-      for(var i=0; i<options.offset; i++) this.calculate();
-    }
+    options.coords = options.useOldCoords ? { x: 0.1, y: 0.1 } : sound.makeCoords();
+
+    this.set(options.coords);
+
+    for(var i=0; i<options.offset; i++) this.calculate();
 
     var b = [];
     for(var i=0; i<options.length; i++){
@@ -136,7 +124,7 @@ var Chaos = null;
       this.calculate();
     }
 
-    if( typeof options.reorder !== "undefined"){
+    if( options.reorder !== "none"){
       switch (options.reorder) {
         case "distanceFromCenter":
           b = reorderByDistanceFromCenter(b);
@@ -162,7 +150,7 @@ var Sequencer = null;
     this.stepSize = 1;
     if (this.seqType !== "rhythm") {
       this.notes = [];
-      var c = new Chaos({});
+      var c = new Chaos();
       for (var foo in c) this[foo] = c[foo];
     }
   }
@@ -170,7 +158,7 @@ var Sequencer = null;
   Sequencer.prototype = new Schillinger();
 
   Sequencer.prototype.getNote = function(){
-    if(this.restCounter === this.rhythm[this.pos % this.rhythm.length]){
+    if(this.restCounter > this.rhythm[this.pos % this.rhythm.length]){
       var n = this.notes[this.pos%this.notes.length];
       this.pos += this.stepSize;
       this.restCounter=0;
@@ -180,19 +168,9 @@ var Sequencer = null;
       return -1;
   }
 
-  Sequencer.prototype.do = function() {
-    if(this.isPlaying){
-      var n = this.getNote()
-      if(n > 0){
-        n = sound.scales.get().lockTo( n );
-        this.noteOn( n );
-      }
-    }
-  };
-
   Sequencer.prototype.trigger = function(){
-    if(this.restCounter === this.rhythm[this.pos % this.rhythm.length]){
-      this.pos++;
+    if(this.restCounter > this.rhythm[this.pos % this.rhythm.length]){
+      this.pos += this.stepSize;
       this.restCounter=0;
       return true;
     }

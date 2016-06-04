@@ -102,6 +102,7 @@ var Schillinger = null;
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
        this.beatCounter = 0;
+       this.pos = 0;
        return "new rhythm generated: " + r;
      } else {
        return r;

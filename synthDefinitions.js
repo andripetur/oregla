@@ -9,12 +9,11 @@
 
   synthDef.synth = function(){
     return flock.synth({
-    nickName: "square-synth",
     synthDef: {
-      // ugen: "flock.ugen.amplitude",
-      // id: 'volume',
-      // mul: 1,
-      // source: {
+      ugen: 'flock.ugen.out',
+      id: 'vol',
+      mul: 0.7,
+      sources: {
         ugen: "flock.ugen.filter.moog",
         id: 'filter',
          cutoff: 8000,
@@ -48,7 +47,7 @@
            ],
          },
         },
-      // }
+      }
     });
   }
 
@@ -61,7 +60,6 @@
       id = "pi-note-" + (i * 6);
       defs.push( { id: id, url: "./piano/" + note + ".wav" });
     }
-    // defs.push( {id: 'oboe', url: "./audio/oboe_C4.wav"});
     return defs;
   }
 
@@ -109,9 +107,9 @@
 
   synthDef.piano = flock.synth({
     synthDef: {
-      id: 'verb',
+      id: 'vol',
       ugen: 'flock.ugen.freeverb',
-      mul: pianoStartVol,
+      mul: 0.7,
       source: {
         ugen: 'flock.ugen.sum',
         sources: makePianoSamples(),
@@ -119,7 +117,6 @@
     }
   });
 
-  var pianoStartVol = 0.7637795275590551;
   synthDef.line = function(from, goTo, _t){
     var t = _t || 0.03;
     return {
@@ -155,8 +152,7 @@
 
   synthDef.ffb = flock.synth( {
     synthDef: {
-      // ugen: 'flock.ugen.freeverb',
-      // ugen: 'flock.ugen.distortion',
+      id: 'vol',
       ugen: 'flock.ugen.sum',
       sources: fillFilterBank(),
     }
@@ -172,7 +168,7 @@
          mul: {
            id: "volEnv",
            ugen: "flock.ugen.asr",
-           attack: 0.001,
+           attack: 0.003,
            sustain: 0.5,
            release: 0.4,
            mul: 0.9,
@@ -205,10 +201,9 @@
             id: "volEnv",
             ugen: "flock.ugen.asr",
             attack: 0.001,
-            sustain: 1,
+            sustain: 0.5,
             release: 0.4,
             gate: 0,
-            mul: 0.5,
           },
         },
 
@@ -238,7 +233,7 @@
         mul: {
           id: "volEnv",
           ugen: "flock.ugen.asr",
-          attack: 0.001,
+          attack: 0.003,
           sustain: 1,
           release: 0.02,
           gate: 0,
@@ -260,6 +255,20 @@
     }
   });
 
+  function percPitchEnv(i,pitch){
+    return {
+      id: "pitchEnv"+i,
+      ugen: "flock.ugen.asr",
+      start: 0,
+      attack: 1.2,
+      sustain: 0.5,
+      release: 0.2,
+      gate: 0,
+      mul: pitch*2,
+      add: pitch,
+    }
+  }
+
   synthDef.perc = flock.synth({
     nickName: "perc",
     synthDef: {
@@ -269,18 +278,18 @@
          sources: [{
              ugen: "flock.ugen.square",
              mul: 0.5,
-             freq: 587
+             freq: percPitchEnv("", 587)
            },
            {
              ugen: "flock.ugen.square",
              mul: 0.5,
-             freq: 845
+             freq: percPitchEnv(2, 845)
            }],
        },
        mul: {
          id: "volEnv",
          ugen: "flock.ugen.asr",
-         attack: 0.001,
+         attack: 0.003,
          sustain: 0.5,
          release: 0.2,
          gate: 0,
@@ -288,6 +297,18 @@
      },
   });
 
+  synthDef.pseudoSynth = function(_init){
+    var init = _init + 100 || 100;
+    return flock.synth({
+      synthDef: {
+        id: 'osc',
+        ugen: "flock.ugen.saw",
+        rate: "control",
+        freq: init, // we use range 100-200, and scale it to 0-100 because 0 is weird
+        mul: 0 // keep it silent
+      }
+    });
+  };
 }());
 
 function setSynthdefValue(v,instrument,controls, t){

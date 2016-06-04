@@ -17,17 +17,13 @@ var initConsole = null;
     window.jqconsole = $('#console').jqconsole(header, '>>> ');
     $('.jqconsole-header').append( '<a class=docLink href=documentation.html target=_blank>Documentation</a>\n');
 
-    // load history from cookies
-    if(document.cookie !== ""){
-        try{
-         jqconsole.history = JSON.parse(document.cookie);
-         jqconsole.history_index = jqconsole.history.length;
-       } catch (e) { // if the json craps out we just nuke it.
-         document.cookie = "";
-       }
+    // load history from localStorage
+    if(typeof localStorage.history !== "undefined"){
+       jqconsole.history = localStorage.history.split(';');
+       jqconsole.history_index = jqconsole.history.length;
      }
 
-     var shortcuts = {};
+    var shortcuts = {};
 
     shortcuts['ctrl+z'] = "Abort prompt."
     jqconsole.RegisterShortcut('Z', function() {
@@ -106,7 +102,7 @@ var initConsole = null;
             jqconsole.Write('ERROR: ' + e.message + '\n');
           }
         }
-        document.cookie = JSON.stringify(jqconsole.history);
+        localStorage.history = jqconsole.history.join(';');
       }
       jqconsole.Prompt(true, handler, function(command) {
         // Continue line if can't compile the command.
