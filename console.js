@@ -1,7 +1,8 @@
 var initConsole = null;
+var initSuggestions = null;
 
 (function(){
-  propStartingWith = function (obj, prefix) {
+  var propStartingWith = function (obj, prefix) {
     var res = [];
     for(var m in obj) {
       if(m.indexOf(prefix) === 0) {
@@ -10,6 +11,30 @@ var initConsole = null;
     }
     return res;
   };
+
+  var originalWindow = [];
+  initSuggestions = function() {
+    // copy a reference for every object in sound to window
+    for (var foo in sound) window[foo] = sound[foo];
+
+    // save originalWindow
+    for (var foo in window) originalWindow.push(foo);
+  }
+
+  function somethingAddedToWindow(){
+    var newWindow = [];
+    for (var foo in window) newWindow.push(foo);
+
+    for (var i = 0; i < originalWindow.length; i++) {
+      newWindow.splice(newWindow.indexOf(originalWindow[i]), 1);
+    }
+
+    for (var i = 0; i < newWindow.length; i++) { // add new things to sound. so it can be suggested
+      originalWindow.push(newWindow[i]);
+      sound[newWindow[i]] = window[newWindow[i]];
+    }
+    console.log(newWindow)
+  }
 
   initConsole = function() {
     // Creating the console.
@@ -53,7 +78,7 @@ var initConsole = null;
       highlightSelectedSuggestion();
     });
 
-    shortcuts['ctrl+w'] = "Move selected suggestion down."
+    shortcuts['ctrl+s'] = "Move selected suggestion down."
     jqconsole.RegisterShortcut('s', function() { // move suggestionDown
       selectedSuggestion++;
       if(selectedSuggestion > $('.suggest div').size()) selectedSuggestion = 0;
@@ -94,15 +119,12 @@ var initConsole = null;
         try {
           jqconsole.Write('==> ' + window.eval(command) + '\n');
         } catch (e) {
-          try { // if it fails check first if it will run on sound object
-            jqconsole.Write('==> ' + window.eval('sound.'+command) + '\n');
-            // TODO maybe add regex to handle if we are trying to compile
-            // something else than single function.
-          } catch (ee) {
-            jqconsole.Write('ERROR: ' + e.message + '\n');
-          }
+          jqconsole.Write('ERROR: ' + e.message + '\n');
         }
         localStorage.history = jqconsole.history.join(';');
+        if(/var|=|function/.test(command)){
+          somethingAddedToWindow();
+        }
       }
       jqconsole.Prompt(true, handler, function(command) {
         // Continue line if can't compile the command.

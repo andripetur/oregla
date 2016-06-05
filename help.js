@@ -40,6 +40,22 @@
   Schillinger.prototype.mirrorIntervals.help = mirror;
   Schillinger.prototype.mirrorRhythm.help = mirror;
 
+  var sort = {
+    title: 'Sort',
+    type: 'Modifier',
+    content: 'Sort based on given type of sort.',
+    options: [ ["ascending", "low to high"],
+            ["descending", "high to low"],
+            ["average-deviation-ascending", "delta from avg h2l"],
+            ["average-deviation-descending", , "delta from avg l2h"],
+            ["wondrous-ascending", "howWonderous h2l"],
+            ["wondrous-descending", "howWonderous l2h"]]
+  };
+
+  Schillinger.prototype.sortNotes.help = sort;
+  Schillinger.prototype.sortIntervals.help = sort;
+  Schillinger.prototype.sortRhythm.help = sort;
+
   // Chaos.js----------------------------------------------------------------------
   Chaos.prototype.getAllFromBuffer.help = {
     title: 'Get all from buffer',
@@ -96,7 +112,7 @@
   Instrument.prototype.filter.help = {
     title: 'Filter',
     type: 'Sound',
-    content: 'Edit the parameters of the filter.',
+    content: 'Edit the filter. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.',
     options: [ ['cutoff', 'frequence'],
               ['resonance', 'float'],
               ['t', 'time value'] ],
@@ -105,7 +121,7 @@
   Instrument.prototype.oscillators.help = {
     title: 'Oscillators',
     type: 'Sound',
-    content: 'Edit the parameters of the oscillators.',
+    content: 'Edit the oscillators. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.',
     options: [ ['detune', 'float 0-100'],
               ['offset', 'int'],
               ['t', 'time value'] ],

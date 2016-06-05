@@ -1,4 +1,5 @@
 // default settings of (ó)regla
+// TODO : make user editable
 var def = {
   scale: "ionian",
   tempo: 80,

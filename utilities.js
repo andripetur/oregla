@@ -72,6 +72,43 @@
     return primes[utilities.randInt(0, underNth)];
   }
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - Wondrous
+  function makeWondrousArray(){
+    var wondrous = [0], n, cntr;
+
+    for (var i = 1; i < 128; i++) {
+      cntr = 0;
+      n = i;
+
+      while (n !== 1) {
+        if(n & 1){ // is odd
+          n*=3;
+          n++;
+        } else {
+          n*=0.5;
+        }
+        cntr++;
+      }
+
+      wondrous.push(cntr)
+    }
+    return wondrous;
+  }
+
+  // Calculate if not in localstorage
+  if(typeof localStorage.wondrous === "undefined"){
+    var wondrous = makeWondrousArray();
+    localStorage.wondrous = wondrous;
+  } else { // load from localstorage
+    var wondrous = localStorage.wondrous.split(',').map(function(el){ return parseInt(el); });
+  }
+
+  utilities.howWonderous = function(nr){
+    if(nr > 127) nr = 127;
+    if(nr < 0) nr = 0;
+    return wondrous[nr];
+  }
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - Misc
   utilities.pythagoras = function(a,b) {
     return Math.sqrt((a*a) + (b*b));

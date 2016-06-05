@@ -38,9 +38,9 @@ var Schillinger = null;
   };
 
   var interferenceOfMonomials = function(){ // as many as you want, last determines type
-    var args = utilities.argumentsToArray(arguments);
-    var type = args.pop();
-    var cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
+    var args = utilities.argumentsToArray(arguments),
+        type = args.pop(),
+        cd = args.reduce(function(a,b){ return a * b; }); // commonDenominator
 
     if(type === 'slow' ) {
       var t = args.map( function(el){ return monomialPeriodicGroup(el, cd); } ); // interference
@@ -85,8 +85,8 @@ var Schillinger = null;
       function(a,b){ return a - b;
     });
 
-    var revSortedSeq = sortedArr.slice(0,sortedArr.length).reverse();
-    var dict = {};
+    var revSortedSeq = sortedArr.slice(0,sortedArr.length).reverse(),
+        dict = {};
 
     for (var i = 0; i < arr.length; i++) {
       dict[sortedArr[i]] = revSortedSeq[i];
@@ -96,14 +96,76 @@ var Schillinger = null;
     return arr.map(function(n){ return dict[n] });
   }
 
+  var sort = function(arr, type){
+    var sortFunction;
+
+    switch (type) {
+      case "asc":
+      case "ascending":
+        sortFunction = function(a,b){
+          return a - b;
+        }
+        break;
+      case "desc":
+      case "descending":
+        sortFunction = function(a,b){
+          return b - a;
+        }
+        break;
+
+      case "avg-dev-asc":
+      case "average-deviation-ascending":
+        var avg = arr.reduce( function(a,b) { return a+b; })/arr.length;
+        sortFunction = function(a,b){
+          return Math.abs(avg - a) - Math.abs(avg - b);
+        }
+        break;
+      case "avg-dev-desc":
+      case "average-deviation-descending":
+        var avg = arr.reduce( function(a,b) { return a+b; })/arr.length;
+        sortFunction = function(a,b){
+          return Math.abs(avg - b) - Math.abs(avg - a);
+        }
+        break;
+
+      case "wond-asc":
+      case "wondrous-ascending":
+        sortFunction = function(a,b){
+          return utilities.howWonderous(a) - utilities.howWonderous(b);
+        }
+        break;
+      case "wond-desc":
+      case "wondrous-descending":
+        sortFunction = function(a,b){
+          return utilities.howWonderous(b) - utilities.howWonderous(a);
+        }
+        break;
+      // case "real-length":
+      // case "realnumbers-length":
+      //   var arr2 = [];
+      //   for (var i = 0; i < arr.length; i+=2) {
+      //     arr2.push(utilities.pythagoras( arr[i], arr[ i+1 < arr.length ? i+1 : 0 ] ));
+      //   }
+      //   sortFunction = function(a,b){
+      //     return utilities.howWonderous(b) - utilities.howWonderous(a);
+      //   }
+      //   break;
+    }
+
+    return arr.sort(sortFunction);
+  };
+
   // accessable to public
-  Schillinger.prototype.newRhythm = function(type,monomials){
-    var r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
+  Schillinger.prototype.newRhythm = function(_t,_m){
+    var type = _t || "slow",
+        monomials = _m || [utilities.randPrime(5),utilities.randPrime(10)],
+        r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
+
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
        this.beatCounter = 0;
        this.pos = 0;
-       return "new rhythm generated: " + r;
+       return "New "+type+" rhythm generated from monomials: "+monomials+"\n    " + r;
      } else {
        return r;
      }
@@ -125,6 +187,7 @@ var Schillinger = null;
   };
 
   Schillinger.prototype.multiplyIntervals = function(multi){
+    if(typeof multi === "undefined") return "Oeps, this function needs an argument."
     var intervals = fromNotesToIntervals(this.notes);
 
     intervals = intervals.map(function(el, indx) {
@@ -136,7 +199,8 @@ var Schillinger = null;
     return "Intervals multiplied by: " + multi + "amount.";
   };
 
-  Schillinger.prototype.transpose = function(delta){
+  Schillinger.prototype.transpose = function(_d){
+    if(typeof _d === "undefined") return "Oeps, this function needs an argument."
     this.notes = this.notes.map(function(n){ return n + delta; });
     return "Transposed by: " + delta + " semitones";
   };
@@ -144,6 +208,7 @@ var Schillinger = null;
   Schillinger.prototype.clampToRange = function(low, high){
     //if note exceeds range, it's transposed an octave down until it reaches allowed range,
     // if note is below range ,transpose it up, into range
+    if(typeof low === "undefined" || typeof high === "undefined") return "Oeps, this function needs two arguments."
     this.notes = this.notes.map( function( el ) {
       if( el < low ) {
         var octavesToMove = Math.ceil((low - el) / 12);
@@ -171,6 +236,21 @@ var Schillinger = null;
   Schillinger.prototype.mirrorRhythm = function(){
     this.rhythm = mirror(this.rhythm);
     return "Rhythm mirrored."
+  };
+
+  Schillinger.prototype.sortNotes = function(type){
+    this.notes = sort(this.notes, type);
+    return "Notes sorted."
+  };
+
+  Schillinger.prototype.sortIntervals = function(type){
+    this.notes = fromIntervalsToNotes(sort(fromNotesToIntervals(this.notes), type));
+    return "Intervals sorted."
+  };
+
+  Schillinger.prototype.sortRhythm = function(type){
+    this.rhythm = sort(this.rhythm, type);
+    return "Rhythm sorted."
   };
 
 })();

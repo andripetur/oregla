@@ -103,6 +103,8 @@ var Chaos = null;
     });
   }
 
+  // TODO implement if only one non-default argument
+  // copy default buffer into instrument, update the object
   Chaos.prototype.fillChaosBuffer = function( o ) {
     var options = Object.assign({}, def.fillBufferSettings); // copy defaults
 

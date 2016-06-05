@@ -130,7 +130,9 @@ var Instrument = null; // make accesible to help
       this.mapBufferToNotes();
       this.newRhythm('fast', [utilities.randPrime(5),utilities.randPrime(10)]);
     };
-    this.quickStart()
+    if(def.quickStartEnabled){
+      this.quickStart();
+    }
   }
 
   function getSynthValue(synth, val){
