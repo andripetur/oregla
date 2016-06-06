@@ -454,9 +454,9 @@ var Instrument = null; // make accesible to help
   }
 
   var disco = {
-    kick:  utilities.seq(0,15).map(function(i){ return (i % 4 === 0) ? 1 : 0; }),
-    snare:  utilities.seq(0,15).map(function(i){ return (i % 4 === 2) ? 1 : 0; }),
-    hh:  utilities.seq(0,15).map(function(i){ return (i % 2 === 1) ? 1 : 0; }),
+    kick:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 0) ? 1 : 0; }),
+    snare:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 2) ? 1 : 0; }),
+    hh:  Array(16).fill(0).map(function(n,i){ return (i % 2 === 1) ? 1 : 0; }),
   }
 
   function loadPreset(preset){
@@ -466,5 +466,5 @@ var Instrument = null; // make accesible to help
     }
   }
 
-  loadPreset(amen);
+  loadPreset(disco);
 }());

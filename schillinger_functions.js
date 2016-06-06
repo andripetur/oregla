@@ -67,6 +67,14 @@ var Schillinger = null;
     return fromNotesToIntervals(indxs); // check distance beetween changes
   };
 
+  Schillinger.impulsesToNumerators = function(_p){
+    var p = utilities.copyArr(_p);
+    p.push(1); // add one at the end so last chunk is counted
+    var indeces = utilities.getAllIndexesOf(p,1);
+    if(indeces[0] === 0) indeces.splice(0,1); // remove zero
+    return fromNotesToIntervals(indeces);
+  }
+
   var fromNotesToIntervals = function(notes) {
     return notes.map(function(el,i,arr){
       return i == 0 ? el : el - arr[i-1];

@@ -157,13 +157,19 @@ function drawInstrument(instrument, _buffer){
 
 function drawDrum(drum, _r){ // optional to pass the rhythm values
   var squares = [],
-      r = _r || sound.drums[drum].rhythm,
+      bin = _r || sound.drums[drum].rhythm,
+      r = Schillinger.impulsesToNumerators(bin),
       rLength = r.reduce(function(a,b){ return a+b; }),
-      w = makeGrid.w/rLength,
+      w = (makeGrid.w * 0.9)/rLength,
       h = makeGrid.h/sound.drums.list.length,
       pos = 0,
       groupValues = Object.assign({}, instrumentValues["drums"]);
     groupValues.top += sound.drums.list.indexOf(drum)*h;
+    if(bin[0] === 0) { // not everything begins at once
+      groupValues.left += r[0]*w;
+      var offset = r.splice(0,1)[0];
+      r[r.length-1] += offset; // stick the offset on front to the last note
+    }
 
     squares.push(...r.map(function(el,indx,arr){
       if(indx !== 0) pos += (w*arr[indx-1]);
@@ -257,7 +263,7 @@ var buttonNr = function(i){
 var faderboxCanvas = null,
     buttonBoxCanvas = null,
     box = {
-      nrOfElements: 8,
+      nrOfElements: 10,
       calc: function() {
         this.height = window.innerHeight*0.25;
         this.width = (window.innerWidth*0.25) - 20;
