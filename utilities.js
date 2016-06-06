@@ -110,6 +110,18 @@
   }
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - Misc
+  utilities.copyObj = function(ob) {
+    return Object.assign({}, coords);
+  }
+
+  utilities.copyArr = function(arr){
+    return arr.slice(0, arr.length);
+  }
+
+  utilities.getTime = function(){
+    return (new Date()).getTime();
+  }
+
   utilities.pythagoras = function(a,b) {
     return Math.sqrt((a*a) + (b*b));
   }

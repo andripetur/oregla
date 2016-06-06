@@ -2,10 +2,18 @@ var initConsole = null;
 var initSuggestions = null;
 
 (function(){
+  // some keywords will not be suggested, but are still reachable via the console
+  var suggestionBlacklist = [
+    'trigger', 'do', 'seqType', // Sequencer
+    'calculate', 'buffer', // Chaos
+    'synth', 'detune', 'offset', // Instrument class
+    'duration' // Drum class
+  ];
+
   var propStartingWith = function (obj, prefix) {
     var res = [];
     for(var m in obj) {
-      if(m.indexOf(prefix) === 0) {
+      if(m.indexOf(prefix) === 0 && !suggestionBlacklist.includes(m)) {
         res.push(m);
       }
     }
@@ -33,7 +41,7 @@ var initSuggestions = null;
       originalWindow.push(newWindow[i]);
       sound[newWindow[i]] = window[newWindow[i]];
     }
-    console.log(newWindow)
+    // console.log(newWindow)
   }
 
   initConsole = function() {
@@ -110,6 +118,14 @@ var initSuggestions = null;
       jqconsole.Write('\n');
     });
 
+    // create a print function
+    var isPrinting = false;
+    window.print = function(str) {
+      var string = str || "";
+      isPrinting = true;
+      jqconsole.Write('==> ' + string + '\n');
+    }
+
     jqconsole.RegisterMatching('{', '}', 'brace');
     jqconsole.RegisterMatching('(', ')', 'paran');
     jqconsole.RegisterMatching('[', ']', 'bracket');
@@ -117,8 +133,14 @@ var initSuggestions = null;
     var handler = function(command) {
       if (command) {
         try {
-          jqconsole.Write('==> ' + window.eval(command) + '\n');
+          var returns = window.eval(command);
+          if(!isPrinting) {
+            jqconsole.Write('==> ' + returns + '\n');
+          } else {
+            isPrinting = false;
+          }
         } catch (e) {
+          isPrinting = false;
           jqconsole.Write('ERROR: ' + e.message + '\n');
         }
         localStorage.history = jqconsole.history.join(';');
@@ -193,8 +215,8 @@ var initSuggestions = null;
       isParenthesisd = false;
       suggestionObject = window;
 
-       // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
-      if (text.match(/[\(\)\{\}\=]/)) { // bail on [], (), and =
+      // TODO if there are paranthesis, begin suggestions from start, so add input to functions)
+      if (text.match(/[\s\(\)\{\}\=]/)) { // bail on [], (), = and whitespace
         isParenthesisd = true;
         return -1;
       }
@@ -257,6 +279,7 @@ var initSuggestions = null;
         return false;
       }
     });
+
     // Initiate the first prompt.
     handler();
   }

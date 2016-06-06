@@ -7,13 +7,13 @@ var Chaos = null;
   Chaos = function( _coords ){
     var coords = _coords || { x: 0.1, y: 0.1, a: 0, t: -4.1, b: 15, o: 1 };
     this.buffer = [];
-    this.getCoords = function(){
-      return coords;
-    };
-    this.get = function(w){
+    this.getCoord = function(w){
       return coords[w];
     };
-    this.set = function(w){
+    this.getCoords = function(w){
+      return utilities.copyObj(coords);
+    };
+    this.setCoords = function(w){
       for (var v in w) coords[v] = w[v];
     };
 
@@ -114,14 +114,14 @@ var Chaos = null;
 
     options.coords = options.useOldCoords ? { x: 0.1, y: 0.1 } : sound.makeCoords();
 
-    this.set(options.coords);
+    this.setCoords(options.coords);
 
     for(var i=0; i<options.offset; i++) this.calculate();
 
     var b = [];
     for(var i=0; i<options.length; i++){
-      b.push( { x: this.get('x'), y: this.get('y'),
-        length: utilities.pythagoras(this.get('x'), this.get('y'))
+      b.push( { x: this.getCoord('x'), y: this.getCoord('y'),
+        length: utilities.pythagoras(this.getCoord('x'), this.getCoord('y'))
       });
       this.calculate();
     }

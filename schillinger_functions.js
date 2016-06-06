@@ -200,7 +200,8 @@ var Schillinger = null;
   };
 
   Schillinger.prototype.transpose = function(_d){
-    if(typeof _d === "undefined") return "Oeps, this function needs an argument."
+    if(typeof _d === "undefined") return "Oeps, this function needs an argument.";
+    var delta = _d;
     this.notes = this.notes.map(function(n){ return n + delta; });
     return "Transposed by: " + delta + " semitones";
   };

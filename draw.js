@@ -70,6 +70,7 @@ function initDrawingAndUI(){
   buttonBoxCanvas = new fabric.Canvas('buttonbox',canvasSettings);
 
   calcAndDrawAllInstruments();
+  box.calc();
   faderboxFunctionality();
   buttonBoxFunctionality();
   for (var i = 0; i < sound.instruments.length; i++) {
@@ -189,9 +190,9 @@ function createFader(i){
     range: { low: 0, high: 1 },
     callbackFunction: "setSynthdefValue",
     // look
-    width: box.sliderWidth, height: box.height*0.75,
+    width: box.elWidth, height: box.height*0.75,
     originY: "bottom",
-    left: i * box.sliderWidth, top: box.height,
+    left: i * box.elWidth, top: box.height,
     fill: arrToColor(colors[1], 0.75),
     lockRotation: true,
     lockMovementX: true,
@@ -201,7 +202,7 @@ function createFader(i){
     hasControls: true,
     transparentCorners: false,
     cornerColor: 'white',
-    cornerSize: box.sliderWidth * 0.5,
+    cornerSize: box.elWidth * 0.5,
     hoverCursor: 'default',
     borderScaleFactor: 2,
     stroke: 'black',
@@ -219,6 +220,14 @@ function createFader(i){
 
 // faderbox
 function createButton(i){
+  var c = new fabric.Circle({
+    radius: box.elWidth * 0.3,
+    left: (i * box.elWidth) + (box.elWidth*0.5), top: box.elWidth*0.5,
+    originY: 'center', originX: 'center',
+    fill: arrToColor(colors[1], 0.75),
+    stroke: arrToColor(colors[0], 0.75),
+  });
+
   var b = new fabric.Rect({
     // functionality
     name: 'button'+(i+1),
@@ -227,8 +236,8 @@ function createButton(i){
     onOn: null,
     onOff: null,
     // look
-    width: box.sliderWidth, height: box.sliderWidth,
-    left: i * box.sliderWidth, top: 0,
+    width: box.elWidth, height: box.elWidth,
+    left: i * box.elWidth, top: 0,
     fill: arrToColor(colors[1], 0.75),
     hasControls: false,
     lockMovementX: true,
@@ -238,29 +247,39 @@ function createButton(i){
     borderColor: 'orange',
   });
 
-  return b;
+  buttonBoxCanvas.add( c, b );
 }
 
-var nrOfUIelements = 8,
-    faderboxCanvas = null,
+var buttonNr = function(i){
+  return i+i+1;
+}
+
+var faderboxCanvas = null,
     buttonBoxCanvas = null,
-    box = {},
+    box = {
+      nrOfElements: 8,
+      calc: function() {
+        this.height = window.innerHeight*0.25;
+        this.width = (window.innerWidth*0.25) - 20;
+        this.elWidth = box.width / box.nrOfElements;
+      }
+    },
     faderSetups = [],
     buttonSetups = [];
 
-for (var i = 0; i < nrOfUIelements; i++) nrOfUIelements[i] = { scaleY: 1 };
+for (var i = 0; i < box.nrOfElements; i++) box.nrOfElements[i] = { scaleY: 1 };
 function setupFader(which, settings) {
   faderboxCanvas.item(which).set(settings);
   faderSetups[which] = settings;
 }
 
 function setupButton(which, settings) {
-  buttonBoxCanvas.item(which).set(settings);
+  buttonBoxCanvas.item(buttonNr(which)).set(settings);
   buttonSetups[which] = settings;
   // register object listener
   var nr = which;
   sound[settings.instrument].watch('isPlaying', function(prop,oldval,newval){
-    var b = buttonBoxCanvas.item(nr);
+    var b = buttonBoxCanvas.item(buttonNr(which));
     b.state = newval;
     b.fill = b.colors[ b.state ? 1 : 0 ];
     buttonBoxCanvas.renderAll();
@@ -272,17 +291,12 @@ function drawFaderbox(){
   for (var i = 0; i < faderSetups.length; i++) {
     faderSetups[i].scaleY = faderboxCanvas.item(i).scaleY;
   }
-
-  box.height = window.innerHeight*0.25;
-  box.width = (window.innerWidth*0.25) - 20;
-  box.sliderWidth = box.width / nrOfUIelements;
-
   faderboxCanvas.clear();
 
   faderboxCanvas.setWidth( box.width );
   faderboxCanvas.setHeight( box.height );
 
-  for (var i = 0; i < nrOfUIelements; i++) faderboxCanvas.add( createFader(i) );
+  for (var i = 0; i < box.nrOfElements; i++) faderboxCanvas.add( createFader(i) );
 
   for (var i = 0; i < faderSetups.length; i++) {
     faderboxCanvas.item(i).set(faderSetups[i]);
@@ -294,9 +308,9 @@ function drawFaderbox(){
 }
 
 function addFaderNames(){
-  for (var i = 0; i < nrOfUIelements; i++) {
+  for (var i = 0; i < box.nrOfElements; i++) {
     faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
-    { left: (i+1) * box.sliderWidth, top: box.height-5 , angle: -90,
+    { left: (i+1) * box.elWidth, top: box.height-5 , angle: -90,
       fill: 'white', originY: 'bottom', fontSize: 15, selectable: false, fontFamily: "Menlo",
     }));
   }
@@ -323,18 +337,18 @@ function faderboxFunctionality(){
 
 function drawButtonbox(){
   for (var i = 0; i < buttonSetups.length; i++) { // rember state if resizing
-    buttonSetups[i].state = buttonBoxCanvas.item(i).state;
+    buttonSetups[i].state = buttonBoxCanvas.item(buttonNr(i)).state;
   }
 
   buttonBoxCanvas.clear();
 
   buttonBoxCanvas.setWidth( box.width );
-  buttonBoxCanvas.setHeight( box.sliderWidth );
+  buttonBoxCanvas.setHeight( box.elWidth );
 
-  for (var i = 0; i < nrOfUIelements; i++) buttonBoxCanvas.add( createButton(i) );
+  for (var i = 0; i < box.nrOfElements; i++) createButton(i);
 
-  for (var i = 0; i < faderSetups.length; i++) {
-    var b = buttonBoxCanvas.item(i);
+  for (var i = 0; i < buttonSetups.length; i++) {
+    var b = buttonBoxCanvas.item(buttonNr(i));
     b.set(buttonSetups[i]);
     b.fill = b.colors[ b.state ? 1 : 0 ];
   }
@@ -366,6 +380,7 @@ function initResize(){
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() { // do when resize is finished
       calcAndDrawAllInstruments();
+      box.calc()
       drawFaderbox();
       drawButtonbox();
     }, 250);

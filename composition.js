@@ -79,6 +79,10 @@ var Instrument = null; // make accesible to help
     return val;
   }
 
+  var timeUnitToMilliseconds = function(unit){
+    return timeUnitToSeconds(unit) * 1000;
+  }
+
   sound.makeCoords = function(){
     return { x: 0.00001, y: 0.000001,
       a: utilities.randFloat(-1000,1000),
@@ -125,7 +129,7 @@ var Instrument = null; // make accesible to help
     this.offset = synthDef.pseudoSynth();
 
     this.quickStart = function(){
-      this.set(sound.makeCoords());
+      this.setCoords(sound.makeCoords());
       this.fillChaosBuffer({offset: utilities.randInt(0,1000)});
       this.mapBufferToNotes();
       this.newRhythm('fast', [utilities.randPrime(5),utilities.randPrime(10)]);
@@ -307,6 +311,8 @@ var Instrument = null; // make accesible to help
 
     this.newRhythm("fast",[5,utilities.randInt(4,9)]);
     this.isPlaying = false;
+
+    //TODO add cheat patterns: 4 on the floor, amen break, blue monday, 
   }
 
   Drum.prototype = new Sequencer("rhythm");
@@ -357,12 +363,86 @@ var Instrument = null; // make accesible to help
       clock.clearAll(); // <- called twice to make sure that everything gets cleared
       scheduleSequences(tempo);
     }
+    sound.schedule.do();
   }
 
   var scheduleSequences = function(bpm) {
     clock.repeat(getBpm(tempo, '8n'), sound.drums.do );
     clock.repeat(getBpm(tempo, '8n'), instrumentDo );
     clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
+  }
+
+  var repeatArr = [],
+      onceArr = [];
+
+  var addToSchedulingArr = function(foo,t,n,isRepeat){
+    var arr = isRepeat ? repeatArr : onceArr;
+    arr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) });
+  }
+
+  sound.schedule = {
+    repeat: function(foo, t, n){ addToSchedulingArr(...arguments, true); },
+    once: function(foo, t, n){ addToSchedulingArr(...arguments, false); },
+
+    clear: function(name){
+      var cntr = 0;
+      for (var i = 0; i < onceArr.length; i++) {
+        if(onceArr[i].name === name){
+          onceArr.splice(i--,1);
+          cntr++;
+        }
+      }
+      for (var i = 0; i < repeatArr.length; i++) {
+        if(repeatArr[i].name === name){
+          repeatArr.splice(i--,1);
+          cntr++;
+        }
+      }
+
+      if(cntr > 0){
+        return "Cleared "+ cntr+ " scheduled events with name: " + name + ".";
+      } else {
+        return "No events found with name: " + name + ".";
+      }
+    },
+
+    clearAll: function(){
+      repeatArr = [];
+      onceArr = [];
+      return "Schedule cleared!"
+    },
+
+    do: function(){
+      var currentTime = utilities.getTime();
+
+      for (var i = 0; i < onceArr.length; i++) {
+        if((currentTime - onceArr[i].id) >= onceArr[i].time){
+          try {
+            onceArr[i].function();
+          } catch (e) {
+            console.log('Once function failed with error: ');
+            console.log(e);
+          }
+          onceArr.splice(i--,1); // remove from arr and do this index again
+        }
+      }
+
+      for (var i = 0; i < repeatArr.length; i++) {
+        if((currentTime - repeatArr[i].id) >= repeatArr[i].time){
+          try {
+            repeatArr[i].function();
+            repeatArr[i].id = currentTime;
+          } catch (e) {
+            console.log('Repeat function failed with error: ');
+            console.log(e);
+            console.log('Scheduling cancelled: ');
+            repeatArr.splice(i--,1); // remove from arr and do this index again
+          }
+        }
+      }
+
+
+    }
   }
 
   scheduleSequences();
