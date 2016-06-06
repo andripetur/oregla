@@ -147,9 +147,7 @@ var Sequencer = null;
   Sequencer = function(t){
     this.seqType = t || "melodic";
     this.rhythm = [];
-    this.restCounter = 0;
     this.pos = 0;
-    this.stepSize = 1;
     if (this.seqType !== "rhythm") {
       this.notes = [];
       var c = new Chaos();
@@ -160,24 +158,15 @@ var Sequencer = null;
   Sequencer.prototype = new Schillinger();
 
   Sequencer.prototype.getNote = function(){
-    if(this.restCounter > this.rhythm[this.pos % this.rhythm.length]){
-      var n = this.notes[this.pos%this.notes.length];
-      this.pos += this.stepSize;
-      this.restCounter=0;
-      return n + 36;
-    }
-      this.restCounter++;
-      return -1;
+    var res = this.rhythm[this.pos % this.rhythm.length] ? 36 + this.notes[this.pos%this.notes.length] : -1;
+    this.pos++;
+    return res;
   }
 
   Sequencer.prototype.trigger = function(){
-    if(this.restCounter > this.rhythm[this.pos % this.rhythm.length]){
-      this.pos += this.stepSize;
-      this.restCounter=0;
-      return true;
-    }
-      this.restCounter++;
-      return false;
+    var res = this.rhythm[this.pos % this.rhythm.length] ? true : false;
+    this.pos++;
+    return res;
   }
 
   Sequencer.prototype.mapBufferToNotes = function(o) {

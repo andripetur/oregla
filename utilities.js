@@ -60,7 +60,7 @@
   }
 
   utilities.seq = function( low, high, stepSize ){
-    var seq=[];
+    var seq=[], stepSize = stepSize || 1;
     for (var i = low; i < high+stepSize; i+=stepSize) seq.push(i);
     return seq;
   }
@@ -116,6 +116,10 @@
 
   utilities.copyArr = function(arr){
     return arr.slice(0, arr.length);
+  }
+
+  utilities.shiftArrRight = function(arr, steps){
+    for (var i = 0; i < steps; i++) arr.push(arr.splice(0,1)[0]);
   }
 
   utilities.getTime = function(){

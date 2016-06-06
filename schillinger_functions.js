@@ -156,14 +156,16 @@ var Schillinger = null;
   };
 
   // accessable to public
-  Schillinger.prototype.newRhythm = function(_t,_m){
+  Schillinger.prototype.newRhythm = function(_t,_m,_s){
     var type = _t || "slow",
         monomials = _m || [utilities.randPrime(5),utilities.randPrime(10)],
-        r = seriesToNumerators(interferenceOfMonomials(...monomials,type));
+        shift = _s || 0,
+        r = fromMonomialsToImpulse(interferenceOfMonomials(...monomials,type));
 
+    r[0] = 1;
+    if(shift > 0) utilities.shiftArrRight(r,shift);
     if( typeof this.rhythm !== "undefined"){
        this.rhythm = r;
-       this.beatCounter = 0;
        this.pos = 0;
        return "New "+type+" rhythm generated from monomials: "+monomials+"\n    " + r;
      } else {

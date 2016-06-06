@@ -258,12 +258,12 @@ var Instrument = null; // make accesible to help
       sound.drums.stop();
     },
     startAll: function(){
+      for (var i = 0; i < sound.drums.list.length; i++) sound.drums[sound.drums.list[i]].start();
       sound.drums.start();
-      for (var drum of sound.drums.list) sound.drums[drum].start();
     },
 
     play: function(which){
-      if (drumTimeouts.hasOwnProperty(which)) clearTimeout(drumTimeouts[which]);
+      // if (drumTimeouts.hasOwnProperty(which)) clearTimeout(drumTimeouts[which]);
       var duration = getSynthValue(sound.drums[which].duration, 'osc.freq') - 100,
           on = { "volEnv.gate": 1 , "pitchEnv.gate": 1} , off = { "volEnv.gate": 0 , "pitchEnv.gate": 0};
 
@@ -309,10 +309,8 @@ var Instrument = null; // make accesible to help
     this.synth = s;
     this.duration = synthDef.pseudoSynth(20);
 
-    this.newRhythm("fast",[5,utilities.randInt(4,9)]);
+    this.newRhythm("fast",[5,utilities.randInt(4,9)], utilities.randInt(0,2));
     this.isPlaying = false;
-
-    //TODO add cheat patterns: 4 on the floor, amen break, blue monday, 
   }
 
   Drum.prototype = new Sequencer("rhythm");
@@ -320,7 +318,7 @@ var Instrument = null; // make accesible to help
   Drum.prototype.ampEnv = function(){
     var options = argsToOptions(...arguments);
     for (var parm in options) {
-      applyParameters(parm, options, [options[parm], this.synth, 'ampEnv.'+parm]);
+      applyParameters(parm, options, [options[parm], this.synth, 'volEnv.'+parm]);
     }
   };
 
@@ -361,28 +359,29 @@ var Instrument = null; // make accesible to help
       changeTempo = false;
       clock.clearAll();
       clock.clearAll(); // <- called twice to make sure that everything gets cleared
+      sound.schedule.clear('instrument')
+      sound.schedule.clear('drums')
       scheduleSequences(tempo);
     }
     sound.schedule.do();
   }
 
   var scheduleSequences = function(bpm) {
-    clock.repeat(getBpm(tempo, '8n'), sound.drums.do );
-    clock.repeat(getBpm(tempo, '8n'), instrumentDo );
     clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
+    sound.schedule.repeat(sound.drums.do, '8n', 'drums')
+    sound.schedule.repeat(instrumentDo, '8n', 'instrument')
   }
 
   var repeatArr = [],
       onceArr = [];
 
-  var addToSchedulingArr = function(foo,t,n,isRepeat){
-    var arr = isRepeat ? repeatArr : onceArr;
-    arr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) });
-  }
-
   sound.schedule = {
-    repeat: function(foo, t, n){ addToSchedulingArr(...arguments, true); },
-    once: function(foo, t, n){ addToSchedulingArr(...arguments, false); },
+    repeat: function(foo, t, n){
+      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) })
+    },
+    once: function(foo, t, n){
+      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) })
+    },
 
     clear: function(name){
       var cntr = 0;
@@ -446,4 +445,26 @@ var Instrument = null; // make accesible to help
   }
 
   scheduleSequences();
+
+  //TODO add cheat patterns: blue monday,
+  var amen = {
+    hh: (new Schillinger()).newRhythm('fast', [2,4,8]),
+    snare: [0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0,1,0],
+    kick: [1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0]
+  }
+
+  var disco = {
+    kick:  utilities.seq(0,15).map(function(i){ return (i % 4 === 0) ? 1 : 0; }),
+    snare:  utilities.seq(0,15).map(function(i){ return (i % 4 === 2) ? 1 : 0; }),
+    hh:  utilities.seq(0,15).map(function(i){ return (i % 2 === 1) ? 1 : 0; }),
+  }
+
+  function loadPreset(preset){
+    for (var v in preset) {
+      sound.drums[v].rhythm = utilities.copyArr(preset[v]);
+      sound.drums[v].pos = 0;
+    }
+  }
+
+  loadPreset(amen);
 }());
