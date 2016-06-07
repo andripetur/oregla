@@ -27,8 +27,16 @@
       <div id='title'><br>(ó)regla<br>&nbsp;</div>
 
         <canvas id="cvs"></canvas>
-        <canvas id="faderbox" class="uibox"></canvas>
-        <canvas id="buttonbox" class="uibox"></canvas>
+        <div id=mixer>
+          Mixer
+          <canvas id="faderbox"></canvas>
+          <canvas id="buttonbox"></canvas>
+          <table><tr> <!-- names -->
+            <td>bss</td><td>ml1</td><td>ml2</td><td>pno</td><td>amb</td>
+            <td>drm</td><td>kik</td><td>snr</td><td>hih</td><td>prc</td>
+          </tr></table>
+        </div>
+
         <div id="help">
           <div id=help-title class="help">Hi there!</div>
           <div id=help-content class="help h-content">> I'm the help window! I'll do my best to present you with useful suggestions and not go all paperclip on your ass...
@@ -50,19 +58,48 @@
           setupFader(i, {
             "name": synth,
             "instrument": sound[synth].synth,
-            "controls": 'vol.mul',
-            "isExponential": true,
+          });
+        }
+
+        // drumbus
+        setupFader(i++, {
+          "name": "drums",
+          "instrument": synthDef.drumBus,
+        });
+
+        var o = i; // offset
+        for (var i = 0; i < sound.drums.list.length; i++) {
+          var drum = sound.drums.list[i];
+          setupFader(i+o, {
+            "name": drum,
+            "instrument": sound.drums[drum].synth,
           });
         }
 
         for (var i = 0; i < sound.instruments.length; i++) {
           setupButton(i, {
-            instrument: sound.instruments[i],
+            instrument: sound[sound.instruments[i]],
             onOn: sound[sound.instruments[i]].start,
             onOff: sound[sound.instruments[i]].stop,
           });
         }
-        addFaderNames();
+
+        setupButton(i++, { // drumbus
+          instrument: sound.drums,
+          onOn: sound.drums.start,
+          onOff: sound.drums.stop,
+        });
+
+        var o = i; // offset
+        for (var i = 0; i < sound.drums.list.length; i++) {
+          var drum = sound.drums.list[i];
+          setupButton(i+o, {
+            "instrument": sound.drums[drum],
+            onOn: sound.drums[drum].start,
+            onOff: sound.drums[drum].stop,
+          });
+        }
+
         initSuggestions();
         </script>
     </body>

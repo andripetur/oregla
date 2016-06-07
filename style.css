@@ -17,14 +17,22 @@ body {
   top: 5%;
   left: 0%;
   text-align: center;
-  /*background: ghostwhite;*/
   background: url(imgs/paper.jpg);
   width: calc(25% - 16px);
 }
 
-.uibox{
-  width: calc(25% - 12px);
+#mixer {
+  width: calc(25% - 20px);
   border: 2px solid #CCC;
+  padding-top: 1vh;
+  border-top: none;
+  font-size: 1vw;
+  text-align: center;
+}
+
+table {
+  text-align: center;
+  width: 100%;
 }
 
 #cvs {

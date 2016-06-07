@@ -57,7 +57,7 @@ function makeGrid( colls, rows ) {
 }
 
 var canvasSettings = {
-  backgroundColor: 'black',
+  backgroundColor: 'rgba(0,0,0,0)',
   renderOnAddRemove: false,
   selection: false
 }
@@ -134,6 +134,22 @@ function addName(instrument, _color){
   }));
 }
 
+// function addMixerText(){
+//   var text = new fabric.Text("Mixer", {
+//     left: faderboxCanvas.getCenter().left,
+//     top: 15,
+//     originX: "center",
+//     fontFamily: "Menlo",
+//     fontSize: 15,
+//     selectable: false,
+//     hoverCursor: 'default',
+//     fill: "white"
+//   });
+//
+//   faderboxCanvas.add( text );
+//   // text.sendToBack();
+// }
+
 function drawInstrument(instrument, _buffer){
   var buffer = _buffer || sound[instrument].buffer,
       xrange = utilities.range(buffer.map(function(p){ return p.x; })),
@@ -190,9 +206,8 @@ function createFader(i){
   var f = new fabric.Rect({
     // functionality
     name: 'slider'+(i+1),
-    controls: 'none',
-    onInstrument: 'none',
-    isExponential: false,
+    controls: 'vol.mul',
+    isExponential: true,
     range: { low: 0, high: 1 },
     callbackFunction: "setSynthdefValue",
     // look
@@ -279,12 +294,12 @@ function setupFader(which, settings) {
   faderSetups[which] = settings;
 }
 
-function setupButton(which, settings) {
+function setupButton(which, settings, monitor) {
   buttonBoxCanvas.item(buttonNr(which)).set(settings);
   buttonSetups[which] = settings;
   // register object listener
   var nr = which;
-  sound[settings.instrument].watch('isPlaying', function(prop,oldval,newval){
+  settings.instrument.watch('isPlaying', function(prop,oldval,newval){
     var b = buttonBoxCanvas.item(buttonNr(which));
     b.state = newval;
     b.fill = b.colors[ b.state ? 1 : 0 ];
@@ -308,18 +323,6 @@ function drawFaderbox(){
     faderboxCanvas.item(i).set(faderSetups[i]);
   }
 
-  if(faderSetups.length !== 0) addFaderNames();
-
-  faderboxCanvas.renderAll();
-}
-
-function addFaderNames(){
-  for (var i = 0; i < box.nrOfElements; i++) {
-    faderboxCanvas.add( new fabric.Text(faderboxCanvas.item(i).name,
-    { left: (i+1) * box.elWidth, top: box.height-5 , angle: -90,
-      fill: 'white', originY: 'bottom', fontSize: 15, selectable: false, fontFamily: "Menlo",
-    }));
-  }
   faderboxCanvas.renderAll();
 }
 

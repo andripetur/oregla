@@ -149,8 +149,8 @@ var Instrument = null; // make accesible to help
   Instrument.prototype.noteOn = function( midi ) {
     var duration = duration || 200,
         freq = flock.midiFreq(midi),
-        detune = getSynthValue(this.detune, 'osc.freq') - 100,
-        osc2Offset = Math.round(getSynthValue(this.offset, 'osc.freq') - 100),
+        detune = getSynthValue(this.detune, 'line.mul') - 100,
+        osc2Offset = Math.round(getSynthValue(this.offset, 'line.mul') - 100),
         freq2 = flock.midiFreq(midi + osc2Offset) * Math.pow(2, (detune)/1200);
 
     this.synth.set({
@@ -206,7 +206,7 @@ var Instrument = null; // make accesible to help
   Instrument.prototype.oscillators = function(){
     var options = argsToOptions(...arguments);
     for (var parm in options) {
-      applyParameters(parm, options, [options[parm]+=100, this[parm], 'osc.freq']);
+      applyParameters(parm, options, [options[parm]+=100, this[parm], 'line.mul']);
     }
   }
 
@@ -264,7 +264,7 @@ var Instrument = null; // make accesible to help
 
     play: function(which){
       // if (drumTimeouts.hasOwnProperty(which)) clearTimeout(drumTimeouts[which]);
-      var duration = getSynthValue(sound.drums[which].duration, 'osc.freq') - 100,
+      var duration = getSynthValue(sound.drums[which].duration, 'line.mul') - 100,
           on = { "volEnv.gate": 1 , "pitchEnv.gate": 1} , off = { "volEnv.gate": 0 , "pitchEnv.gate": 0};
 
       if(duration < 25) duration = 25;
@@ -335,7 +335,7 @@ var Instrument = null; // make accesible to help
   Drum.prototype.set = function(){
     var options = argsToOptions(...arguments);
     for (var parm in options) {
-      applyParameters(parm, options, [options[parm]+=100, this[parm], 'osc.freq']);
+      applyParameters(parm, options, [options[parm]+=100, this[parm], 'line.mul']);
     }
   };
 

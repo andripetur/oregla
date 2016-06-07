@@ -161,48 +161,98 @@
   synthDef.kick = flock.synth({
     nickName: "kick",
     synthDef: {
-      ugen: 'flock.ugen.distortion',
-        source: {
-         id: 'osc',
-         ugen: "flock.ugen.sinOsc",
-         mul: {
-           id: "volEnv",
-           ugen: "flock.ugen.asr",
-           attack: 0.003,
-           sustain: 0.5,
-           release: 0.4,
-           mul: 0.9,
-         },
+      ugen: "flock.ugen.out",
+      id: 'vol',
+      mul: 0.7,
+      bus: 5,
+      sources: {
+        ugen: 'flock.ugen.distortion',
+          source: {
+           id: 'osc',
+           ugen: "flock.ugen.sinOsc",
+           mul: {
+             id: "volEnv",
+             ugen: "flock.ugen.asr",
+             attack: 0.003,
+             sustain: 0.5,
+             release: 0.4,
+             mul: 0.9,
+           },
 
-         freq: {
-           id: "pitchEnv",
-           ugen: "flock.ugen.asr",
-           attack: 0.001,
-           sustain: 0.1,
-           release: 0.2,
-           gate: 0,
-           mul: 1000,
-           add: 60,
+           freq: {
+             id: "pitchEnv",
+             ugen: "flock.ugen.asr",
+             attack: 0.001,
+             sustain: 0.1,
+             release: 0.2,
+             gate: 0,
+             mul: 1000,
+             add: 60,
+           },
          },
+         gain: 3,
        },
-       gain: 2,
-     },
+     }
   });
 
   synthDef.snare = flock.synth({
     nickName: "snare",
     synthDef: {
-      ugen: 'flock.ugen.distortion',
-      source: {
+      ugen: "flock.ugen.out",
+      id: 'vol',
+      mul: 0.7,
+      bus: 5,
+      sources: {
+        ugen: 'flock.ugen.distortion',
+        source: {
+          ugen: "flock.ugen.filter.biquad.bp",
+          source: {
+            ugen: "flock.ugen.whiteNoise",
+            mul: {
+              id: "volEnv",
+              ugen: "flock.ugen.asr",
+              attack: 0.001,
+              sustain: 1,
+              release: 0.4,
+              gate: 0,
+            },
+          },
+
+          freq: {
+            id: "pitchEnv",
+            ugen: "flock.ugen.asr",
+            attack: 0.001,
+            sustain: 0.1,
+            release: 0.2,
+            gate: 0,
+            mul: 18000,
+            add: 400,
+          },
+
+          q: 2.0
+        },
+        gain: 2
+      }
+    }
+  });
+
+  synthDef.hh = flock.synth({
+    nickName: "hh",
+    synthDef: {
+      ugen: "flock.ugen.out",
+      id: 'vol',
+      mul: 0.7,
+      bus: 5,
+      sources: {
         ugen: "flock.ugen.filter.biquad.bp",
         source: {
           ugen: "flock.ugen.whiteNoise",
           mul: {
             id: "volEnv",
             ugen: "flock.ugen.asr",
-            attack: 0.001,
-            sustain: 0.5,
-            release: 0.4,
+            attack: 0.003,
+            sustain: 1,
+            release: 0.02,
             gate: 0,
           },
         },
@@ -211,47 +261,15 @@
           id: "pitchEnv",
           ugen: "flock.ugen.asr",
           attack: 0.001,
-          sustain: 0.1,
-          release: 0.2,
-          gate: 0,
-          mul: 18000,
-          add: 400,
-        },
-
-        q: 2.0
-      },
-      gain: 2
-    }
-  });
-
-  synthDef.hh = flock.synth({
-    nickName: "hh",
-    synthDef: {
-      ugen: "flock.ugen.filter.biquad.bp",
-      source: {
-        ugen: "flock.ugen.whiteNoise",
-        mul: {
-          id: "volEnv",
-          ugen: "flock.ugen.asr",
-          attack: 0.003,
           sustain: 1,
           release: 0.02,
           gate: 0,
+          mul: 9000,
+          add: 2000,
         },
-      },
 
-      freq: {
-        id: "pitchEnv",
-        ugen: "flock.ugen.asr",
-        attack: 0.001,
-        sustain: 1,
-        release: 0.02,
-        gate: 0,
-        mul: 9000,
-        add: 2000,
-      },
-
-      q: 3.0
+        q: 3.0
+      }
     }
   });
 
@@ -272,40 +290,57 @@
   synthDef.perc = flock.synth({
     nickName: "perc",
     synthDef: {
-      ugen: 'flock.ugen.distortion',
-        source: {
-         ugen: "flock.ugen.sum",
-         sources: [{
-             ugen: "flock.ugen.square",
-             mul: 0.5,
-             freq: percPitchEnv("", 587)
-           },
-           {
-             ugen: "flock.ugen.square",
-             mul: 0.5,
-             freq: percPitchEnv(2, 845)
-           }],
+      ugen: "flock.ugen.out",
+      id: 'vol',
+      mul: 0.7,
+      bus: 5,
+      sources: {
+        ugen: 'flock.ugen.distortion',
+          source: {
+           ugen: "flock.ugen.sum",
+           sources: [{
+               ugen: "flock.ugen.square",
+               mul: 0.5,
+               freq: percPitchEnv("", 587)
+             },
+             {
+               ugen: "flock.ugen.square",
+               mul: 0.5,
+               freq: percPitchEnv(2, 845)
+             }],
+         },
+         mul: {
+           id: "volEnv",
+           ugen: "flock.ugen.asr",
+           attack: 0.003,
+           sustain: 1,
+           release: 0.2,
+           gate: 0,
+         },
        },
-       mul: {
-         id: "volEnv",
-         ugen: "flock.ugen.asr",
-         attack: 0.003,
-         sustain: 0.5,
-         release: 0.2,
-         gate: 0,
-       },
-     },
+     }
+  });
+
+  synthDef.drumBus = flock.synth({
+    synthDef: {
+      ugen: 'flock.ugen.out',
+      id: 'vol',
+      mul: 0.7,
+      sources: {
+        ugen: 'flock.ugen.in',
+        bus: 5
+      }
+    }
   });
 
   synthDef.pseudoSynth = function(_init){
     var init = _init + 100 || 100;
     return flock.synth({
       synthDef: {
-        id: 'osc',
-        ugen: "flock.ugen.saw",
+        ugen: 'flock.ugen.out',
         rate: "control",
-        freq: init, // we use range 100-200, and scale it to 0-100 because 0 is weird
-        mul: 0 // keep it silent
+        id: 'line',
+        mul: init,
       }
     });
   };
