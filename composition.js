@@ -62,21 +62,19 @@ var Instrument = null; // make accesible to help
   }
 
   var timeUnitToSeconds = function(unit){
-    var val;
     if (unit.includes('n')) {
-      val = getBpm(tempo, unit);
+      return getBpm(tempo, unit);
     } else if (unit.includes('b')) { // convert bars to seconds
       var barLength = getBpm(tempo, signature.lower) * signature.upper,
           nrOfBars = parseFloat(unit.replace('b', ''));
-      val = barLength * nrOfBars;
+      return barLength * nrOfBars;
     } else if(unit.includes('s') && !unit.includes('m')) {
-      val = parseFloat(unit.replace('s', ''));
+      return parseFloat(unit.replace('s', ''));
     } else if(unit.includes('ms')) {
-      val = parseFloat(unit.replace('ms', ''))/1000;
+      return parseFloat(unit.replace('ms', ''))/1000;
     } else if(unit.includes('m') && !unit.includes('s')) {
-      val = parseFloat(unit.replace('s', ''))*60;
+      return parseFloat(unit.replace('s', ''))*60;
     }
-    return val;
   }
 
   var timeUnitToMilliseconds = function(unit){
@@ -359,8 +357,6 @@ var Instrument = null; // make accesible to help
       changeTempo = false;
       clock.clearAll();
       clock.clearAll(); // <- called twice to make sure that everything gets cleared
-      sound.schedule.clear('instrument')
-      sound.schedule.clear('drums')
       scheduleSequences(tempo);
     }
     sound.schedule.do();
@@ -368,8 +364,6 @@ var Instrument = null; // make accesible to help
 
   var scheduleSequences = function(bpm) {
     clock.repeat(getBpm(tempo, '128n'),tempoChangeListener);
-    sound.schedule.repeat(sound.drums.do, '8n', 'drums')
-    sound.schedule.repeat(instrumentDo, '8n', 'instrument')
   }
 
   var repeatArr = [],
@@ -377,10 +371,10 @@ var Instrument = null; // make accesible to help
 
   sound.schedule = {
     repeat: function(foo, t, n){
-      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) })
+      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: t })
     },
     once: function(foo, t, n){
-      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: timeUnitToMilliseconds(t) })
+      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: t })
     },
 
     clear: function(name){
@@ -399,42 +393,61 @@ var Instrument = null; // make accesible to help
       }
 
       if(cntr > 0){
-        return "Cleared "+ cntr+ " scheduled events with name: " + name + ".";
+        return "Cleared "+ cntr +" scheduled events with name: " + name + ".";
       } else {
         return "No events found with name: " + name + ".";
       }
     },
 
     clearAll: function(){
-      repeatArr = [];
+      repeatArr.splice(2,repeatArr.length); // first two are system repeats
       onceArr = [];
       return "Schedule cleared!"
+    },
+
+    show: function(){
+      if ( repeatArr.length === 2 && onceArr.length < 1) {
+        return "No scheduled events to show."
+      } else {
+        if(repeatArr.length > 2) {
+          print('Repeats scheduled:');
+          for (var i = 2; i < repeatArr.length; i++) {
+            print('    '+repeatArr[i].name);
+          }
+        }
+        if(onceArr.length > 0){
+          print('Once scheduled:');
+          for (var i = 0; i < onceArr.length; i++) {
+            print('    '+onceArr[i].name);
+          }
+        }
+      }
     },
 
     do: function(){
       var currentTime = utilities.getTime();
 
       for (var i = 0; i < onceArr.length; i++) {
-        if((currentTime - onceArr[i].id) >= onceArr[i].time){
+        if((currentTime - onceArr[i].id) >= timeUnitToMilliseconds(onceArr[i].time)){
           try {
             onceArr[i].function();
           } catch (e) {
-            console.log('Once function failed with error: ');
-            console.log(e);
+            print('Once function failed with error: ');
+            print(e);
           }
           onceArr.splice(i--,1); // remove from arr and do this index again
         }
       }
 
       for (var i = 0; i < repeatArr.length; i++) {
-        if((currentTime - repeatArr[i].id) >= repeatArr[i].time){
+        if((currentTime - repeatArr[i].id) >= timeUnitToMilliseconds(repeatArr[i].time)){
           try {
             repeatArr[i].function();
             repeatArr[i].id = currentTime;
           } catch (e) {
-            console.log('Repeat function failed with error: ');
-            console.log(e);
-            console.log('Scheduling cancelled: ');
+            print('Repeat function failed with error: ');
+            print(e);
+            print('Scheduling cancelled: ');
             repeatArr.splice(i--,1); // remove from arr and do this index again
           }
         }
@@ -445,26 +458,31 @@ var Instrument = null; // make accesible to help
   }
 
   scheduleSequences();
+  sound.schedule.repeat(sound.drums.do, '8n', 'drums_schedule');
+  sound.schedule.repeat(instrumentDo, '8n', 'instrument_schedule');
 
   //TODO add cheat patterns: blue monday,
-  var amen = {
-    hh: (new Schillinger()).newRhythm('fast', [2,4,8]),
-    snare: [0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0,1,0],
-    kick: [1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0]
+  var drumPatterns = {
+    amen: {
+      hh: (new Schillinger()).newRhythm('fast', [2,4,8]),
+      snare: [0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0,1,0],
+      kick: [1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0]
+    },
+
+    disco: {
+      kick:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 0) ? 1 : 0; }),
+      snare:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 2) ? 1 : 0; }),
+      hh:  Array(16).fill(0).map(function(n,i){ return (i % 2 === 1) ? 1 : 0; }),
+    }
+
   }
 
-  var disco = {
-    kick:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 0) ? 1 : 0; }),
-    snare:  Array(16).fill(0).map(function(n,i){ return (i % 4 === 2) ? 1 : 0; }),
-    hh:  Array(16).fill(0).map(function(n,i){ return (i % 2 === 1) ? 1 : 0; }),
-  }
-
-  function loadPreset(preset){
-    for (var v in preset) {
-      sound.drums[v].rhythm = utilities.copyArr(preset[v]);
+  sound.loadDrumPattern = function(p){
+    if (typeof drumPatterns[p] === "undefined") return "drum pattern name not valid."
+    for (var v in drumPatterns[p]) {
+      sound.drums[v].rhythm = utilities.copyArr(drumPatterns[p][v]);
       sound.drums[v].pos = 0;
     }
+    return "pattern loaded"
   }
-
-  loadPreset(disco);
 }());

@@ -6,7 +6,7 @@ var initSuggestions = null;
   var suggestionBlacklist = [
     'trigger', 'do', 'seqType', // Sequencer
     'calculate', 'buffer', // Chaos
-    'synth', 'detune', 'offset', // Instrument class
+    'synth', 'isPlaying', 'detune', 'offset', // Instrument class
     'duration' // Drum class
   ];
 

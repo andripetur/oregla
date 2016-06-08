@@ -127,4 +127,52 @@
               ['t', 'time value'] ],
   };
 
+  // Instrument.start.help = {
+  //   title: 'Start',
+  //   type: 'Schedule',
+  //   content: 'The instruments sequence starts playing.',
+  // }
+  //
+  // Drum.start.help = {
+  //   title: 'Start',
+  //   type: 'Schedule',
+  //   content: 'The drums sequence starts playing.',
+  // }
+
+  sound.drums.start.help = {
+    title: 'Start',
+    type: 'Schedule',
+    content: 'The drum sequences start playing, individual drum states remain the same.',
+  }
+
+  sound.drums.startAll.help = {
+    title: 'Start all',
+    type: 'Schedule',
+    content: 'All drums start playing.',
+  }
+  //
+  // Instrument.stop.help = {
+  //   title: 'Stop',
+  //   type: 'Schedule',
+  //   content: 'The instruments sequence stops playing.',
+  // }
+  //
+  // Drum.stop.help = {
+  //   title: 'Stop',
+  //   type: 'Schedule',
+  //   content: 'The drums sequence stops playing.',
+  // }
+
+  sound.drums.stop.help = {
+    title: 'Stop',
+    type: 'Schedule',
+    content: 'The drum sequences stop playing, individual drum states remain the same.',
+  }
+
+  sound.drums.stopAll.help = {
+    title: 'Stop all',
+    type: 'Schedule',
+    content: 'All drums stop playing.',
+  }
+
 })();
