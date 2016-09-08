@@ -24,6 +24,9 @@
             <td>drm</td><td>kik</td><td>snr</td><td>hih</td><td>prc</td>
           </tr></table>
         </div>
+        <div id=sequencerContainer>
+          <div id='lpseq'></div>
+        </div>
 
         <div id="help">
           <div id=help-title class="help">Hi there!</div>
@@ -40,6 +43,7 @@
         drawFaderbox();
         drawButtonbox();
         initResize();
+        initLpSeq();
 
         for (var i = 0; i < sound.instruments.length; i++) {
           var synth = sound.instruments[i];

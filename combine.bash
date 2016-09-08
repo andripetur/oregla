@@ -11,6 +11,7 @@ SOURCES=('libs/polyfills.js'
 'schillinger_functions.js'
 'chaos.js'
 'synthDefinitions.js'
+'lpSeq.js'
 'composition.js'
 'help.js' )
 

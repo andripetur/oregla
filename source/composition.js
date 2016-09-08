@@ -1,4 +1,5 @@
 var Instrument = null; // make accesible to help
+var timeUnitToSeconds;
 (function () {
   "use strict";
 
@@ -61,7 +62,7 @@ var Instrument = null; // make accesible to help
     return (60 / bpm) / divisor[smallestDivisor];
   }
 
-  var timeUnitToSeconds = function(unit){
+  timeUnitToSeconds = function(unit){
     if (unit.includes('n')) {
       return getBpm(tempo, unit);
     } else if (unit.includes('b')) { // convert bars to seconds
@@ -400,7 +401,7 @@ var Instrument = null; // make accesible to help
     },
 
     clearAll: function(){
-      repeatArr.splice(2,repeatArr.length); // first two are system repeats
+      repeatArr.splice(3,repeatArr.length); // first three are system repeats
       onceArr = [];
       return "Schedule cleared!"
     },
@@ -457,9 +458,18 @@ var Instrument = null; // make accesible to help
     }
   }
 
+  // Assign lpSeq to drums
+  // TODO make this a user accesible function
+  for (var i = 0; i < playheads.length; i++) {
+    (function(i){
+      playheads[i].do = function(){ drums.play(drums.list[i]); }
+    })(i);
+  }
+
   scheduleSequences();
   sound.schedule.repeat(sound.drums.do, '8n', 'drums_schedule');
   sound.schedule.repeat(instrumentDo, '8n', 'instrument_schedule');
+  sound.schedule.repeat(launchpadDo, '8n', 'launchpad_schedule');
 
   //TODO add cheat patterns: blue monday,
   var drumPatterns = {

@@ -30,6 +30,23 @@ body {
   text-align: center;
 }
 
+#sequencerContainer {
+  cursor: pointer;
+  width: calc(25% - 20px);
+  border: 2px solid #CCC;
+  text-align: center;
+}
+
+#lpseq {
+  white-space: pre;
+  display: inline-block;
+  line-height: 100%;
+  color: white;
+  background: black;
+  font-size: 1.3vw;
+  padding: 5px;
+}
+
 table {
   text-align: center;
   width: 100%;
@@ -166,7 +183,7 @@ a:link, a:visited {
 }
 
 a:hover, a:active {
-    background-color: #0d0;
+  background-color: #0d0;
 }
 
 a.docLink {
@@ -180,5 +197,5 @@ a.docLink {
 }
 
 a:hover.docLink, a:active.docLink {
-    background-color: #0d0;
+  background-color: #0d0;
 }
