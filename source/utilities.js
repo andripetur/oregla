@@ -134,6 +134,16 @@
     return nr - Math.floor(nr) !== 0;
   }
 
+  utilities.shuffleArray = function(arr){
+    var shuffled = [], r;
+      while (arr.length > 0) {
+        r = utilities.randInt(0, arr.length);
+        shuffled.push(arr[r]);
+        arr.splice(r,1);
+      }
+    return shuffled;
+  }
+
   utilities.argumentsToArray = function(args){
     return Array.prototype.slice.call(args);
   }
@@ -186,6 +196,21 @@
     return anagrams.filter(function(item) {
       return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });
+  }
+
+  var names = utilities.shuffleArray([
+    'joey', 'chandler', 'monica', 'ross', 'rachel',
+    'barney', 'ted', 'robin', 'lily', 'marshall',
+    'bojack', 'todd', 'diane', 'mr.peanutbutter', 'princess_caroline',
+    'bob_sux', 'linda', 'louise', 'gene', 'tina',
+    'rick_c-132', 'morty_c-132', 'rick_c-137', 'morty_c-137', 'mr.meeseeks',
+    'jeff', 'troy', 'abed', 'annie', 'britta',
+    'dangerzone', 'velvet', 'c-something', 'warrior', 'chet'
+  ]);
+  
+  var nNn = 0;
+  utilities.getNextName = function() {
+    return names[nNn++ % names.length];
   }
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - Timer

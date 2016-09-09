@@ -5,6 +5,9 @@
         <meta charset="UTF-8">
         <title> (ó)regla </title>
         <link rel="icon" href="imgs/icon.png">
+        <script src="source/libs/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="source/libs/src-min-noconflict/ext-beautify.js" type="text/javascript" charset="utf-8"></script>
+        <script src="source/libs/beautify.js"></script>
         <script src="oregla.js"></script>
 
         <link rel="stylesheet" href="style.css"/>
@@ -19,7 +22,7 @@
           Mixer
           <canvas id="faderbox"></canvas>
           <canvas id="buttonbox"></canvas>
-          <table><tr> <!-- names -->
+          <table id=nameTable><tr> <!-- names -->
             <td>bss</td><td>ml1</td><td>ml2</td><td>pno</td><td>amb</td>
             <td>drm</td><td>kik</td><td>snr</td><td>hih</td><td>prc</td>
           </tr></table>
@@ -27,6 +30,22 @@
         <div id=sequencerContainer>
           <div id='lpseq'></div>
         </div>
+
+        <div id='editorTitle'><br><br>schedule editor</div>
+        <div id='editorInfo'>
+          <table width=100% height=100%>
+            <tr><td>editing</td> <td>t </td></tr>
+            <tr>
+              <td id='editingName' class='e-tr' contenteditable="true">noScheduleSelected</td>
+              <td id='editingTime' class='e-tr' contenteditable="true">??</td>
+            </tr>
+          </table>
+        </div>
+        <pre id=editorContainer>
+          <div id="editor"></div>
+        </pre>
+
+        <div id='scheduleBrowser'></div>
 
         <div id="help">
           <div id=help-title class="help">Hi there!</div>
@@ -44,7 +63,8 @@
         drawButtonbox();
         initResize();
         initLpSeq();
-
+        setupEditorBrowser();
+        drawBrowser();
         for (var i = 0; i < sound.instruments.length; i++) {
           var synth = sound.instruments[i];
           setupFader(i, {

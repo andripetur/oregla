@@ -371,11 +371,15 @@ var timeUnitToSeconds;
       onceArr = [];
 
   sound.schedule = {
-    repeat: function(foo, t, n){
-      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: t })
+    repeat: function(foo, t, n){ // id is a bad confusing name, because it changes every do()
+      if(typeof n === 'undefined') n = utilities.getNextName();
+      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
+      if (typeof drawBrowser !== "undefined") drawBrowser();
     },
     once: function(foo, t, n){
-      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: t })
+      if(typeof n === 'undefined') n = utilities.getNextName();
+      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
+      if (typeof drawBrowser !== "undefined") drawBrowser();
     },
 
     clear: function(name){
@@ -393,6 +397,8 @@ var timeUnitToSeconds;
         }
       }
 
+      drawBrowser();
+
       if(cntr > 0){
         return "Cleared "+ cntr +" scheduled events with name: " + name + ".";
       } else {
@@ -401,18 +407,18 @@ var timeUnitToSeconds;
     },
 
     clearAll: function(){
-      repeatArr.splice(3,repeatArr.length); // first three are system repeats
+      repeatArr.splice(nrOfSystemRepeats,repeatArr.length); // first three are system repeats
       onceArr = [];
       return "Schedule cleared!"
     },
 
     show: function(){
-      if ( repeatArr.length === 2 && onceArr.length < 1) {
+      if ( repeatArr.length === nrOfSystemRepeats && onceArr.length < 1) {
         return "No scheduled events to show."
       } else {
-        if(repeatArr.length > 2) {
+        if(repeatArr.length > nrOfSystemRepeats) {
           print('Repeats scheduled:');
-          for (var i = 2; i < repeatArr.length; i++) {
+          for (var i = nrOfSystemRepeats; i < repeatArr.length; i++) {
             print('    '+repeatArr[i].name);
           }
         }
@@ -424,6 +430,32 @@ var timeUnitToSeconds;
         }
       }
     },
+
+    getFunction: function(name){
+      var foo = this.findFunction(name);
+      if(typeof foo !== 'undefined'){
+        var fooStr = foo.function.toString();
+        var body = fooStr.substring(fooStr.indexOf("{") + 1, fooStr.lastIndexOf("}"));
+        document.getElementById('editingName').innerHTML = name;
+        document.getElementById('editingTime').innerHTML = foo.time;
+        editor.setValue(js_beautify(body))
+        // js_beautify(body)
+        // beautify.beautify(editor.getSession());
+      }
+    },
+
+    updateFunction: function(name, f){
+      var foo = f || this.findFunction(name);
+      if(typeof foo !== 'undefined') foo.function = new Function(editor.getValue());
+    },
+
+    findFunction: function(name){
+      var bothArr = [ ...repeatArr, ...onceArr ];
+      for (var i = 0; i < bothArr.length; i++) if(bothArr[i].name === name) return bothArr[i];
+    },
+
+    getRepeatArr: function(){ return repeatArr; },
+    getOnceArr:   function(){ return onceArr; },
 
     do: function(){
       var currentTime = utilities.getTime();
@@ -437,6 +469,7 @@ var timeUnitToSeconds;
             print(e);
           }
           onceArr.splice(i--,1); // remove from arr and do this index again
+          drawBrowser();
         }
       }
 
@@ -450,6 +483,7 @@ var timeUnitToSeconds;
             print(e);
             print('Scheduling cancelled: ');
             repeatArr.splice(i--,1); // remove from arr and do this index again
+            drawBrowser();
           }
         }
       }
@@ -467,6 +501,7 @@ var timeUnitToSeconds;
   }
 
   scheduleSequences();
+  var nrOfSystemRepeats = 3;
   sound.schedule.repeat(sound.drums.do, '8n', 'drums_schedule');
   sound.schedule.repeat(instrumentDo, '8n', 'instrument_schedule');
   sound.schedule.repeat(launchpadDo, '8n', 'launchpad_schedule');

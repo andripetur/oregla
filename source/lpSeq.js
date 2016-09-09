@@ -2,6 +2,13 @@ var midi = null,
     output,
     input,
     padStates = [];
+
+// request MIDI access
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+} else {
+  alert("No MIDI support in your browser.");
+}
 for (var i = 0; i < 64; i++) padStates.push(false); // start everything from zero
 
 // create sequencer grid
@@ -38,7 +45,7 @@ var topRow = [],
     noteToTopRow = {},
     topRowToNote = {};
 for (var i = 0, note = 104; i < 8; i++, note++) {
-  topRow.push(false);
+  topRow.push(i===4);
   noteToTopRow[note] = i;
   topRowToNote[i] = note;
 }
@@ -85,18 +92,8 @@ function drawSequencer() {
   gridContainer.innerHTML = formattedGrid;
 }
 
-var stepLength = 400;
-
 function initLpSeq(){
   gridContainer = document.getElementById('lpseq');
-
-  // request MIDI access
-  if (navigator.requestMIDIAccess) {
-    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
-  } else {
-    alert("No MIDI support in your browser.");
-  }
-
   drawSequencer(); // make it appear
 }
 
@@ -150,7 +147,6 @@ var paths = [
   ]
 ];
 paths.selected = 0;
-topRow[4] = true; // light up this pattern
 var colorOneIndexes = [ ...paths[paths.selected][0], ...paths[paths.selected][2] ];
 
 function Stylus(p){
@@ -182,7 +178,8 @@ function Stylus(p){
 var playheads = [ new Stylus(0), new Stylus(1), new Stylus(2), new Stylus(3) ];
 
 function launchpadDo() {
-  drawSequencer();
+  // if all playheads are paused don't draw
+  if(playheads.reduce(function(a,b) { return a.on || b.on; })) drawSequencer();
   for (var i = 0; i < playheads.length; i++) {
     if(playheads[i].on){
       var velocityOff = 0;
