@@ -127,28 +127,12 @@ function addName(instrument, _color){
 
   patterns[instrument].add( new fabric.Text(instrument, {
     left: pos.left,
-    top: pos.top,
+    top: pos.top + 15,
     fontFamily: "Menlo",
     fontSize: 15,
     fill: color
   }));
 }
-
-// function addMixerText(){
-//   var text = new fabric.Text("Mixer", {
-//     left: faderboxCanvas.getCenter().left,
-//     top: 15,
-//     originX: "center",
-//     fontFamily: "Menlo",
-//     fontSize: 15,
-//     selectable: false,
-//     hoverCursor: 'default',
-//     fill: "white"
-//   });
-//
-//   faderboxCanvas.add( text );
-//   // text.sendToBack();
-// }
 
 function drawInstrument(instrument, _buffer){
   var buffer = _buffer || sound[instrument].buffer,
@@ -158,17 +142,30 @@ function drawInstrument(instrument, _buffer){
       xPad = makeGrid.w * p,
       yPad = makeGrid.h * p;
 
-  var circles = buffer.map(function(el){
-    return new fabric.Circle({
-        left: utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, makeGrid.w-xPad),
-        top:  utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, makeGrid.h-yPad),
-        radius: 5,
-      });
+  var circles = buffer.map(function(el,indx){
+    var circle = new fabric.Circle({
+      left: utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, makeGrid.w-xPad),
+      top:  utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, makeGrid.h-yPad),
+      originX: 'center',
+      originY: 'center',
+      radius: isResize ? 5 : 0,
+    });
+
+    if(!isResize){
+      setTimeout( function(){
+        circle.animate('radius', 5, {
+          duration: timeUnitToSeconds('8n')*1000,
+          onChange: function(){ canvasUpdated = true; }
+        })
+      }, timeUnitToSeconds('8n')*1000*indx);
+    }
+
+    return circle;
   });
 
   patterns.rm(instrument);
   patterns.add(instrument, circles, instrumentValues[instrument]);
-  addName(instrument);
+  // addName(instrument);
 }
 
 function drawDrum(drum, _r){ // optional to pass the rhythm values
@@ -189,17 +186,38 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
 
     squares.push(...r.map(function(el,indx,arr){
       if(indx !== 0) pos += (w*arr[indx-1]);
-      return new fabric.Rect({
-        left: pos,
-        top:  0,
-        width: w,
-        height: el*3,
+      var rect = new fabric.Rect({
+        left: pos, top:  0,
+        originX: 'center', originY: 'center',
+        width: isResize ? w : 0,
+        height: isResize ? el*3 : 0,
       });
+
+      if(!isResize){
+        setTimeout( function(){
+          rect.animate('width', w, {
+            duration: timeUnitToSeconds('8n')*1000,
+            onChange: function(){ canvasUpdated = true; }
+          })
+          rect.animate('height', el*3, {
+            duration: timeUnitToSeconds('8n')*1000,
+          })
+        }, timeUnitToSeconds('8n')*1000*indx);
+      }
+      return rect;
     }));
   patterns.rm(drum);
   patterns.add(drum, squares, groupValues);
   addName(drum,instrumentValues["drums"].text);
 }
+
+var canvasUpdated = false;
+setInterval(function(){
+  if(canvasUpdated){
+    canvas.renderAll();
+    canvasUpdated = false;
+  }
+}, 40)
 
 // faderbox
 function createFader(i){
@@ -383,12 +401,14 @@ function buttonBoxFunctionality(){
   });
 }
 
-var resizeTimer;
+var resizeTimer, isResize;
 function initResize(){
   $( window ).resize(function() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() { // do when resize is finished
+      isResize = true;
       calcAndDrawAllInstruments();
+      isResize = false;
       box.calc()
       drawFaderbox();
       drawButtonbox();

@@ -8,10 +8,12 @@ function setupEditorBrowser(){
   var editorHTMLelement = document.getElementById('editor');
   editorHTMLelement.style.fontFamily='Menlo';
   editorHTMLelement.style.fontSize='15px';
+  editorHTMLelement.style.background = 'rgba(20,20,20, 0.5)';
   editor.setShowPrintMargin(false);
   editor.getSession().setUseSoftTabs(true);
   editor.getSession().setMode("ace/mode/javascript");
 
+  // TODO add pause command
   editor.commands.addCommands([{
     name: 'updateSchedule',
     bindKey: {win: 'Ctrl-S',  mac: 'Ctrl-s'},

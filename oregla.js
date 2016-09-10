@@ -137,28 +137,12 @@ function addName(instrument, _color){
 
   patterns[instrument].add( new fabric.Text(instrument, {
     left: pos.left,
-    top: pos.top,
+    top: pos.top + 15,
     fontFamily: "Menlo",
     fontSize: 15,
     fill: color
   }));
 }
-
-// function addMixerText(){
-//   var text = new fabric.Text("Mixer", {
-//     left: faderboxCanvas.getCenter().left,
-//     top: 15,
-//     originX: "center",
-//     fontFamily: "Menlo",
-//     fontSize: 15,
-//     selectable: false,
-//     hoverCursor: 'default',
-//     fill: "white"
-//   });
-//
-//   faderboxCanvas.add( text );
-//   // text.sendToBack();
-// }
 
 function drawInstrument(instrument, _buffer){
   var buffer = _buffer || sound[instrument].buffer,
@@ -168,17 +152,30 @@ function drawInstrument(instrument, _buffer){
       xPad = makeGrid.w * p,
       yPad = makeGrid.h * p;
 
-  var circles = buffer.map(function(el){
-    return new fabric.Circle({
-        left: utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, makeGrid.w-xPad),
-        top:  utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, makeGrid.h-yPad),
-        radius: 5,
-      });
+  var circles = buffer.map(function(el,indx){
+    var circle = new fabric.Circle({
+      left: utilities.scale(el.x, xrange.low, xrange.high, 0+xPad, makeGrid.w-xPad),
+      top:  utilities.scale(el.y, yrange.low, yrange.high, 0+yPad, makeGrid.h-yPad),
+      originX: 'center',
+      originY: 'center',
+      radius: isResize ? 5 : 0,
+    });
+
+    if(!isResize){
+      setTimeout( function(){
+        circle.animate('radius', 5, {
+          duration: timeUnitToSeconds('8n')*1000,
+          onChange: function(){ canvasUpdated = true; }
+        })
+      }, timeUnitToSeconds('8n')*1000*indx);
+    }
+
+    return circle;
   });
 
   patterns.rm(instrument);
   patterns.add(instrument, circles, instrumentValues[instrument]);
-  addName(instrument);
+  // addName(instrument);
 }
 
 function drawDrum(drum, _r){ // optional to pass the rhythm values
@@ -199,17 +196,38 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
 
     squares.push(...r.map(function(el,indx,arr){
       if(indx !== 0) pos += (w*arr[indx-1]);
-      return new fabric.Rect({
-        left: pos,
-        top:  0,
-        width: w,
-        height: el*3,
+      var rect = new fabric.Rect({
+        left: pos, top:  0,
+        originX: 'center', originY: 'center',
+        width: isResize ? w : 0,
+        height: isResize ? el*3 : 0,
       });
+
+      if(!isResize){
+        setTimeout( function(){
+          rect.animate('width', w, {
+            duration: timeUnitToSeconds('8n')*1000,
+            onChange: function(){ canvasUpdated = true; }
+          })
+          rect.animate('height', el*3, {
+            duration: timeUnitToSeconds('8n')*1000,
+          })
+        }, timeUnitToSeconds('8n')*1000*indx);
+      }
+      return rect;
     }));
   patterns.rm(drum);
   patterns.add(drum, squares, groupValues);
   addName(drum,instrumentValues["drums"].text);
 }
+
+var canvasUpdated = false;
+setInterval(function(){
+  if(canvasUpdated){
+    canvas.renderAll();
+    canvasUpdated = false;
+  }
+}, 40)
 
 // faderbox
 function createFader(i){
@@ -393,12 +411,14 @@ function buttonBoxFunctionality(){
   });
 }
 
-var resizeTimer;
+var resizeTimer, isResize;
 function initResize(){
   $( window ).resize(function() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() { // do when resize is finished
+      isResize = true;
       calcAndDrawAllInstruments();
+      isResize = false;
       box.calc()
       drawFaderbox();
       drawButtonbox();
@@ -1548,5 +1568,5 @@ var timeUnitToSeconds;
     return "pattern loaded"
   }
 }());
-var editor,beautify,drawBrowser;function setupEditorBrowser(){editor=ace.edit("editor");beautify=ace.require("ace/ext/beautify");editor.setTheme("ace/theme/chaos");editor.$blockScrolling=Infinity;var editorHTMLelement=document.getElementById("editor");editorHTMLelement.style.fontFamily="Menlo";editorHTMLelement.style.fontSize="15px";editor.setShowPrintMargin(false);editor.getSession().setUseSoftTabs(true);editor.getSession().setMode("ace/mode/javascript");editor.commands.addCommands([{name:"updateSchedule",bindKey:{win:"Ctrl-S",mac:"Ctrl-s"},exec:function(editor){var foo=editor.getValue();var name=document.getElementById("editingName").innerHTML;var time=document.getElementById("editingTime").innerHTML;var lookingForFoo=schedule.findFunction(name);if(typeof lookingForFoo==="undefined"&&time!=="??"){schedule.repeat(new Function(editor.getValue()),time,name)}else{schedule.updateFunction(name,lookingForFoo)}blinkEditorElement("editorTitle","rgba(255,255,0,0.5)")}},{name:"newSchedule",bindKey:{win:"Ctrl-n",mac:"Ctrl-n"},exec:function(editor){editor.setValue("");document.getElementById("editingName").innerHTML="insertName";document.getElementById("editingTime").innerHTML="??"}},{name:"switchToConsole",bindKey:{win:"Ctrl-x",mac:"Ctrl-x"},exec:function(editor){jqconsole.Focus()}}]);function blinkEditorElement(id,color){var editor=document.getElementById(id);var oldColor=editor.style.backgroundColor;editor.style.transition="background-color 0.15s ease-in-out";editor.style.backgroundColor=color;setTimeout(function(){document.getElementById(id).style.backgroundColor=oldColor},150)}drawBrowser=function(){var tab="┃ ",browser,width=30,eol="┖─╴",foo;browser="╻̊<b>Schedule</b><br>";browser+="┃<br>";browser+="┣━┱╴<b>Repeats:</b> <br>";(foo=function(arr,emptyLength){var icon,name,select,cancel;if(arr.length===emptyLength)browser+=tab+eol+"<i>empty</i>"+"<br>";for(var i=emptyLength;i<arr.length;i++){icon=i===arr.length-1?eol:"┠─╴";name=arr[i].name;select="<span onclick=sound.schedule.getFunction('"+name+"')>"+utilities.rightPad(name,width-10," ")+"</span>";select+=utilities.rightPad("("+arr[i].time+")",10);cancel="<span onclick=sound.schedule.clear('"+name+"')>x</span>";browser+=tab+icon+select+cancel+"<br>"}})(sound.schedule.getRepeatArr(),3);browser+="┃<br>";browser+="┗━┱╴<b>Once:</b> <br>";tab="  ";foo(sound.schedule.getOnceArr(),0);document.getElementById("scheduleBrowser").innerHTML=browser}}
+var editor,beautify,drawBrowser;function setupEditorBrowser(){editor=ace.edit("editor");beautify=ace.require("ace/ext/beautify");editor.setTheme("ace/theme/chaos");editor.$blockScrolling=Infinity;var editorHTMLelement=document.getElementById("editor");editorHTMLelement.style.fontFamily="Menlo";editorHTMLelement.style.fontSize="15px";editorHTMLelement.style.background="rgba(20,20,20, 0.5)";editor.setShowPrintMargin(false);editor.getSession().setUseSoftTabs(true);editor.getSession().setMode("ace/mode/javascript");editor.commands.addCommands([{name:"updateSchedule",bindKey:{win:"Ctrl-S",mac:"Ctrl-s"},exec:function(editor){var foo=editor.getValue();var name=document.getElementById("editingName").innerHTML;var time=document.getElementById("editingTime").innerHTML;var lookingForFoo=schedule.findFunction(name);if(typeof lookingForFoo==="undefined"&&time!=="??"){schedule.repeat(new Function(editor.getValue()),time,name)}else{schedule.updateFunction(name,lookingForFoo)}blinkEditorElement("editorTitle","rgba(255,255,0,0.5)")}},{name:"newSchedule",bindKey:{win:"Ctrl-n",mac:"Ctrl-n"},exec:function(editor){editor.setValue("");document.getElementById("editingName").innerHTML="insertName";document.getElementById("editingTime").innerHTML="??"}},{name:"switchToConsole",bindKey:{win:"Ctrl-x",mac:"Ctrl-x"},exec:function(editor){jqconsole.Focus()}}]);function blinkEditorElement(id,color){var editor=document.getElementById(id);var oldColor=editor.style.backgroundColor;editor.style.transition="background-color 0.15s ease-in-out";editor.style.backgroundColor=color;setTimeout(function(){document.getElementById(id).style.backgroundColor=oldColor},150)}drawBrowser=function(){var tab="┃ ",browser,width=30,eol="┖─╴",foo;browser="╻̊<b>Schedule</b><br>";browser+="┃<br>";browser+="┣━┱╴<b>Repeats:</b> <br>";(foo=function(arr,emptyLength){var icon,name,select,cancel;if(arr.length===emptyLength)browser+=tab+eol+"<i>empty</i>"+"<br>";for(var i=emptyLength;i<arr.length;i++){icon=i===arr.length-1?eol:"┠─╴";name=arr[i].name;select="<span onclick=sound.schedule.getFunction('"+name+"')>"+utilities.rightPad(name,width-10," ")+"</span>";select+=utilities.rightPad("("+arr[i].time+")",10);cancel="<span onclick=sound.schedule.clear('"+name+"')>x</span>";browser+=tab+icon+select+cancel+"<br>"}})(sound.schedule.getRepeatArr(),3);browser+="┃<br>";browser+="┗━┱╴<b>Once:</b> <br>";tab="  ";foo(sound.schedule.getOnceArr(),0);document.getElementById("scheduleBrowser").innerHTML=browser}}
 (function(){Schillinger.prototype.newRhythm.help={title:"New Rhythm",type:"Generator",content:"A new rhythm.<br> a1(str): fast,slow. arg2: an array of numbers."};Schillinger.prototype.reverse.help={title:"Reverse",type:"Modifier",content:"If called without an argument reverses the whole sequence. Optional <string>arg1 what you want reversed: notes or rhythm."};Schillinger.prototype.multiplyIntervals.help={title:"Multiply intervals",type:"Modifier",content:"Multiply all intervals with scalar of <int>arg1."};Schillinger.prototype.transpose.help={title:"Transpose",type:"Modifier",content:"Transpose the sequence horisontally by <int>arg1."};Schillinger.prototype.clampToRange.help={title:"Clamp",type:"Modifier",content:"Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high)."};var mirror={title:"Mirror",type:"Modifier",content:"Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth."};Schillinger.prototype.mirrorNotes.help=mirror;Schillinger.prototype.mirrorIntervals.help=mirror;Schillinger.prototype.mirrorRhythm.help=mirror;var sort={title:"Sort",type:"Modifier",content:"Sort based on given type of sort.",options:[["ascending","low to high"],["descending","high to low"],["average-deviation-ascending","delta from avg h2l"],["average-deviation-descending",,"delta from avg l2h"],["wondrous-ascending","howWonderous h2l"],["wondrous-descending","howWonderous l2h"]]};Schillinger.prototype.sortNotes.help=sort;Schillinger.prototype.sortIntervals.help=sort;Schillinger.prototype.sortRhythm.help=sort;Chaos.prototype.getAllFromBuffer.help={title:"Get all from buffer",type:"Data",content:"Returns an array with all elements of requested value <string>arg1 from the chaos buffer."};Chaos.prototype.fillChaosBuffer.help={title:"Fill Chaos Buffer",type:"Generator",content:"Fills a buffer with iterations from chaos. Takes an option object as argument.",options:[["length","int"],["offset","int"],["coords","object { a: f, t: f, b: f, o: f}"],["reorder","string"],["release","float"],["t","time value"]]};Sequencer.prototype.mapBufferToNotes.help={title:"Map buffer to notes",type:"Modifier",content:"Maps chaos buffer to note values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};Sequencer.prototype.mapBufferToRhythm.help={title:"Map buffer to rhythm",type:"Modifier",content:"Maps chaos buffer to rhytmic values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};sound.scales.set.help={title:"Set scale",type:"Modifier",content:"Selects the scale to tune notes too.",docLink:"documentation.html#scales"};Instrument.prototype.envelope.help={title:"Envelope",type:"Sound",content:"Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["attack","float"],["sustain","float 0-1"],["release","float"],["t","time value"]]};Instrument.prototype.filter.help={title:"Filter",type:"Sound",content:"Edit the filter. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["cutoff","frequence"],["resonance","float"],["t","time value"]]};Instrument.prototype.oscillators.help={title:"Oscillators",type:"Sound",content:"Edit the oscillators. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["detune","float 0-100"],["offset","int"],["t","time value"]]};sound.drums.start.help={title:"Start",type:"Schedule",content:"The drum sequences start playing, individual drum states remain the same."};sound.drums.startAll.help={title:"Start all",type:"Schedule",content:"All drums start playing."};sound.drums.stop.help={title:"Stop",type:"Schedule",content:"The drum sequences stop playing, individual drum states remain the same."};sound.drums.stopAll.help={title:"Stop all",type:"Schedule",content:"All drums stop playing."}})();
