@@ -34,7 +34,7 @@ var playRow = [],
 for(var i = 0; i<16; i++) {
   if(i % 2 === 1){
     var note = i * 8;
-    playRow.push(true);
+    playRow.push(playRow.length>3); // 4false, 4 true
     noteToPlayRow[note] = playRow.length-1;
     playRowToNote[playRow.length-1] = note;
    }
@@ -58,7 +58,7 @@ var color = {
 }
 
 // draw the thing
-var pPos, gridContainer;
+var pPos, gridContainer, needToDrawSequencer = true;
 
 function drawSequencer() {
   var formattedGrid = "", icon, color, pIndx, pBtn;
@@ -154,7 +154,7 @@ function Stylus(p){
   this.path = p;
   this.color = p % 2 === 0 ? 'green' : 'red';
   this.direction = 'forward';
-  this.on = true;
+  this.on = playRow[p];
   this.do = function(){};
 
   this.tick = function(){
@@ -179,7 +179,7 @@ var playheads = [ new Stylus(0), new Stylus(1), new Stylus(2), new Stylus(3) ];
 
 function launchpadDo() {
   // if all playheads are paused don't draw
-  if(playheads.reduce(function(a,b) { return a.on || b.on; })) drawSequencer();
+  if(playRow[0] || playRow[1] || playRow[2] || playRow[3]) drawSequencer();
   for (var i = 0; i < playheads.length; i++) {
     if(playheads[i].on){
       var velocityOff = 0;

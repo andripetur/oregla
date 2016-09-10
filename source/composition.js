@@ -438,9 +438,7 @@ var timeUnitToSeconds;
         var body = fooStr.substring(fooStr.indexOf("{") + 1, fooStr.lastIndexOf("}"));
         document.getElementById('editingName').innerHTML = name;
         document.getElementById('editingTime').innerHTML = foo.time;
-        editor.setValue(js_beautify(body))
-        // js_beautify(body)
-        // beautify.beautify(editor.getSession());
+        editor.setValue(js_beautify(body));
       }
     },
 

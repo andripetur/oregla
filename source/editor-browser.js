@@ -26,7 +26,8 @@ function setupEditorBrowser(){
         schedule.updateFunction(name, lookingForFoo);
       }
 
-      blinkEditorTitle();
+      blinkEditorElement('editorTitle', 'rgba(255,255,0,0.5)');
+      // blinkEditorElement('editor', 'rgb(100,100,0)');
     },
     readOnly: true // false if this command should not apply in readOnly mode
   });
@@ -42,11 +43,13 @@ function setupEditorBrowser(){
     readOnly: true // false if this command should not apply in readOnly mode
   });
 
-  function blinkEditorTitle(){
-    // blink editor title
-    document.getElementById('editorTitle').style.backgroundColor = 'rgba(255,255,0,0.5)';
+  function blinkEditorElement(id, color){
+    var editor = document.getElementById(id);
+    var oldColor = editor.style.backgroundColor;
+    editor.style.transition = 'background-color 0.15s ease-in-out';
+    editor.style.backgroundColor = color;
     setTimeout(function(){
-      document.getElementById('editorTitle').style.backgroundColor = 'rgba(0,0,0,0)';
+      document.getElementById(id).style.backgroundColor = oldColor;
     }, 150);
   }
 
