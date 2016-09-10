@@ -109,6 +109,11 @@ var initSuggestions = null;
       }
     });
 
+    shortcuts['ctrl+x'] = "Switch beetween schedule editor and console.";
+    jqconsole.RegisterShortcut('x', function() {
+      editor.focus();
+    });
+
     shortcuts['ctrl+h'] = "Show shortcut list."
     jqconsole.RegisterShortcut('H', function() {
       jqconsole.Write('\n');

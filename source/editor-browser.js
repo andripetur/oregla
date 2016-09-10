@@ -5,13 +5,14 @@ function setupEditorBrowser(){
   beautify = ace.require("ace/ext/beautify");
   editor.setTheme("ace/theme/chaos");
   editor.$blockScrolling = Infinity;
-  document.getElementById('editor').style.fontFamily='Menlo';
-  document.getElementById('editor').style.fontSize='15px';
+  var editorHTMLelement = document.getElementById('editor');
+  editorHTMLelement.style.fontFamily='Menlo';
+  editorHTMLelement.style.fontSize='15px';
   editor.setShowPrintMargin(false);
   editor.getSession().setUseSoftTabs(true);
   editor.getSession().setMode("ace/mode/javascript");
 
-  editor.commands.addCommand({
+  editor.commands.addCommands([{
     name: 'updateSchedule',
     bindKey: {win: 'Ctrl-S',  mac: 'Ctrl-s'},
     exec: function(editor) {
@@ -29,19 +30,21 @@ function setupEditorBrowser(){
       blinkEditorElement('editorTitle', 'rgba(255,255,0,0.5)');
       // blinkEditorElement('editor', 'rgb(100,100,0)');
     },
-    readOnly: true // false if this command should not apply in readOnly mode
-  });
-
-  editor.commands.addCommand({
-    name: 'newSchedule',
+  },
+  { name: 'newSchedule',
     bindKey: {win: 'Ctrl-n',  mac: 'Ctrl-n'},
     exec: function(editor) {
       editor.setValue('');
       document.getElementById('editingName').innerHTML='insertName';
       document.getElementById('editingTime').innerHTML='??';
     },
-    readOnly: true // false if this command should not apply in readOnly mode
-  });
+  },
+  { name: 'switchToConsole',
+    bindKey: {win: 'Ctrl-x',  mac: 'Ctrl-x'},
+    exec: function(editor) {
+      jqconsole.Focus();
+    }
+  }]);
 
   function blinkEditorElement(id, color){
     var editor = document.getElementById(id);

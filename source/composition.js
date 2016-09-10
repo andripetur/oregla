@@ -396,7 +396,9 @@ var timeUnitToSeconds;
           cntr++;
         }
       }
-
+      if(document.getElementById('editingName').innerHTML === name){ // clear editor
+        editor.commands.byName.newSchedule.exec(editor);
+      }
       drawBrowser();
 
       if(cntr > 0){
