@@ -1,8 +1,11 @@
-var editor, beautify, drawBrowser; // get reference to extension
+var editor, drawBrowser; // get reference to extension
+
+function Constant(name, initValue){ // make declaring constants easier from the editor
+  if(typeof window[name] === 'undefined') window[name] = initValue;
+}
 
 function setupEditorBrowser(){
   editor = ace.edit("editor");
-  beautify = ace.require("ace/ext/beautify");
   editor.setTheme("ace/theme/chaos");
   editor.$blockScrolling = Infinity;
   var editorHTMLelement = document.getElementById('editor'),
@@ -10,9 +13,10 @@ function setupEditorBrowser(){
       editingTimeHTMLel = document.getElementById('editingTime');
   editorHTMLelement.style.fontFamily='Menlo';
   editorHTMLelement.style.fontSize='15px';
-  editorHTMLelement.style.background = 'rgba(20,20,20, 0.5)';
+  editorHTMLelement.style.background='rgba(20,20,20, 0.5)';
   editor.setShowPrintMargin(false);
   editor.getSession().setUseSoftTabs(true);
+  editor.getSession().setTabSize(2);
   editor.getSession().setMode("ace/mode/javascript");
 
   editor.commands.addCommands([{

@@ -13,6 +13,7 @@ SOURCES=('libs/polyfills.js'
 'synthDefinitions.js'
 'lpSeq.js'
 'composition.js'
+'scheduler.js'
 'editor-browser.js'
 'help.js' )
 

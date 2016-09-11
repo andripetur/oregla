@@ -1,6 +1,8 @@
 (function () {
   "use strict";
   fluid.registerNamespace("utilities");
+  fluid.registerNamespace("u");
+  u = utilities;
 
   var randomStream = new Random(parseInt(Date().split(' ')[4].split(':').join(''))),
       random = function(){ return randomStream.random(); };
@@ -203,11 +205,11 @@
     'barney', 'ted', 'robin', 'lily', 'marshall',
     'bojack', 'todd', 'diane', 'mr.peanutbutter', 'princess_caroline',
     'bob_sux', 'linda', 'louise', 'gene', 'tina',
-    'rick_c-132', 'morty_c-132', 'rick_c-137', 'morty_c-137', 'mr.meeseeks',
+    'rick_c132', 'morty_c132', 'rick_c137', 'morty_c137', 'mr.meeseeks',
     'jeff', 'troy', 'abed', 'annie', 'britta',
-    'dangerzone', 'velvet', 'c-something', 'warrior', 'chet'
+    'dangerzone', 'velvet', 'c_something', 'warrior', 'chet'
   ]);
-  
+
   var nNn = 0;
   utilities.getNextName = function() {
     return names[nNn++ % names.length];
