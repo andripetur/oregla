@@ -5,7 +5,9 @@ function setupEditorBrowser(){
   beautify = ace.require("ace/ext/beautify");
   editor.setTheme("ace/theme/chaos");
   editor.$blockScrolling = Infinity;
-  var editorHTMLelement = document.getElementById('editor');
+  var editorHTMLelement = document.getElementById('editor'),
+      editingNameHTMLel = document.getElementById('editingName'),
+      editingTimeHTMLel = document.getElementById('editingTime');
   editorHTMLelement.style.fontFamily='Menlo';
   editorHTMLelement.style.fontSize='15px';
   editorHTMLelement.style.background = 'rgba(20,20,20, 0.5)';
@@ -13,14 +15,13 @@ function setupEditorBrowser(){
   editor.getSession().setUseSoftTabs(true);
   editor.getSession().setMode("ace/mode/javascript");
 
-  // TODO add pause command
   editor.commands.addCommands([{
     name: 'updateSchedule',
     bindKey: {win: 'Ctrl-S',  mac: 'Ctrl-s'},
     exec: function(editor) {
-      var foo = editor.getValue();
-      var name = document.getElementById('editingName').innerHTML;
-      var time = document.getElementById('editingTime').innerHTML;
+      var foo = editor.getValue(),
+          name = editingNameHTMLel.innerHTML,
+          time = editingTimeHTMLel.innerHTML;
 
       var lookingForFoo = schedule.findFunction(name);
       if(typeof lookingForFoo === 'undefined' && time !== '??'){
@@ -37,14 +38,20 @@ function setupEditorBrowser(){
     bindKey: {win: 'Ctrl-n',  mac: 'Ctrl-n'},
     exec: function(editor) {
       editor.setValue('');
-      document.getElementById('editingName').innerHTML='insertName';
-      document.getElementById('editingTime').innerHTML='??';
+      editingNameHTMLel.innerHTML='insertName';
+      editingTimeHTMLel.innerHTML='??';
     },
   },
   { name: 'switchToConsole',
     bindKey: {win: 'Ctrl-x',  mac: 'Ctrl-x'},
     exec: function(editor) {
       jqconsole.Focus();
+    }
+  },
+  { name: 'pauseSchedule',
+    bindKey: {win: 'Ctrl-p',  mac: 'Ctrl-p'},
+    exec: function(editor) {
+      schedule.togglePause(editingNameHTMLel.innerHTML);
     }
   }]);
 
@@ -59,21 +66,28 @@ function setupEditorBrowser(){
   }
 
   drawBrowser = function(){
-    var tab='┃ ', browser, width = 30, eol = '┖─╴', foo;
+    var tab='┃ ', browser, width = Math.floor(window.innerWidth / 28), eol = '┖─╴';
     browser ='╻̊<b>Schedule</b><br>';
     browser+='┃<br>';
     browser+="┣━┱╴<b>Repeats:</b> <br>";
 
     (foo = function(arr, emptyLength){
-      var icon, name, select, cancel;
-      if(arr.length === emptyLength) browser += tab + eol + '<i>empty</i>' + '<br>';
+      var icon, name, select, cancel, pause, pcolor, foo;
+      if(arr.length === emptyLength) browser += tab + eol + '<i>empty</i><br>';
       for (var i = emptyLength; i < arr.length; i++) {
         icon = i === arr.length-1 ? eol : '┠─╴';
         name = arr[i].name;
         select = '<span onclick=sound.schedule.getFunction(\''+ name +'\')>' + utilities.rightPad(name, width-10, ' ') + '</span>';
         select += utilities.rightPad('('+arr[i].time+')', 10);
         cancel = '<span onclick=sound.schedule.clear(\''+ name +'\')>x</span>';
-        browser += tab + icon + select + cancel + '<br>';
+        if(emptyLength !== 0){ // dont show pause button on once tasks
+          pcolor = arr[i].paused ? 'red' : 'green';
+          pause = '<span onclick=sound.schedule.togglePause(\''+ name +'\') ';
+          pause +='style=\"color:'+ pcolor +';\">▶</span> ';
+        } else {
+          pause = "  ";
+        }
+        browser += tab + icon + select + pause + cancel + '<br>';
       }
     })(sound.schedule.getRepeatArr(), 3);
 

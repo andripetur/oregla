@@ -208,7 +208,7 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
     }));
   patterns.rm(drum);
   patterns.add(drum, squares, groupValues);
-  addName(drum,instrumentValues["drums"].text);
+  // addName(drum,instrumentValues["drums"].text);
 }
 
 var canvasUpdated = false;
@@ -412,6 +412,7 @@ function initResize(){
       box.calc()
       drawFaderbox();
       drawButtonbox();
+      drawBrowser();
     }, 250);
   });
 }

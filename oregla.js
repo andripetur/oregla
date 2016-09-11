@@ -218,7 +218,7 @@ function drawDrum(drum, _r){ // optional to pass the rhythm values
     }));
   patterns.rm(drum);
   patterns.add(drum, squares, groupValues);
-  addName(drum,instrumentValues["drums"].text);
+  // addName(drum,instrumentValues["drums"].text);
 }
 
 var canvasUpdated = false;
@@ -422,6 +422,7 @@ function initResize(){
       box.calc()
       drawFaderbox();
       drawButtonbox();
+      drawBrowser();
     }, 250);
   });
 }
@@ -1407,16 +1408,21 @@ var timeUnitToSeconds;
   var repeatArr = [],
       onceArr = [];
 
+  function Task(foo,t,n){
+    this.id = utilities.getTime();
+    this.name = n || utilities.getNextName();
+    this.function = foo;
+    this.time = t;
+    this.paused = false;
+    if (typeof drawBrowser !== "undefined") setTimeout(drawBrowser, 10);
+  };
+
   sound.schedule = {
     repeat: function(foo, t, n){ // id is a bad confusing name, because it changes every do()
-      if(typeof n === 'undefined') n = utilities.getNextName();
-      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
-      if (typeof drawBrowser !== "undefined") drawBrowser();
+      repeatArr.push( new Task(...arguments) );
     },
     once: function(foo, t, n){
-      if(typeof n === 'undefined') n = utilities.getNextName();
-      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
-      if (typeof drawBrowser !== "undefined") drawBrowser();
+      onceArr.push( new Task(...arguments) );
     },
 
     clear: function(name){
@@ -1486,6 +1492,12 @@ var timeUnitToSeconds;
       if(typeof foo !== 'undefined') foo.function = new Function(editor.getValue());
     },
 
+    togglePause: function(name, f){
+      var foo = f || this.findFunction(name);
+      if(typeof foo !== 'undefined') foo.paused = !foo.paused;
+      drawBrowser();
+    },
+
     findFunction: function(name){
       var bothArr = [ ...repeatArr, ...onceArr ];
       for (var i = 0; i < bothArr.length; i++) if(bothArr[i].name === name) return bothArr[i];
@@ -1513,7 +1525,7 @@ var timeUnitToSeconds;
       for (var i = 0; i < repeatArr.length; i++) {
         if((currentTime - repeatArr[i].id) >= timeUnitToMilliseconds(repeatArr[i].time)){
           try {
-            repeatArr[i].function();
+            if(!repeatArr[i].paused) repeatArr[i].function();
             repeatArr[i].id = currentTime;
           } catch (e) {
             print('Repeat function failed with error: ');
@@ -1568,5 +1580,5 @@ var timeUnitToSeconds;
     return "pattern loaded"
   }
 }());
-var editor,beautify,drawBrowser;function setupEditorBrowser(){editor=ace.edit("editor");beautify=ace.require("ace/ext/beautify");editor.setTheme("ace/theme/chaos");editor.$blockScrolling=Infinity;var editorHTMLelement=document.getElementById("editor");editorHTMLelement.style.fontFamily="Menlo";editorHTMLelement.style.fontSize="15px";editorHTMLelement.style.background="rgba(20,20,20, 0.5)";editor.setShowPrintMargin(false);editor.getSession().setUseSoftTabs(true);editor.getSession().setMode("ace/mode/javascript");editor.commands.addCommands([{name:"updateSchedule",bindKey:{win:"Ctrl-S",mac:"Ctrl-s"},exec:function(editor){var foo=editor.getValue();var name=document.getElementById("editingName").innerHTML;var time=document.getElementById("editingTime").innerHTML;var lookingForFoo=schedule.findFunction(name);if(typeof lookingForFoo==="undefined"&&time!=="??"){schedule.repeat(new Function(editor.getValue()),time,name)}else{schedule.updateFunction(name,lookingForFoo)}blinkEditorElement("editorTitle","rgba(255,255,0,0.5)")}},{name:"newSchedule",bindKey:{win:"Ctrl-n",mac:"Ctrl-n"},exec:function(editor){editor.setValue("");document.getElementById("editingName").innerHTML="insertName";document.getElementById("editingTime").innerHTML="??"}},{name:"switchToConsole",bindKey:{win:"Ctrl-x",mac:"Ctrl-x"},exec:function(editor){jqconsole.Focus()}}]);function blinkEditorElement(id,color){var editor=document.getElementById(id);var oldColor=editor.style.backgroundColor;editor.style.transition="background-color 0.15s ease-in-out";editor.style.backgroundColor=color;setTimeout(function(){document.getElementById(id).style.backgroundColor=oldColor},150)}drawBrowser=function(){var tab="┃ ",browser,width=30,eol="┖─╴",foo;browser="╻̊<b>Schedule</b><br>";browser+="┃<br>";browser+="┣━┱╴<b>Repeats:</b> <br>";(foo=function(arr,emptyLength){var icon,name,select,cancel;if(arr.length===emptyLength)browser+=tab+eol+"<i>empty</i>"+"<br>";for(var i=emptyLength;i<arr.length;i++){icon=i===arr.length-1?eol:"┠─╴";name=arr[i].name;select="<span onclick=sound.schedule.getFunction('"+name+"')>"+utilities.rightPad(name,width-10," ")+"</span>";select+=utilities.rightPad("("+arr[i].time+")",10);cancel="<span onclick=sound.schedule.clear('"+name+"')>x</span>";browser+=tab+icon+select+cancel+"<br>"}})(sound.schedule.getRepeatArr(),3);browser+="┃<br>";browser+="┗━┱╴<b>Once:</b> <br>";tab="  ";foo(sound.schedule.getOnceArr(),0);document.getElementById("scheduleBrowser").innerHTML=browser}}
+var editor,beautify,drawBrowser;function setupEditorBrowser(){editor=ace.edit("editor");beautify=ace.require("ace/ext/beautify");editor.setTheme("ace/theme/chaos");editor.$blockScrolling=Infinity;var editorHTMLelement=document.getElementById("editor"),editingNameHTMLel=document.getElementById("editingName"),editingTimeHTMLel=document.getElementById("editingTime");editorHTMLelement.style.fontFamily="Menlo";editorHTMLelement.style.fontSize="15px";editorHTMLelement.style.background="rgba(20,20,20, 0.5)";editor.setShowPrintMargin(false);editor.getSession().setUseSoftTabs(true);editor.getSession().setMode("ace/mode/javascript");editor.commands.addCommands([{name:"updateSchedule",bindKey:{win:"Ctrl-S",mac:"Ctrl-s"},exec:function(editor){var foo=editor.getValue(),name=editingNameHTMLel.innerHTML,time=editingTimeHTMLel.innerHTML;var lookingForFoo=schedule.findFunction(name);if(typeof lookingForFoo==="undefined"&&time!=="??"){schedule.repeat(new Function(editor.getValue()),time,name)}else{schedule.updateFunction(name,lookingForFoo)}blinkEditorElement("editorTitle","rgba(255,255,0,0.5)")}},{name:"newSchedule",bindKey:{win:"Ctrl-n",mac:"Ctrl-n"},exec:function(editor){editor.setValue("");editingNameHTMLel.innerHTML="insertName";editingTimeHTMLel.innerHTML="??"}},{name:"switchToConsole",bindKey:{win:"Ctrl-x",mac:"Ctrl-x"},exec:function(editor){jqconsole.Focus()}},{name:"pauseSchedule",bindKey:{win:"Ctrl-p",mac:"Ctrl-p"},exec:function(editor){schedule.togglePause(editingNameHTMLel.innerHTML)}}]);function blinkEditorElement(id,color){var editor=document.getElementById(id);var oldColor=editor.style.backgroundColor;editor.style.transition="background-color 0.15s ease-in-out";editor.style.backgroundColor=color;setTimeout(function(){document.getElementById(id).style.backgroundColor=oldColor},150)}drawBrowser=function(){var tab="┃ ",browser,width=Math.floor(window.innerWidth/28),eol="┖─╴";browser="╻̊<b>Schedule</b><br>";browser+="┃<br>";browser+="┣━┱╴<b>Repeats:</b> <br>";(foo=function(arr,emptyLength){var icon,name,select,cancel,pause,pcolor,foo;if(arr.length===emptyLength)browser+=tab+eol+"<i>empty</i><br>";for(var i=emptyLength;i<arr.length;i++){icon=i===arr.length-1?eol:"┠─╴";name=arr[i].name;select="<span onclick=sound.schedule.getFunction('"+name+"')>"+utilities.rightPad(name,width-10," ")+"</span>";select+=utilities.rightPad("("+arr[i].time+")",10);cancel="<span onclick=sound.schedule.clear('"+name+"')>x</span>";if(emptyLength!==0){pcolor=arr[i].paused?"red":"green";pause="<span onclick=sound.schedule.togglePause('"+name+"') ";pause+='style="color:'+pcolor+';">▶</span> '}else{pause="  "}browser+=tab+icon+select+pause+cancel+"<br>"}})(sound.schedule.getRepeatArr(),3);browser+="┃<br>";browser+="┗━┱╴<b>Once:</b> <br>";tab="  ";foo(sound.schedule.getOnceArr(),0);document.getElementById("scheduleBrowser").innerHTML=browser}}
 (function(){Schillinger.prototype.newRhythm.help={title:"New Rhythm",type:"Generator",content:"A new rhythm.<br> a1(str): fast,slow. arg2: an array of numbers."};Schillinger.prototype.reverse.help={title:"Reverse",type:"Modifier",content:"If called without an argument reverses the whole sequence. Optional <string>arg1 what you want reversed: notes or rhythm."};Schillinger.prototype.multiplyIntervals.help={title:"Multiply intervals",type:"Modifier",content:"Multiply all intervals with scalar of <int>arg1."};Schillinger.prototype.transpose.help={title:"Transpose",type:"Modifier",content:"Transpose the sequence horisontally by <int>arg1."};Schillinger.prototype.clampToRange.help={title:"Clamp",type:"Modifier",content:"Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high)."};var mirror={title:"Mirror",type:"Modifier",content:"Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth."};Schillinger.prototype.mirrorNotes.help=mirror;Schillinger.prototype.mirrorIntervals.help=mirror;Schillinger.prototype.mirrorRhythm.help=mirror;var sort={title:"Sort",type:"Modifier",content:"Sort based on given type of sort.",options:[["ascending","low to high"],["descending","high to low"],["average-deviation-ascending","delta from avg h2l"],["average-deviation-descending",,"delta from avg l2h"],["wondrous-ascending","howWonderous h2l"],["wondrous-descending","howWonderous l2h"]]};Schillinger.prototype.sortNotes.help=sort;Schillinger.prototype.sortIntervals.help=sort;Schillinger.prototype.sortRhythm.help=sort;Chaos.prototype.getAllFromBuffer.help={title:"Get all from buffer",type:"Data",content:"Returns an array with all elements of requested value <string>arg1 from the chaos buffer."};Chaos.prototype.fillChaosBuffer.help={title:"Fill Chaos Buffer",type:"Generator",content:"Fills a buffer with iterations from chaos. Takes an option object as argument.",options:[["length","int"],["offset","int"],["coords","object { a: f, t: f, b: f, o: f}"],["reorder","string"],["release","float"],["t","time value"]]};Sequencer.prototype.mapBufferToNotes.help={title:"Map buffer to notes",type:"Modifier",content:"Maps chaos buffer to note values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};Sequencer.prototype.mapBufferToRhythm.help={title:"Map buffer to rhythm",type:"Modifier",content:"Maps chaos buffer to rhytmic values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};sound.scales.set.help={title:"Set scale",type:"Modifier",content:"Selects the scale to tune notes too.",docLink:"documentation.html#scales"};Instrument.prototype.envelope.help={title:"Envelope",type:"Sound",content:"Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["attack","float"],["sustain","float 0-1"],["release","float"],["t","time value"]]};Instrument.prototype.filter.help={title:"Filter",type:"Sound",content:"Edit the filter. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["cutoff","frequence"],["resonance","float"],["t","time value"]]};Instrument.prototype.oscillators.help={title:"Oscillators",type:"Sound",content:"Edit the oscillators. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["detune","float 0-100"],["offset","int"],["t","time value"]]};sound.drums.start.help={title:"Start",type:"Schedule",content:"The drum sequences start playing, individual drum states remain the same."};sound.drums.startAll.help={title:"Start all",type:"Schedule",content:"All drums start playing."};sound.drums.stop.help={title:"Stop",type:"Schedule",content:"The drum sequences stop playing, individual drum states remain the same."};sound.drums.stopAll.help={title:"Stop all",type:"Schedule",content:"All drums stop playing."}})();

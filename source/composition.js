@@ -370,16 +370,21 @@ var timeUnitToSeconds;
   var repeatArr = [],
       onceArr = [];
 
+  function Task(foo,t,n){
+    this.id = utilities.getTime();
+    this.name = n || utilities.getNextName();
+    this.function = foo;
+    this.time = t;
+    this.paused = false;
+    if (typeof drawBrowser !== "undefined") setTimeout(drawBrowser, 10);
+  };
+
   sound.schedule = {
     repeat: function(foo, t, n){ // id is a bad confusing name, because it changes every do()
-      if(typeof n === 'undefined') n = utilities.getNextName();
-      repeatArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
-      if (typeof drawBrowser !== "undefined") drawBrowser();
+      repeatArr.push( new Task(...arguments) );
     },
     once: function(foo, t, n){
-      if(typeof n === 'undefined') n = utilities.getNextName();
-      onceArr.push( { id: utilities.getTime(), name: n, function: foo, time: t });
-      if (typeof drawBrowser !== "undefined") drawBrowser();
+      onceArr.push( new Task(...arguments) );
     },
 
     clear: function(name){
@@ -449,6 +454,12 @@ var timeUnitToSeconds;
       if(typeof foo !== 'undefined') foo.function = new Function(editor.getValue());
     },
 
+    togglePause: function(name, f){
+      var foo = f || this.findFunction(name);
+      if(typeof foo !== 'undefined') foo.paused = !foo.paused;
+      drawBrowser();
+    },
+
     findFunction: function(name){
       var bothArr = [ ...repeatArr, ...onceArr ];
       for (var i = 0; i < bothArr.length; i++) if(bothArr[i].name === name) return bothArr[i];
@@ -476,7 +487,7 @@ var timeUnitToSeconds;
       for (var i = 0; i < repeatArr.length; i++) {
         if((currentTime - repeatArr[i].id) >= timeUnitToMilliseconds(repeatArr[i].time)){
           try {
-            repeatArr[i].function();
+            if(!repeatArr[i].paused) repeatArr[i].function();
             repeatArr[i].id = currentTime;
           } catch (e) {
             print('Repeat function failed with error: ');
