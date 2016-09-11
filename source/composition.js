@@ -438,8 +438,12 @@ var timeUnitToSeconds;
       }
     },
 
-    getFunction: function(name){
-      var foo = this.findFunction(name);
+    getLengthOfRepeatArr: function(){
+      return repeatArr.length - nrOfSystemRepeats;
+    },
+
+    getFunction: function(name, f){ // returns the function body of a task
+      var foo = f || this.findFunction(name);
       if(typeof foo !== 'undefined'){
         var fooStr = foo.function.toString();
         var body = fooStr.substring(fooStr.indexOf("{") + 1, fooStr.lastIndexOf("}"));
@@ -447,6 +451,11 @@ var timeUnitToSeconds;
         document.getElementById('editingTime').innerHTML = foo.time;
         editor.setValue(js_beautify(body));
       }
+    },
+
+    getFunctionByIndex: function(i){
+      i += nrOfSystemRepeats;
+      return this.getFunction(repeatArr[i].name, repeatArr[i].foo);
     },
 
     updateFunction: function(name, f){

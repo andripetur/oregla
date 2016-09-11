@@ -40,6 +40,14 @@ function setupEditorBrowser(){
       editor.setValue('');
       editingNameHTMLel.innerHTML='insertName';
       editingTimeHTMLel.innerHTML='??';
+      drawBrowser();
+      blinkEditorElement('editor', 'rgb(100,100,0)');
+    },
+  },
+  { name: 'deleteSchedule',
+    bindKey: {win: 'Ctrl-d',  mac: 'Ctrl-d'},
+    exec: function(editor) {
+      schedule.clear(editingNameHTMLel.innerHTML);
     },
   },
   { name: 'switchToConsole',
@@ -55,6 +63,22 @@ function setupEditorBrowser(){
     }
   }]);
 
+  for (var i = 1; i < 10; i++) {
+    (function(i){
+      editor.commands.addCommand({
+        name: 'selectSchedule'+i,
+        bindKey: {win: 'Ctrl-'+i,  mac: 'Ctrl-'+i},
+        exec: function(editor) {
+          if(i-1 < schedule.getLengthOfRepeatArr()){
+            schedule.getFunctionByIndex(i-1);
+            drawBrowser();
+            blinkEditorElement('editor', 'rgb(100,100,0)');
+          }
+        },
+      })
+    })(i);
+  }
+
   function blinkEditorElement(id, color){
     var editor = document.getElementById(id);
     var oldColor = editor.style.backgroundColor;
@@ -66,16 +90,17 @@ function setupEditorBrowser(){
   }
 
   drawBrowser = function(){
-    var tab='┃ ', browser, width = Math.floor(window.innerWidth / 28), eol = '┖─╴';
+    var tab='┃ ', browser, width = Math.floor(window.innerWidth / 30), eol = '┖─╴';
     browser ='╻̊<b>Schedule</b><br>';
     browser+='┃<br>';
     browser+="┣━┱╴<b>Repeats:</b> <br>";
 
     (foo = function(arr, emptyLength){
-      var icon, name, select, cancel, pause, pcolor, foo;
-      if(arr.length === emptyLength) browser += tab + eol + '<i>empty</i><br>';
+      var icon, name, select, cancel, pause, pcolor, foo, nr, fontColor;
+      if(arr.length === emptyLength) browser += tab + eol + '<i>0. empty</i><br>';
       for (var i = emptyLength; i < arr.length; i++) {
         icon = i === arr.length-1 ? eol : '┠─╴';
+        nr = '<i>' + (i+1 - emptyLength) + '. </i>'; // nr for select schedule shortcut
         name = arr[i].name;
         select = '<span onclick=sound.schedule.getFunction(\''+ name +'\')>' + utilities.rightPad(name, width-10, ' ') + '</span>';
         select += utilities.rightPad('('+arr[i].time+')', 10);
@@ -87,12 +112,18 @@ function setupEditorBrowser(){
         } else {
           pause = "  ";
         }
-        browser += tab + icon + select + pause + cancel + '<br>';
+        // give that classic browser stripe look
+        bcolor = i % 2 === 0 ? 'rgba(100, 100, 100, 0.5)' : 'rgba(100, 100, 100, 0.25)';
+        fontColor = name === editingNameHTMLel.innerHTML ? 'yellow' : 'white';
+        bcolor = '<span style=\"background:'+ bcolor +'; color:'+ fontColor +'\">';
+
+        // compose dat line
+        browser += tab + icon + bcolor + nr + select + pause + cancel + '</span><br>';
       }
     })(sound.schedule.getRepeatArr(), 3);
 
     browser+='┃<br>';
-    browser+="┗━┱╴<b>Once:</b> <br>";
+    browser+="┗━┱╴<b>Once:</b><br>";
     tab='  ';
 
     foo(sound.schedule.getOnceArr(), 0);
