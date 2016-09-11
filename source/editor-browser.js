@@ -90,20 +90,21 @@ function setupEditorBrowser(){
   }
 
   drawBrowser = function(){
-    var tab='┃ ', browser, width = Math.floor(window.innerWidth / 30), eol = '┖─╴';
-    browser ='╻̊<b>Schedule</b><br>';
+    var tab='┃ ', browser, width = Math.ceil(window.innerWidth / 41), eol = '┖─╴';
+    browser ='╻̊<b>Scheduled tasks:</b><br>';
     browser+='┃<br>';
     browser+="┣━┱╴<b>Repeats:</b> <br>";
 
     (foo = function(arr, emptyLength){
-      var icon, name, select, cancel, pause, pcolor, foo, nr, fontColor;
+      var icon, paddedname, name, select, cancel, pause, pcolor, foo, nr, fontColor;
       if(arr.length === emptyLength) browser += tab + eol + '<i>0. empty</i><br>';
       for (var i = emptyLength; i < arr.length; i++) {
         icon = i === arr.length-1 ? eol : '┠─╴';
         nr = '<i>' + (i+1 - emptyLength) + '. </i>'; // nr for select schedule shortcut
         name = arr[i].name;
-        select = '<span onclick=sound.schedule.getFunction(\''+ name +'\')>' + utilities.rightPad(name, width-10, ' ') + '</span>';
-        select += utilities.rightPad('('+arr[i].time+')', 10);
+        paddedname = utilities.rightPad(name, Math.floor(width*0.2), ' ');
+        select = '<span onclick=sound.schedule.getFunction(\''+ name +'\')>' + paddedname + '</span>';
+        select += utilities.rightPad('('+arr[i].time+')', Math.floor(width*0.4) - paddedname.length + 5);
         cancel = '<span onclick=sound.schedule.clear(\''+ name +'\')>x</span>';
         if(emptyLength !== 0){ // dont show pause button on once tasks
           pcolor = arr[i].paused ? 'red' : 'green';

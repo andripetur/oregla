@@ -100,17 +100,17 @@ body {
   left: 25%;
   top: 1%;
   font-size: 15px;
-  width: 50%;
+  width: 45%;
   background-color: rgba(0, 0, 0, 0.0);
 }
 
 #editorInfo{
   position: absolute;
   border: 2px solid #CCC;
-  left: 50%;
+  left: 40%;
   top: 1%;
   font-size: 15px;
-  width: 25%;
+  width: 30%;
   height: 55px;
   background-color: rgba(0, 0, 0, 0.2);
 }
@@ -123,11 +123,10 @@ body {
 #editorContainer{
   position: absolute;
   border: 2px solid #CCC;
-
   top: 45px;
   left: 25%;
-  width: 50%;
-  height: 34%;
+  width: 45%;
+  height: calc(59% + 3px);
   overflow: hidden;
 }
 
@@ -142,13 +141,13 @@ body {
 #scheduleBrowser {
   position: absolute;
   border: 2px solid #CCC;
-  top: calc(37% + 45px);
-  left: 25%;
-  cursor: pointer;
-  height: 180px;
-  width: calc(50% - 10px);
-  overflow: scroll;
+  top: 1%;
+  left: 71%;
+  width: calc(28% - 10px);
+  height: 65%;
 
+  overflow: scroll;
+  cursor: pointer;
   line-height: 100%;
   white-space: pre;
   background: rgba(0, 0, 0, 0.5);
