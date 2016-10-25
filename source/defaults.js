@@ -13,4 +13,4 @@ var def = {
   },
 
   quickStartEnabled: true,
-}
+};

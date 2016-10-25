@@ -41,17 +41,19 @@ SOURCES_NOGUI=('defaults.js'
 'composition.js'
 'scheduler.js')
 
-if [[ $MODE -eq "GUI" ]]; then
+if [[ $MODE = "GUI" ]]; then
   > oregla.js # clear dest file
   for i in ${SOURCES[@]}; do
     file='source/'${i}
     uglifyjs $file >> oregla.js || cat $file >> oregla.js #minify file, if fail, just append it
   done
-elif [[ $MODE -eq "NO_GUI" ]]; then
+elif [[ $MODE = "NO_GUI" ]]; then
   > oregla_nogui.js # clear dest file
   for i in ${SOURCES_NOGUI[@]}; do
     file='source/'${i}
+    echo "// ------" $file "-------" >> oregla_nogui.js
     cat $file >> oregla_nogui.js
+    echo >> oregla_nogui.js
   done
 fi
 
