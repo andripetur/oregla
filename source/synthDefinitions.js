@@ -52,6 +52,7 @@
   }
 
   // - - - - samplers - - - -
+  var drms = [ "kick", "snare", "hh", "perc"];
 
   function makeBufferDefs(){
     var note, id, defs = [];
@@ -59,6 +60,10 @@
       note = ((i % 2) == 0 ? "C" : "Fis" ) + Math.floor(i/2);
       id = "pi-note-" + (i * 6);
       defs.push( { id: id, url: "./piano/" + note + ".wav" });
+    }
+
+    for (var d of drms) {
+      defs.push( { id: d, url: "./drm/bss/" + d + '.WAV' });
     }
     return defs;
   }
@@ -69,6 +74,7 @@
 
   var everySixUnder103 = [];
   for (var i = 0; i < 18; i++) everySixUnder103.push(i*6);
+  // synthDef.loader.buffers[0].format.duration // to find length of samples
 
   function makePianoSamples(){
     var bufferId, delta, synths = [];
@@ -95,6 +101,14 @@
             id: "trig",
             ugen: "flock.ugen.inputChangeTrigger",
             source: 0,
+          },
+
+          mul: {
+            ugen: "flock.ugen.asr",
+            attack: 0.001,
+            sustain: 0.5,
+            release: 0.4,
+            gate: 0,
           },
 
           speed: Math.pow(2, delta/12),
@@ -157,169 +171,29 @@
       sources: fillFilterBank(),
     }
   })
+   // drum defs
 
-  synthDef.kick = flock.synth({
-    nickName: "kick",
-    synthDef: {
-      ugen: "flock.ugen.out",
-      id: 'vol',
-      mul: 0.7,
-      bus: 5,
-      sources: {
-        ugen: 'flock.ugen.distortion',
-          source: {
-           id: 'osc',
-           ugen: "flock.ugen.sinOsc",
-           mul: {
-             id: "volEnv",
-             ugen: "flock.ugen.asr",
-             attack: 0.003,
-             sustain: 0.5,
-             release: 0.4,
-             mul: 0.9,
+   for (var d of drms) {
+     synthDef[d] = flock.synth({
+       nickName: d,
+       synthDef: {
+         ugen: "flock.ugen.out",
+         id: 'vol',
+         mul: 0.7,
+         bus: 5,
+         sources: {
+           ugen: "flock.ugen.playBuffer",
+           buffer: d,
+
+           trigger: {
+             id: "trig",
+             ugen: "flock.ugen.inputChangeTrigger",
+             source: 0,
            },
-
-           freq: {
-             id: "pitchEnv",
-             ugen: "flock.ugen.asr",
-             attack: 0.001,
-             sustain: 0.1,
-             release: 0.2,
-             gate: 0,
-             mul: 1000,
-             add: 60,
-           },
-         },
-         gain: 3,
-       },
-     }
-  });
-
-  synthDef.snare = flock.synth({
-    nickName: "snare",
-    synthDef: {
-      ugen: "flock.ugen.out",
-      id: 'vol',
-      mul: 0.7,
-      bus: 5,
-      sources: {
-        ugen: 'flock.ugen.distortion',
-        source: {
-          ugen: "flock.ugen.filter.biquad.bp",
-          source: {
-            ugen: "flock.ugen.whiteNoise",
-            mul: {
-              id: "volEnv",
-              ugen: "flock.ugen.asr",
-              attack: 0.001,
-              sustain: 1,
-              release: 0.4,
-              gate: 0,
-            },
-          },
-
-          freq: {
-            id: "pitchEnv",
-            ugen: "flock.ugen.asr",
-            attack: 0.001,
-            sustain: 0.1,
-            release: 0.2,
-            gate: 0,
-            mul: 18000,
-            add: 400,
-          },
-
-          q: 2.0
-        },
-        gain: 2
-      }
-    }
-  });
-
-  synthDef.hh = flock.synth({
-    nickName: "hh",
-    synthDef: {
-      ugen: "flock.ugen.out",
-      id: 'vol',
-      mul: 0.7,
-      bus: 5,
-      sources: {
-        ugen: "flock.ugen.filter.biquad.bp",
-        source: {
-          ugen: "flock.ugen.whiteNoise",
-          mul: {
-            id: "volEnv",
-            ugen: "flock.ugen.asr",
-            attack: 0.003,
-            sustain: 1,
-            release: 0.02,
-            gate: 0,
-          },
-        },
-
-        freq: {
-          id: "pitchEnv",
-          ugen: "flock.ugen.asr",
-          attack: 0.001,
-          sustain: 1,
-          release: 0.02,
-          gate: 0,
-          mul: 9000,
-          add: 2000,
-        },
-
-        q: 3.0
-      }
-    }
-  });
-
-  function percPitchEnv(i,pitch){
-    return {
-      id: "pitchEnv"+i,
-      ugen: "flock.ugen.asr",
-      start: 0,
-      attack: 1.2,
-      sustain: 0.5,
-      release: 0.2,
-      gate: 0,
-      mul: pitch*2,
-      add: pitch,
-    }
-  }
-
-  synthDef.perc = flock.synth({
-    nickName: "perc",
-    synthDef: {
-      ugen: "flock.ugen.out",
-      id: 'vol',
-      mul: 0.7,
-      bus: 5,
-      sources: {
-        ugen: 'flock.ugen.distortion',
-          source: {
-           ugen: "flock.ugen.sum",
-           sources: [{
-               ugen: "flock.ugen.square",
-               mul: 0.5,
-               freq: percPitchEnv("", 587)
-             },
-             {
-               ugen: "flock.ugen.square",
-               mul: 0.5,
-               freq: percPitchEnv(2, 845)
-             }],
-         },
-         mul: {
-           id: "volEnv",
-           ugen: "flock.ugen.asr",
-           attack: 0.003,
-           sustain: 1,
-           release: 0.2,
-           gate: 0,
-         },
-       },
-     }
-  });
+         }
+       }
+     });
+   }
 
   synthDef.drumBus = flock.synth({
     synthDef: {

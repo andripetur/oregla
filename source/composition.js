@@ -180,8 +180,12 @@ var Instrument = null; // make accesible to help
 
   sound.piano = new Instrument( synthDef.piano );
   sound.piano.noteOn = function( mNote ) {
-    var pNote = "piano-"+mNote+".trigger.source";
-    synthDef.piano.set( pNote , 1 );
+    var pNote = "piano-"+mNote;
+    synthDef.piano.set( pNote+".trigger.source" , 1 );// start sample
+    synthDef.piano.set( pNote+".mul.gate" , 1 );// start envelope
+    setTimeout(function() {
+      synthDef.piano.set( pNote+".mul.gate" , 0 );// stop envelope
+    }, 100)
   }
 
   sound.ambient = new Instrument( synthDef.ffb );
@@ -227,22 +231,7 @@ var Instrument = null; // make accesible to help
     },
 
     play: function(which){
-      // if (drumTimeouts.hasOwnProperty(which)) clearTimeout(drumTimeouts[which]);
-      var duration = getSynthValue(sound.drums[which].duration, 'line.mul') - 100,
-          on = { "volEnv.gate": 1 , "pitchEnv.gate": 1} , off = { "volEnv.gate": 0 , "pitchEnv.gate": 0};
-
-      if(duration < 25) duration = 25;
-
-      if(which === 'perc') {
-        on["pitchEnv2.gate"] = 1;
-        off["pitchEnv2.gate"] = 0;
-      }
-
-      sound.drums[which].synth.set( on );
-
-      drumTimeouts[which] = setTimeout(function () {
-        sound.drums[which].synth.set( off );
-      }, duration);
+      sound.drums[which].synth.set( 'trig.source', 1 );
     },
 
     do: function() {
@@ -338,6 +327,6 @@ var Instrument = null; // make accesible to help
       sound.drums[v].rhythm = utilities.copyArr(drumPatterns[p][v]);
       sound.drums[v].pos = 0;
     }
-    return "pattern loaded"
+    return "pattern loaded";
   }
 }());

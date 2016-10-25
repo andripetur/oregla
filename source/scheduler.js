@@ -96,7 +96,7 @@ var timeUnitToSeconds;
       if(document.getElementById('editingName').innerHTML === name){ // clear editor
         editor.commands.byName.newSchedule.exec(editor);
       }
-      drawBrowser();
+      if (typeof drawBrowser !== "undefined") drawBrowser();
 
       if(cntr > 0){
         return "Cleared "+ cntr +" scheduled events with name: " + name + ".";
@@ -161,7 +161,7 @@ var timeUnitToSeconds;
     togglePause: function(name, f){
       var foo = f || this.findFunction(name);
       if(typeof foo !== 'undefined') foo.paused = !foo.paused;
-      drawBrowser();
+      if (typeof drawBrowser !== "undefined") drawBrowser();
     },
 
     findFunction: function(name){
@@ -184,7 +184,7 @@ var timeUnitToSeconds;
             print(e);
           }
           onceArr.splice(i--,1); // remove from arr and do this index again
-          drawBrowser();
+          if (typeof drawBrowser !== "undefined") drawBrowser();
         }
       }
 
@@ -198,7 +198,7 @@ var timeUnitToSeconds;
             print(e);
             print('Scheduling cancelled: ');
             repeatArr.splice(i--,1); // remove from arr and do this index again
-            drawBrowser();
+            if (typeof drawBrowser !== "undefined") drawBrowser();
           }
         }
       }
