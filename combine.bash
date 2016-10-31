@@ -32,7 +32,8 @@ SOURCES=('libs/polyfills.js'
 'editor-browser.js'
 'help.js' )
 
-SOURCES_NOGUI=('defaults.js'
+SOURCES_NOGUI=('libs/flocking-all.min.js'
+'defaults.js'
 'utilities.js'
 'schillinger_functions.js'
 'chaos.js'
