@@ -1056,7 +1056,7 @@ var Instrument = null; // make accesible to help
 
   Scale.prototype.lockTo = function(n, baseNote){
     if(this.absolute.length === 0) return n;
-    return this.absolute.indexOf(n) >= 0 ? n : n+1;
+    return this.absolute.indexOf(n%12) >= 0 ? n : n+1;
   }
 
   sound.scales = {
