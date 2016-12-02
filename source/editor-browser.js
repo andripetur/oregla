@@ -54,6 +54,13 @@ function setupEditorBrowser(){
       schedule.clear(editingNameHTMLel.innerHTML);
     },
   },
+  { name: 'restoreSchedule',
+    bindKey: {win: 'Ctrl-r',  mac: 'Ctrl-r'},
+    exec: function(editor) {
+      editor.commands.byName["updateSchedule"].exec(editor);
+      schedule.restore(editingNameHTMLel.innerHTML);
+    },
+  },
   { name: 'switchToConsole',
     bindKey: {win: 'Ctrl-x',  mac: 'Ctrl-x'},
     exec: function(editor) {
@@ -96,42 +103,56 @@ function setupEditorBrowser(){
   drawBrowser = function(){
     var tab='┃ ', browser, width = Math.ceil(window.innerWidth / 41), eol = '┖─╴';
     browser ='╻̊<b>Scheduled tasks:</b><br>';
-    browser+='┃<br>';
-    browser+="┣━┱╴<b>Repeats:</b> <br>";
+    (addTitle = function(title, last){
+      browser+='┃<br>';
+      browser+= last ? '┗━┱╴' : '┣━┱╴';
+      browser+= '<b>'+title+':</b><br>';
+      if(last) tab='  ';
+    })('Repeats', false);
 
-    (foo = function(arr, emptyLength){
-      var icon, paddedname, name, select, cancel, pause, pcolor, foo, nr, fontColor;
-      if(arr.length === emptyLength) browser += tab + eol + '<i>0. empty</i><br>';
+    (drawArr = function(arr, emptyLength, f){
+      var tree, paddedname, name, select, cancel, pause, restore, pcolor, foo, nr, fontColor;
+
+      if(arr.length === emptyLength) {
+        browser += tab + eol + '<i>0. empty</i><br>';
+      }
+
       for (var i = emptyLength; i < arr.length; i++) {
-        icon = i === arr.length-1 ? eol : '┠─╴';
+        tree = i === arr.length-1 ? eol : '┠─╴';
         nr = '<i>' + (i+1 - emptyLength) + '. </i>'; // nr for select schedule shortcut
         name = arr[i].name;
         paddedname = utilities.rightPad(name, Math.floor(width*0.2), ' ');
         select = '<span onclick=sound.schedule.getFunction(\''+ name +'\')>' + paddedname + '</span>';
         select += utilities.rightPad('('+arr[i].time+')', Math.floor(width*0.4) - paddedname.length + 5);
         cancel = '<span onclick=sound.schedule.clear(\''+ name +'\')>x</span>';
-        if(emptyLength !== 0){ // dont show pause button on once tasks
+        restore = '<span onclick=sound.schedule.restore(\''+ name +'\') style=\"color:orange;\">▲</span> ';
+
+        if(emptyLength !== 0){ // only show pause button on repeat tasks
           pcolor = arr[i].paused ? 'red' : 'green';
           pause = '<span onclick=sound.schedule.togglePause(\''+ name +'\') ';
           pause +='style=\"color:'+ pcolor +';\">▶</span> ';
         } else {
           pause = "  ";
         }
+
         // give that classic browser stripe look
         bcolor = i % 2 === 0 ? 'rgba(100, 100, 100, 0.5)' : 'rgba(100, 100, 100, 0.25)';
         fontColor = name === editingNameHTMLel.innerHTML ? 'yellow' : 'white';
         bcolor = '<span style=\"background:'+ bcolor +'; color:'+ fontColor +'\">';
 
         // compose dat line
-        browser += tab + icon + bcolor + nr + select + pause + cancel + '</span><br>';
+        if(typeof f !== "undefined") pause = restore;
+        browser += tab + tree + bcolor + nr + select + pause + cancel + '</span><br>';
       }
     })(sound.schedule.getRepeatArr(), 3);
 
-    browser+='┃<br>';
-    browser+="┗━┱╴<b>Once:</b><br>";
-    tab='  ';
+    addTitle('Once', sound.schedule.getFailedArr().length === 0);
+    drawArr(sound.schedule.getOnceArr(), 0);
 
-    foo(sound.schedule.getOnceArr(), 0);
+    if(sound.schedule.getFailedArr().length !== 0) {
+      addTitle('Failed', true);
+      drawArr(sound.schedule.getFailedArr(), 0, 'f');
+    }
 
     document.getElementById('scheduleBrowser').innerHTML = browser;
   }

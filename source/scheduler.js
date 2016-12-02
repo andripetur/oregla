@@ -60,7 +60,8 @@ var timeUnitToSeconds;
   }
 
   var repeatArr = [],
-      onceArr = [];
+      onceArr = [],
+      failedArr = [];
 
   function Task(foo,t,n){
     this.id = utilities.getTime();
@@ -74,25 +75,31 @@ var timeUnitToSeconds;
   sound.schedule = {
     repeat: function(foo, t, n){ // id is a bad confusing name, because it changes every do()
       repeatArr.push( new Task(...arguments) );
+      return "Scheduled a new task: " + repeatArr[repeatArr.length-1].name;
     },
     once: function(foo, t, n){
       onceArr.push( new Task(...arguments) );
+      return "Scheduled a new task: " + onceArr[repeatArr.length-1].name;
+    },
+    failed: function(task, comesFrom){
+      task.belongs = comesFrom;
+      failedArr.push(task);
     },
 
     clear: function(name){
       var cntr = 0;
-      for (var i = 0; i < onceArr.length; i++) {
-        if(onceArr[i].name === name){
-          onceArr.splice(i--,1);
-          cntr++;
+      (seekAndDestroy = function(arr){
+        for (var i = 0; i < arr.length; i++) {
+          if(arr[i].name === name){
+            arr.splice(i--,1);
+            cntr++;
+          }
         }
-      }
-      for (var i = 0; i < repeatArr.length; i++) {
-        if(repeatArr[i].name === name){
-          repeatArr.splice(i--,1);
-          cntr++;
-        }
-      }
+      })(onceArr);
+
+      seekAndDestroy(repeatArr);
+      seekAndDestroy(failedArr);
+
       if(document.getElementById('editingName').innerHTML === name){ // clear editor
         editor.commands.byName.newSchedule.exec(editor);
       }
@@ -108,25 +115,35 @@ var timeUnitToSeconds;
     clearAll: function(){
       repeatArr.splice(nrOfSystemRepeats,repeatArr.length); // first three are system repeats
       onceArr = [];
+      failedArr = [];
       return "Schedule cleared!"
     },
 
+    restore: function(name){
+      for (var i = 0; i < failedArr.length; i++) {
+        if(failedArr[i].name === name) {
+          var f = failedArr.splice(i--,1)[0];
+          if(f.belongs === onceArr) f.id = utilities.getTime(); // once gets new time.
+          f.belongs.push(f);
+        }
+      }
+      if (typeof drawBrowser !== "undefined") drawBrowser();
+    },
+
     show: function(){
-      if ( repeatArr.length === nrOfSystemRepeats && onceArr.length < 1) {
+      if ( repeatArr.length === nrOfSystemRepeats && onceArr.length < 1 && failedArr.length < 1) {
         return "No scheduled events to show."
       } else {
-        if(repeatArr.length > nrOfSystemRepeats) {
-          print('Repeats scheduled:');
-          for (var i = nrOfSystemRepeats; i < repeatArr.length; i++) {
-            print('    '+repeatArr[i].name);
+        (showArr = function(arr, startIndex, msg){
+          if(arr.length > nrOfSystemRepeats) {
+            print(msg);
+            for (var i = startIndex; i < arr.length; i++) {
+              print('    '+arr[i].name);
+            }
           }
-        }
-        if(onceArr.length > 0){
-          print('Once scheduled:');
-          for (var i = 0; i < onceArr.length; i++) {
-            print('    '+onceArr[i].name);
-          }
-        }
+        })(repeatArr, nrOfSystemRepeats, 'Repeats scheduled:');
+        showArr(onceArr, 0, 'Once scheduled:');
+        showArr(failedArr, 0, 'Failed tasks:');
       }
     },
 
@@ -165,12 +182,13 @@ var timeUnitToSeconds;
     },
 
     findFunction: function(name){
-      var bothArr = [ ...repeatArr, ...onceArr ];
+      var bothArr = [ ...repeatArr, ...onceArr, ...failedArr ];
       for (var i = 0; i < bothArr.length; i++) if(bothArr[i].name === name) return bothArr[i];
     },
 
     getRepeatArr: function(){ return repeatArr; },
     getOnceArr:   function(){ return onceArr; },
+    getFailedArr: function(){ return failedArr; },
 
     do: function(){
       var currentTime = utilities.getTime();
@@ -180,10 +198,11 @@ var timeUnitToSeconds;
           try {
             onceArr[i].function();
           } catch (e) {
-            print('Once function failed with error: ');
-            print(e);
+            print('Repeat function \"'+onceArr[i].name+'\" failed with error: ');
+            print('    '+e);
+            schedule.failed(onceArr.splice(i--,1)[0], onceArr);  // move to failed
           }
-          onceArr.splice(i--,1); // remove from arr and do this index again
+          onceArr.splice(i--,1); // remove from schedule and do this index again
           if (typeof drawBrowser !== "undefined") drawBrowser();
         }
       }
@@ -194,10 +213,10 @@ var timeUnitToSeconds;
             if(!repeatArr[i].paused) repeatArr[i].function();
             repeatArr[i].id = currentTime;
           } catch (e) {
-            print('Repeat function failed with error: ');
-            print(e);
-            print('Scheduling cancelled: ');
-            repeatArr.splice(i--,1); // remove from arr and do this index again
+            print('Repeat function \"'+repeatArr[i].name+'\" failed with error: ');
+            print('    '+e);
+            print('Scheduling cancelled.');
+            schedule.failed(repeatArr.splice(i--,1)[0], repeatArr); //  move to failed and do this index again
             if (typeof drawBrowser !== "undefined") drawBrowser();
           }
         }

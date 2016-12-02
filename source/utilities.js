@@ -120,6 +120,13 @@
     return arr.slice(0, arr.length);
   }
 
+  utilities.removeDuplicates = function(arr){
+    var seen = {};
+    return arr.filter(function(item) {
+      return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+  }
+
   utilities.shiftArrRight = function(arr, steps){
     for (var i = 0; i < steps; i++) arr.push(arr.splice(0,1)[0]);
   }
@@ -194,10 +201,7 @@
       }
     }
 
-    var seen = {}; // remove duplicates
-    return anagrams.filter(function(item) {
-      return seen.hasOwnProperty(item) ? false : (seen[item] = true);
-    });
+    return utilities.removeDuplicates(anagrams);
   }
 
   var names = utilities.shuffleArray([
