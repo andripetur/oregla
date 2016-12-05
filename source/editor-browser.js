@@ -5,7 +5,12 @@ function Constant(name, initValue){ // make declaring constants easier from the 
 }
 
 function setupEditorBrowser(){
+  var langTools = ace.require("ace/ext/language_tools");
   editor = ace.edit("editor");
+  editor.setOptions({
+    enableBasicAutocompletion: true,
+    enableLiveAutocompletion: true
+  });
   editor.setTheme("ace/theme/chaos");
   editor.$blockScrolling = Infinity;
   var editorHTMLelement = document.getElementById('editor'),
@@ -18,6 +23,94 @@ function setupEditorBrowser(){
   editor.getSession().setUseSoftTabs(true);
   editor.getSession().setTabSize(2);
   editor.getSession().setMode("ace/mode/javascript");
+
+  //TODO implement this autocomplete+fuzzy matching in console too(I think it's neater).
+  var autoCompleteObject = function(obj, flatten) {
+    var res = {}, objContent, value;
+
+    for (var key in obj) {
+      value = obj[key];
+      if( value.typeName !== "flock.synth" ){ // ignore flocking synths, they are to huge
+
+        if(typeof value === "object"){ // strip the data from the objects.
+          if(value instanceof Array){
+            res[key] = "[]";
+          } else if( typeof value === "number"){
+            res[key] = "number";
+          } else if( typeof value === "boolean"){
+            res[key] = "boolean";
+          } else {
+            objContent = autoCompleteObject(value, flatten);
+            if(flatten){
+              res[key] = "object";
+              for(var x in objContent) {
+                res[key + '.' + x] = objContent[x];
+              }
+            } else {
+              res[key] = objContent;
+            }
+          }
+        } else if( typeof value === "function") {
+          res[key] = "function()";
+        } else {
+          res[key] = value;
+        }
+      }
+    }
+
+    return res;
+  };
+
+  var getAllKeys = function(obj){
+    var res = [];
+    for ( var i in obj ) res.push(i);
+    return res;
+  };
+
+  var getKeysStartingWith = function(obj, pref){
+    var res = [];
+    for ( var i in obj ) if(i.includes(pref)) res.push(i.replace(pref, ""));
+    return res;
+  }
+
+  var oreglaList = autoCompleteObject(sound, true);
+  var oreglaKeyWordList = getAllKeys(oreglaList);
+
+  var oreglaCompleter = {
+    getCompletions: function(editor, session, pos, prefix, callback) {
+        var keyWordList,
+            index = editor.session.getTokenAt(pos.row, pos.column).index,
+            currLine = editor.session.getTokens(pos.row);
+
+        if(currLine.length > 2){ // if it is possible that we have entered a namespace
+          var startPoint = index,
+              subLine, pre = "";
+
+          while(typeof currLine[startPoint-1] !== "undefined" &&
+                (currLine[startPoint-1].type === "punctuation.operator" ||
+                currLine[startPoint-1].type === "identifier" )){
+            startPoint--; // find startpoint
+          }
+
+          subLine = currLine.slice(startPoint, index); // extract our line
+          for (var i = 0; i < line.length; i++) pre += subLine[i].value; // compose string
+
+          keyWordList = getKeysStartingWith(oreglaList, pre); // get keys in that object
+        } else {
+          keyWordList = oreglaKeyWordList;
+        }
+
+        callback(null, keyWordList.map(function(word) {
+          return {
+            caption: word,
+            value: word,
+            meta: "oregla"
+          };
+        }));
+    }
+  };
+
+  langTools.addCompleter(oreglaCompleter);
 
   editor.commands.addCommands([{
     name: 'updateSchedule',

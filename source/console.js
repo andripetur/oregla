@@ -207,7 +207,7 @@ var initSuggestions = null;
     }
 
     var isDotted = false;
-    var isParenthesisd = false
+    var isParenthesisd = false;
     var suggestionObject = null;
     var selectedSuggestion = 0;
 
