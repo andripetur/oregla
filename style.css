@@ -1,9 +1,9 @@
 body {
   font-family: Menlo;
   text-rendering: geometricPrecision;
-  background-color: black;
-  font-size: 18px;
-  color: white;
+  background-color: #111; /* almost black */
+  font-size: 18px; /* almost white */
+  color: #eeeeee;
   line-height: 100%;
   overflow: hidden;
   width: 100%;
@@ -212,10 +212,10 @@ body {
 /* - - - - - - - - - - - - - - - Documentation - - - - - - - - - - - - - - */
 .docBody {
   font-style: normal;
-  font-size: 18px;
+  font-size: 16px;
   overflow-y: auto;
   overflow-x: hidden;
-  line-height: normal;
+  line-height: 1.5;
 }
 
 #docNav {
