@@ -229,5 +229,5 @@ var timeUnitToSeconds;
   var nrOfSystemRepeats = 3;
   sound.schedule.repeat(sound.drums.do, '8n', 'drums_schedule');
   sound.schedule.repeat(Instrument.do, '8n', 'instrument_schedule');
-  sound.schedule.repeat(launchpadDo, '8n', 'launchpad_schedule');
+  sound.schedule.repeat(lpseq.do, '8n', 'launchpad_schedule');
 })();

@@ -715,327 +715,331 @@ var Schillinger = null;
 })();
 var Chaos=null;(function(){"use strict";Chaos=function(_coords){var coords=_coords||{x:.1,y:.1,a:0,t:-4.1,b:15,o:1};this.buffer=[];this.getCoord=function(w){return coords[w]};this.getCoords=function(w){return utilities.copyObj(coords)};this.setCoords=function(w){for(var v in w)coords[v]=w[v]};this.calculate=function(){var xx,yy;xx=coords.y-coords.x/Math.abs(coords.x)*Math.sqrt(Math.abs(coords.b*coords.x-coords.o));yy=coords.t-coords.x;coords.x=xx;coords.y=yy};var strangeAttractor=function(){var a=5,b=15,c=1,interval=.05,x=coords.x,y=coords.y,z=coords.z||.1,xx,yy;xx=x-a*x*interval+a*y*interval;yy=y+b*x*interval-y*interval-z*x*interval;zz=z-c*z*interval+x*y*interval;coords.x=xx;coords.y=yy;coords.z=zz}};Chaos.prototype.getAllFromBuffer=function(w){return this.buffer.map(function(el){return el[w]})};var reorderByDistanceFromEachother=function(buffer){var distances=[];for(var i=0;i<buffer.length;i++){for(var y=i+1;y<buffer.length;y++){distances.push({i1:i,i2:y,length:utilities.pythagoras(buffer[i].x-buffer[y].x,buffer[i].y-buffer[y].y)})}}distances.sort(function(a,b){return a.length-b.length});var reorder=[];var foundIndxs=[];reorder.push(buffer[distances[0].i1]);reorder.push(buffer[distances[0].i2]);foundIndxs.push(distances[0].i1);var lookingFor=distances[0].i2;var i=0;while(reorder.length<buffer.length){if(foundIndxs.indexOf(distances[i].i1)>-1||foundIndxs.indexOf(distances[i].i2)>-1){distances.splice(i,1)}else if(distances[i].i1===lookingFor){reorder.push(buffer[distances[i].i2]);foundIndxs.push(distances[i].i1);lookingFor=distances[i].i2;i=0}else if(distances[i].i2===lookingFor){reorder.push(buffer[distances[i].i1]);foundIndxs.push(distances[i].i2);lookingFor=distances[i].i1;i=0}else{i++}}return reorder};var reorderByDistanceFromCenter=function(buffer){return buffer.sort(function(a,b){return a.length-b.length})};Chaos.prototype.fillChaosBuffer=function(o){var options=Object.assign({},def.fillBufferSettings);if(typeof o!=="undefined"){for(var v in o)options[v]=o[v]}options.coords=options.useOldCoords?{x:.1,y:.1}:sound.makeCoords();this.setCoords(options.coords);for(var i=0;i<options.offset;i++)this.calculate();var b=[];for(var i=0;i<options.length;i++){b.push({x:this.getCoord("x"),y:this.getCoord("y"),length:utilities.pythagoras(this.getCoord("x"),this.getCoord("y"))});this.calculate()}if(options.reorder!=="none"){switch(options.reorder){case"distanceFromCenter":b=reorderByDistanceFromCenter(b);break;case"distanceFromEachother":b=reorderByDistanceFromEachother(b);break}}this.buffer=b;return"Chaos buffer filled!"}})();var Sequencer=null;(function(){Sequencer=function(t){this.seqType=t||"melodic";this.rhythm=[];this.pos=0;if(this.seqType!=="rhythm"){this.notes=[];var c=new Chaos;for(var foo in c)this[foo]=c[foo]}};Sequencer.prototype=new Schillinger;Sequencer.prototype.getNote=function(){var res=this.rhythm[this.pos%this.rhythm.length]?36+this.notes[this.pos%this.notes.length]:-1;this.pos++;return res};Sequencer.prototype.trigger=function(){var res=this.rhythm[this.pos%this.rhythm.length]?true:false;this.pos++;return res};Sequencer.prototype.mapBufferToNotes=function(o){var valueToMap="length";var mapTo={low:0,high:24};var buffRange=utilities.range(this.getAllFromBuffer(valueToMap));this.notes=this.buffer.map(function(el){return Math.floor(utilities.scale(el[valueToMap],buffRange.low,buffRange.high,mapTo.low,mapTo.high))})};Sequencer.prototype.mapBufferToRhythm=function(o){var valueToMap="length";var mapTo={low:1,high:4};var buffRange=utilities.range(this.getAllFromBuffer(valueToMap));this.rhythm=this.buffer.map(function(el){return Math.floor(utilities.scale(el[valueToMap],buffRange.low,buffRange.high,mapTo.low,mapTo.high))})}})();
 (function(){"use strict";fluid.registerNamespace("sound");fluid.registerNamespace("synthDef");var environment=flock.init();environment.start();synthDef.synth=function(){return flock.synth({synthDef:{ugen:"flock.ugen.out",id:"vol",mul:.7,sources:{ugen:"flock.ugen.filter.moog",id:"filter",cutoff:8e3,resonance:2,source:{ugen:"flock.ugen.sum",sources:[{id:"osc",ugen:"flock.ugen.saw",mul:{id:"env",ugen:"flock.ugen.asr",attack:.001,sustain:.5,release:.4,gate:0}},{id:"osc2",ugen:"flock.ugen.saw",mul:{id:"env2",ugen:"flock.ugen.asr",attack:.001,sustain:.5,release:.4,gate:0}}]}}}})};var drms=["kick","snare","hh","perc"];function makeBufferDefs(){var note,id,defs=[];for(var i=0;i<16;i++){note=(i%2==0?"C":"Fis")+Math.floor(i/2);id="pi-note-"+i*6;defs.push({id:id,url:"./piano/"+note+".wav"})}for(var d of drms){defs.push({id:d,url:"./drm/bss/"+d+".WAV"})}return defs}synthDef.loader=flock.bufferLoader({bufferDefs:makeBufferDefs()});var everySixUnder103=[];for(var i=0;i<18;i++)everySixUnder103.push(i*6);function makePianoSamples(){var bufferId,delta,synths=[];for(var i=0;i<128;i++){if(everySixUnder103.indexOf(i)>-1){delta=1;bufferId="pi-note-"+i}else{var diffs=everySixUnder103.map(function(el){return{diff:Math.abs(el-i),val:el}});diffs.sort(function(a,b){return a.diff-b.diff});var baseNote=diffs[0].val;bufferId="pi-note-"+baseNote;delta=i-baseNote}synths.push({ugen:"flock.ugen.playBuffer",id:"piano-"+i,buffer:bufferId,trigger:{id:"trig",ugen:"flock.ugen.inputChangeTrigger",source:0},mul:{ugen:"flock.ugen.asr",attack:.001,sustain:.5,release:.4,gate:0},speed:Math.pow(2,delta/12),loop:0,start:0})}return synths}synthDef.piano=flock.synth({synthDef:{id:"vol",ugen:"flock.ugen.freeverb",mul:.7,source:{ugen:"flock.ugen.sum",sources:makePianoSamples()}}});synthDef.line=function(from,goTo,_t){var t=_t||.03;return{ugen:"flock.ugen.xLine",rate:"control",start:from,end:goTo,duration:t}};synthDef.ffBankSize=10;function fillFilterBank(){var ffb=[];for(var i=0;i<synthDef.ffBankSize;i++){ffb.push({id:"f"+i,ugen:"flock.ugen.filter.moog",cutoff:4e3,resonance:8.9,source:{id:"n"+i,ugen:"flock.ugen.whiteNoise",mul:1},mul:0})}return ffb}synthDef.ffb=flock.synth({synthDef:{id:"vol",ugen:"flock.ugen.sum",sources:fillFilterBank()}});for(var d of drms){synthDef[d]=flock.synth({nickName:d,synthDef:{ugen:"flock.ugen.out",id:"vol",mul:.7,bus:5,sources:{ugen:"flock.ugen.playBuffer",buffer:d,trigger:{id:"trig",ugen:"flock.ugen.inputChangeTrigger",source:0}}}})}synthDef.drumBus=flock.synth({synthDef:{ugen:"flock.ugen.out",id:"vol",mul:.7,sources:{ugen:"flock.ugen.in",bus:5}}});synthDef.pseudoSynth=function(_init){var init=_init+100||100;return flock.synth({synthDef:{ugen:"flock.ugen.out",rate:"control",id:"line",mul:init}})}})();function setSynthdefValue(v,instrument,controls,t){var fr=instrument.get(controls);fr=typeof fr==="object"?fr.inputs.end.inputs.value:fr;instrument.set(controls,synthDef.line(fr,v,t))}
-var midi = null,
-    output,
-    input,
-    padStates = [];
+(function(){
+  fluid.registerNamespace("lpseq")
 
-// request MIDI access
-if (navigator.requestMIDIAccess) {
-  navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
-} else {
-  alert("No MIDI support in your browser.");
-}
-for (var i = 0; i < 64; i++) padStates.push(false); // start everything from zero
+  var midi = null,
+      output,
+      input,
+      padStates = [];
 
-// create sequencer grid
-var noteToGrid = {},
-    gridToNote = {},
-    padCntr = 0,
-    note = 0;
-
-for (var y = 0; y < 8; y++) {
-  for (var x = 0; x < 8; x++) {
-    noteToGrid[note] = padCntr;
-    gridToNote[padCntr] = note;
-    note++;
-    padCntr++;
-  }
-  note+=8;
-}
-
-// playRow
-var playRow = [],
-    noteToPlayRow = {},
-    playRowToNote = {};
-for(var i = 0; i<16; i++) {
-  if(i % 2 === 1){
-    var note = i * 8;
-    playRow.push(playRow.length>3); // 4false, 4 true
-    noteToPlayRow[note] = playRow.length-1;
-    playRowToNote[playRow.length-1] = note;
-   }
-}
-
-// topRow
-var topRow = [],
-    noteToTopRow = {},
-    topRowToNote = {};
-for (var i = 0, note = 104; i < 8; i++, note++) {
-  topRow.push(i===4);
-  noteToTopRow[note] = i;
-  topRowToNote[i] = note;
-}
-
-var color = {
-  red: 15,
-  green: 60,
-  yellow: 62,
-  amber: 63,
-}
-
-// draw the thing
-var pPos, gridContainer, needToDrawSequencer = true;
-
-function drawSequencer() {
-  var formattedGrid = "", icon, color, pIndx, pBtn;
-
-  pPos = playheads.map(function(x){ return x.posInGrid });
-
-  for (var i = 0; i < topRow.length; i++) {
-    formattedGrid += "<span onclick=topRowFunctionality("+i+")>" + (topRow[i] ? '●': '○') + ' </span>';
-  }
-
-  formattedGrid += ' <br>'
-  for (var i = 0; i < padStates.length; i++) {
-    color = colorOneIndexes.includes(i) ? 'rgb(30,30,30)' : 'rgb(60,60,60)';
-    formattedGrid += "<span onclick=toggleGridState("+i+") style=\"background: "+color+";\">";
-
-    if( (pIndx = pPos.indexOf(i)) > -1){ // it's a playhead
-      icon = padStates[i] ? '◆': '◇';
-      icon = "<font color=" + playheads[pIndx].color + ">" + icon + "</font>";
-    } else {
-      icon = padStates[i] ? '■' : '□';
-    }
-
-    formattedGrid += icon + " </span>";
-
-    if(i % 8 === 7) {
-      pBtn = noteToPlayRow[gridToNote[i]+1];
-      color = playRow[pBtn] ? 'green' : 'red';
-      formattedGrid += "<span onclick=togglePlayRowState("+pBtn+") style=\"color:"+ color +";\">▶</span><br>"; //pButton & linebreak
-    }
-  }
-  gridContainer.innerHTML = formattedGrid;
-}
-
-function initLpSeq(){
-  gridContainer = document.getElementById('lpseq');
-  drawSequencer(); // make it appear
-}
-
-// midi functions
-var rerouteMidiOutToConsole = false;
-function onMIDISuccess(midiAccess) {
-  midi = midiAccess;
-
-  if (selectDevice('Launchpad', 'input')) {
-    selectDevice('Launchpad', 'output');
-    input.onmidimessage = handleButtonPresses;
-    initLights();
+  // request MIDI access
+  if (navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
   } else {
-    // midi.onstatechange = function() {
-    //   onMIDISuccess(midi);
-    // }
-    onMIDIFailure();
+    alert("No MIDI support in your browser.");
   }
+  for (var i = 0; i < 64; i++) padStates.push(false); // start everything from zero
 
-}
+  // create sequencer grid
+  var noteToGrid = {},
+      gridToNote = {},
+      padCntr = 0,
+      note = 0;
 
-function onMIDIFailure(e) {
-  console.log('Not connected to a launcphad, no midi being output.');
-  output = { send: function(e){ if(rerouteMidiOutToConsole) console.log(e); }};
-}
-
-var paths = [
-  [ // rings inside rings
-    [0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24, 16, 8],
-    [9, 10, 11, 12, 13, 14, 22, 30, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33, 25, 17],
-    [18, 19, 20, 21, 29, 37, 45, 44, 43, 42, 34, 26],
-    [27, 28, 36, 35]
-  ],
-  [ // two set of rings inside rings
-    [0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 30, 29, 28, 27, 26, 25, 24, 16, 8],
-    [41, 42, 43, 44, 45, 46, 54, 53, 52, 51, 50, 49],
-    [32, 33, 34, 35, 36, 37, 38, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40],
-    [9, 10, 11, 12, 13, 14, 22, 21, 20, 19, 18, 17],
-  ],
-  [ // oposing U with inside block
-    [24, 16, 8, 0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 30, 22, 14, 13, 12, 11, 10, 9, 17, 25],
-    [32, 40, 48, 56, 57, 58, 59, 60, 61, 62, 63, 55, 47, 39, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33],
-    [34, 35, 36, 37, 45, 44, 43, 42],
-    [18, 19, 20, 21, 29, 28, 27, 26]
-  ],
-  [ // double line at top, rest in circles
-    [0, 1, 2, 3, 4, 5, 6, 7, 15, 14, 13, 12, 11, 10, 9, 8],
-    [16, 17, 18, 19, 20, 21, 22, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24],
-    [25, 26, 27, 28, 29, 30, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33],
-    [34, 35, 36, 37, 45, 44, 43, 42]
-  ]
-];
-paths.selected = 0;
-var colorOneIndexes = [ ...paths[paths.selected][0], ...paths[paths.selected][2] ];
-
-function Stylus(p){
-  this.cntr = 0;
-  this.path = p;
-  this.color = p % 2 === 0 ? 'green' : 'red';
-  this.direction = 'forward';
-  this.on = playRow[p];
-  this.do = function(){};
-
-  this.tick = function(){
-    if(this.direction === 'forward'){
-      this.cntr++;
-    } else {
-      this.cntr--;
-      if(this.cntr < 0) this.cntr = paths[paths.selected][this.path].length - 1;
+  for (var y = 0; y < 8; y++) {
+    for (var x = 0; x < 8; x++) {
+      noteToGrid[note] = padCntr;
+      gridToNote[padCntr] = note;
+      note++;
+      padCntr++;
     }
-    this.calcPos();
+    note+=8;
   }
 
-  this.calcPos = function(){
-    this.posInPath = this.cntr % paths[paths.selected][this.path].length;
-    this.posInGrid = paths[paths.selected][this.path][this.posInPath];
+  // playRow
+  var playRow = [],
+      noteToPlayRow = {},
+      playRowToNote = {};
+  for(var i = 0; i<16; i++) {
+    if(i % 2 === 1){
+      var note = i * 8;
+      playRow.push(playRow.length>3); // 4false, 4 true
+      noteToPlayRow[note] = playRow.length-1;
+      playRowToNote[playRow.length-1] = note;
+     }
   }
 
-  this.calcPos(); // init pos
-}
-
-var playheads = [ new Stylus(0), new Stylus(1), new Stylus(2), new Stylus(3) ];
-
-function launchpadDo() {
-  // if all playheads are paused don't draw
-  if(playRow[0] || playRow[1] || playRow[2] || playRow[3]) drawSequencer();
-  for (var i = 0; i < playheads.length; i++) {
-    if(playheads[i].on){
-      var velocityOff = 0;
-
-      if(padStates[playheads[i].posInGrid]){ // check if step is on
-        velocityOff = color.yellow;
-        playheads[i].do();
-      }
-
-      blinkLight(gridToNote[playheads[i].posInGrid], color[playheads[i].color], velocityOff);
-      playheads[i].tick();
-    }
+  // topRow
+  var topRow = [],
+      noteToTopRow = {},
+      topRowToNote = {};
+  for (var i = 0, note = 104; i < 8; i++, note++) {
+    topRow.push(i===4);
+    noteToTopRow[note] = i;
+    topRowToNote[i] = note;
   }
-}
 
-function toggleGridState(g){
-  padStates[g] = !padStates[g];
-  output.send( [0x90, gridToNote[g], (padStates[g] ? color.yellow : 0) ] ); // set light according to change
-  drawSequencer();
-}
-
-function togglePlayRowState(pad){
-  playRow[pad] = !playRow[pad];
-  if(pad < 4){
-    playheads[pad].on = playRow[pad];
-  } else {
-    playheads[pad-4].direction = playRow[pad] ? 'forward' : 'backward';
+  var color = {
+    red: 15,
+    green: 60,
+    yellow: 62,
+    amber: 63,
   }
-  output.send( [0x90, playRowToNote[pad], (playRow[pad] ? color.green : color.red) ] ); // set light according to change
-  drawSequencer();
-}
 
-function topRowFunctionality(button){
-  if(button === 0){ // clear ALl
-    for (var i = 0; i < pPos.length; i++){
-      output.send( [0x90, gridToNote[pPos[i]], 0 ] , window.performance.now() + (i+5)*100); // turnLightOn
+  // draw the thing
+  var pPos, gridContainer, needToDrawSequencer = true;
+
+  function drawSequencer() {
+    var formattedGrid = "", icon, color, pIndx, pBtn;
+
+    pPos = lpseq.playheads.map(function(x){ return x.posInGrid });
+
+    for (var i = 0; i < topRow.length; i++) {
+      formattedGrid += "<span onclick=topRowFunctionality("+i+")>" + (topRow[i] ? '●': '○') + ' </span>';
     }
 
+    formattedGrid += ' <br>'
     for (var i = 0; i < padStates.length; i++) {
-      padStates[i] = false;
-      output.send( [0x90, gridToNote[i], 0 ] , window.performance.now() + i*10); // turnLightOn
-    }
+      color = colorOneIndexes.includes(i) ? 'rgb(30,30,30)' : 'rgb(60,60,60)';
+      formattedGrid += "<span onclick=toggleGridState("+i+") style=\"background: "+color+";\">";
 
-  } else if(button === 1){ // fillALL
-    for (var i = 0; i < pPos.length; i++){
-      output.send( [0x90, gridToNote[pPos[i]], color.yellow ] , window.performance.now() + (i+5)*100); // turnLightOn
-    }
-    for (var i = 0; i < padStates.length; i++) {
-      padStates[i] = true;
-      output.send( [0x90, gridToNote[i], color.yellow ] , window.performance.now() + i*10); // turnLightOn
-    }
-  } else if(button === 2){
-    initLights();
-    for (var i = 0; i < padStates.length; i++) {
-      if( Math.random() > 0.5) {
-        padStates[i] = true;
-        output.send( [0x90, gridToNote[i], color.yellow ] ); // turnLightOn
+      if( (pIndx = pPos.indexOf(i)) > -1){ // it's a playhead
+        icon = padStates[i] ? '◆': '◇';
+        icon = "<font color=" + lpseq.playheads[pIndx].color + ">" + icon + "</font>";
       } else {
-        padStates[i] = false;
+        icon = padStates[i] ? '■' : '□';
       }
-    }
-  } else if(button === 3){
-    for (var i = 0; i < padStates.length; i++) {
-      if(padStates[i] && Math.random() > 0.5){
-        padStates[i] = false;
-        output.send( [0x90, gridToNote[i], 0 ] ); // turnLightoff
-      }
-    }
-  } else if (button > 3){ // select path
-    var oldButton = noteToTopRow[paths.selected + 108];
-    paths.selected = button-4;
 
-    for (var i = 0; i < playheads.length; i++) playheads[i].calcPos();
-    topRow[oldButton] = false;
-    topRow[button] = true;
-    setButtonInTopRow(topRowToNote[oldButton], 0);
-    setButtonInTopRow(topRowToNote[button], color.green);
-    colorOneIndexes = [ ...paths[paths.selected][0], ...paths[paths.selected][2] ];
+      formattedGrid += icon + " </span>";
+
+      if(i % 8 === 7) {
+        pBtn = noteToPlayRow[gridToNote[i]+1];
+        color = playRow[pBtn] ? 'green' : 'red';
+        formattedGrid += "<span onclick=togglePlayRowState("+pBtn+") style=\"color:"+ color +";\">▶</span><br>"; //pButton & linebreak
+      }
+    }
+    gridContainer.innerHTML = formattedGrid;
   }
-  drawSequencer();
-}
 
-function handleButtonPresses( event ){
-  if(event.data[2] > 0) { // its a note on
-    var note = event.data[1];
-    if(event.data[0] === 176){ // topRowButton press
-      topRowFunctionality(note - 104);
-    } else if(noteToPlayRow.hasOwnProperty(note)){ // playRowButton press
-      togglePlayRowState(noteToPlayRow[note])
+  lpseq.init = function(){
+    gridContainer = document.getElementById('lpseq');
+    drawSequencer(); // make it appear
+  }
+
+  // midi functions
+  var rerouteMidiOutToConsole = false;
+  function onMIDISuccess(midiAccess) {
+    midi = midiAccess;
+
+    if (selectDevice('Launchpad', 'input')) {
+      selectDevice('Launchpad', 'output');
+      input.onmidimessage = handleButtonPresses;
+      initLights();
     } else {
-      toggleGridState(noteToGrid[note]);
+      // midi.onstatechange = function() {
+      //   onMIDISuccess(midi);
+      // }
+      onMIDIFailure();
+    }
+
+  }
+
+  function onMIDIFailure(e) {
+    console.log('Not connected to a launcphad, no midi being output.');
+    output = { send: function(e){ if(rerouteMidiOutToConsole) console.log(e); }};
+  }
+
+  var paths = [
+    [ // rings inside rings
+      [0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24, 16, 8],
+      [9, 10, 11, 12, 13, 14, 22, 30, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33, 25, 17],
+      [18, 19, 20, 21, 29, 37, 45, 44, 43, 42, 34, 26],
+      [27, 28, 36, 35]
+    ],
+    [ // two set of rings inside rings
+      [0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 30, 29, 28, 27, 26, 25, 24, 16, 8],
+      [41, 42, 43, 44, 45, 46, 54, 53, 52, 51, 50, 49],
+      [32, 33, 34, 35, 36, 37, 38, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40],
+      [9, 10, 11, 12, 13, 14, 22, 21, 20, 19, 18, 17],
+    ],
+    [ // oposing U with inside block
+      [24, 16, 8, 0, 1, 2, 3, 4, 5, 6, 7, 15, 23, 31, 30, 22, 14, 13, 12, 11, 10, 9, 17, 25],
+      [32, 40, 48, 56, 57, 58, 59, 60, 61, 62, 63, 55, 47, 39, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33],
+      [34, 35, 36, 37, 45, 44, 43, 42],
+      [18, 19, 20, 21, 29, 28, 27, 26]
+    ],
+    [ // double line at top, rest in circles
+      [0, 1, 2, 3, 4, 5, 6, 7, 15, 14, 13, 12, 11, 10, 9, 8],
+      [16, 17, 18, 19, 20, 21, 22, 23, 31, 39, 47, 55, 63, 62, 61, 60, 59, 58, 57, 56, 48, 40, 32, 24],
+      [25, 26, 27, 28, 29, 30, 38, 46, 54, 53, 52, 51, 50, 49, 41, 33],
+      [34, 35, 36, 37, 45, 44, 43, 42]
+    ]
+  ];
+  paths.selected = 0;
+  var colorOneIndexes = [ ...paths[paths.selected][0], ...paths[paths.selected][2] ];
+
+  function Stylus(p){
+    this.cntr = 0;
+    this.path = p;
+    this.color = p % 2 === 0 ? 'green' : 'red';
+    this.direction = 'forward';
+    this.on = playRow[p];
+    this.do = function(){};
+
+    this.tick = function(){
+      if(this.direction === 'forward'){
+        this.cntr++;
+      } else {
+        this.cntr--;
+        if(this.cntr < 0) this.cntr = paths[paths.selected][this.path].length - 1;
+      }
+      this.calcPos();
+    }
+
+    this.calcPos = function(){
+      this.posInPath = this.cntr % paths[paths.selected][this.path].length;
+      this.posInGrid = paths[paths.selected][this.path][this.posInPath];
+    }
+
+    this.calcPos(); // init pos
+  }
+  lpseq.playheads = [ new Stylus(0), new Stylus(1), new Stylus(2), new Stylus(3) ];
+
+  lpseq.do = function() {
+    // if all playheads are paused don't draw
+    if(playRow[0] || playRow[1] || playRow[2] || playRow[3]) drawSequencer();
+    for (var i = 0; i < lpseq.playheads.length; i++) {
+      if(lpseq.playheads[i].on){
+        var velocityOff = 0;
+
+        if(padStates[lpseq.playheads[i].posInGrid]){ // check if step is on
+          velocityOff = color.yellow;
+          lpseq.playheads[i].do();
+        }
+
+        blinkLight(gridToNote[lpseq.playheads[i].posInGrid], color[lpseq.playheads[i].color], velocityOff);
+        lpseq.playheads[i].tick();
+      }
     }
   }
-}
 
-function selectDevice( deviceName, io ){
-  var ioObj = io === "input" ? midi.inputs : midi.outputs;
-  for (var entry of ioObj) {
-    var ioput = entry[1];
-    if (ioput.name === deviceName) {
-      window[io] = ioObj.get(ioput.id);
-      console.log(io + ' device: ' + deviceName + ' succesfully selected')
-      return true;
+  function toggleGridState(g){
+    padStates[g] = !padStates[g];
+    output.send( [0x90, gridToNote[g], (padStates[g] ? color.yellow : 0) ] ); // set light according to change
+    drawSequencer();
+  }
+
+  function togglePlayRowState(pad){
+    playRow[pad] = !playRow[pad];
+    if(pad < 4){
+      lpseq.playheads[pad].on = playRow[pad];
+    } else {
+      lpseq.playheads[pad-4].direction = playRow[pad] ? 'forward' : 'backward';
+    }
+    output.send( [0x90, playRowToNote[pad], (playRow[pad] ? color.green : color.red) ] ); // set light according to change
+    drawSequencer();
+  }
+
+  function topRowFunctionality(button){
+    if(button === 0){ // clear ALl
+      for (var i = 0; i < pPos.length; i++){
+        output.send( [0x90, gridToNote[pPos[i]], 0 ] , window.performance.now() + (i+5)*100); // turnLightOn
+      }
+
+      for (var i = 0; i < padStates.length; i++) {
+        padStates[i] = false;
+        output.send( [0x90, gridToNote[i], 0 ] , window.performance.now() + i*10); // turnLightOn
+      }
+
+    } else if(button === 1){ // fillALL
+      for (var i = 0; i < pPos.length; i++){
+        output.send( [0x90, gridToNote[pPos[i]], color.yellow ] , window.performance.now() + (i+5)*100); // turnLightOn
+      }
+      for (var i = 0; i < padStates.length; i++) {
+        padStates[i] = true;
+        output.send( [0x90, gridToNote[i], color.yellow ] , window.performance.now() + i*10); // turnLightOn
+      }
+    } else if(button === 2){
+      initLights();
+      for (var i = 0; i < padStates.length; i++) {
+        if( Math.random() > 0.5) {
+          padStates[i] = true;
+          output.send( [0x90, gridToNote[i], color.yellow ] ); // turnLightOn
+        } else {
+          padStates[i] = false;
+        }
+      }
+    } else if(button === 3){
+      for (var i = 0; i < padStates.length; i++) {
+        if(padStates[i] && Math.random() > 0.5){
+          padStates[i] = false;
+          output.send( [0x90, gridToNote[i], 0 ] ); // turnLightoff
+        }
+      }
+    } else if (button > 3){ // select path
+      var oldButton = noteToTopRow[paths.selected + 108];
+      paths.selected = button-4;
+
+      for (var i = 0; i < lpseq.playheads.length; i++) lpseq.playheads[i].calcPos();
+      topRow[oldButton] = false;
+      topRow[button] = true;
+      setButtonInTopRow(topRowToNote[oldButton], 0);
+      setButtonInTopRow(topRowToNote[button], color.green);
+      colorOneIndexes = [ ...paths[paths.selected][0], ...paths[paths.selected][2] ];
+    }
+    drawSequencer();
+  }
+
+  function handleButtonPresses( event ){
+    if(event.data[2] > 0) { // its a note on
+      var note = event.data[1];
+      if(event.data[0] === 176){ // topRowButton press
+        topRowFunctionality(note - 104);
+      } else if(noteToPlayRow.hasOwnProperty(note)){ // playRowButton press
+        togglePlayRowState(noteToPlayRow[note])
+      } else {
+        toggleGridState(noteToGrid[note]);
+      }
     }
   }
 
-  console.log(io+ ' device not found');
-  return false;
-}
+  function selectDevice( deviceName, io ){
+    var ioObj = io === "input" ? midi.inputs : midi.outputs;
+    for (var entry of ioObj) {
+      var ioput = entry[1];
+      if (ioput.name === deviceName) {
+        window[io] = ioObj.get(ioput.id);
+        console.log(io + ' device: ' + deviceName + ' succesfully selected')
+        return true;
+      }
+    }
 
-function clearLaunchpad() {
-  output.send( [ 176, 0, 0 ]);
-}
-
-function lightUpPlayRow(){
-  for (var i = 0; i < playRow.length; i++) {
-    output.send( [0x90, playRowToNote[i], (playRow[i] ? color.green : color.red) ] );
+    console.log(io+ ' device not found');
+    return false;
   }
-}
 
-function lightTopRow(clearFirst){
-  if(clearFirst) for (var i = 0; i < topRow.length; i++) setButtonInTopRow(i+104, 0);
-  setButtonInTopRow(paths.selected+108, color.green); // light up selected sequence
-}
+  function clearLaunchpad() {
+    output.send( [ 176, 0, 0 ]);
+  }
 
-function initLights(){ // make it look right
-  clearLaunchpad();
-  lightUpPlayRow();
-  lightTopRow(false);
-}
+  function lightUpPlayRow(){
+    for (var i = 0; i < playRow.length; i++) {
+      output.send( [0x90, playRowToNote[i], (playRow[i] ? color.green : color.red) ] );
+    }
+  }
 
-function setButtonInTopRow(note, data){
-  output.send( [ 176, note, data ]);
-}
+  function lightTopRow(clearFirst){
+    if(clearFirst) for (var i = 0; i < topRow.length; i++) setButtonInTopRow(i+104, 0);
+    setButtonInTopRow(paths.selected+108, color.green); // light up selected sequence
+  }
 
-function blinkLight( note , velocityOn, velocityOff ) {
-  output.send( [0x90, note, velocityOn] );
-  output.send( [0x90, note, velocityOff], window.performance.now() + (timeUnitToSeconds('8n')*1000) );
-}
+  function initLights(){ // make it look right
+    clearLaunchpad();
+    lightUpPlayRow();
+    lightTopRow(false);
+  }
+
+  function setButtonInTopRow(note, data){
+    output.send( [ 176, note, data ]);
+  }
+
+  function blinkLight( note , velocityOn, velocityOff ) {
+    output.send( [0x90, note, velocityOn] );
+    output.send( [0x90, note, velocityOff], window.performance.now() + (timeUnitToSeconds('8n')*1000) );
+  }
+
+})();
 var Instrument = null; // make accesible to help
 (function () {
   "use strict";
@@ -1337,9 +1341,9 @@ var Instrument = null; // make accesible to help
 
   // Assign lpSeq to drums
   // TODO make this a user accesible function
-  for (var i = 0; i < playheads.length; i++) {
+  for (var i = 0; i < lpseq.playheads.length; i++) {
     (function(i){
-      playheads[i].do = function(){ drums.play(drums.list[i]); }
+      lpseq.playheads[i].do = function(){ drums.play(drums.list[i]); }
     })(i);
   }
 
@@ -1599,7 +1603,8 @@ var timeUnitToSeconds;
   var nrOfSystemRepeats = 3;
   sound.schedule.repeat(sound.drums.do, '8n', 'drums_schedule');
   sound.schedule.repeat(Instrument.do, '8n', 'instrument_schedule');
-  sound.schedule.repeat(launchpadDo, '8n', 'launchpad_schedule');
+  sound.schedule.repeat(lpseq.do, '8n', 'launchpad_schedule');
 })();
 var editor,drawBrowser;function Constant(name,initValue){if(typeof window[name]==="undefined")window[name]=initValue}function setupEditorBrowser(){var langTools=ace.require("ace/ext/language_tools");editor=ace.edit("editor");editor.setOptions({enableBasicAutocompletion:true,enableLiveAutocompletion:true});editor.setTheme("ace/theme/chaos");editor.$blockScrolling=Infinity;var editorHTMLelement=document.getElementById("editor"),editingNameHTMLel=document.getElementById("editingName"),editingTimeHTMLel=document.getElementById("editingTime");editorHTMLelement.style.fontFamily="Menlo";editorHTMLelement.style.fontSize="15px";editorHTMLelement.style.background="rgba(20,20,20, 0.5)";editor.setShowPrintMargin(false);editor.getSession().setUseSoftTabs(true);editor.getSession().setTabSize(2);editor.getSession().setMode("ace/mode/javascript");var autoCompleteObject=function(obj,flatten){var res={},objContent,value;for(var key in obj){value=obj[key];if(value.typeName!=="flock.synth"){if(typeof value==="object"){if(value instanceof Array){res[key]="[]"}else if(typeof value==="number"){res[key]="number"}else if(typeof value==="boolean"){res[key]="boolean"}else{objContent=autoCompleteObject(value,flatten);if(flatten){res[key]="object";for(var x in objContent){res[key+"."+x]=objContent[x]}}else{res[key]=objContent}}}else if(typeof value==="function"){res[key]="function()"}else{res[key]=value}}}return res};var getAllKeys=function(obj){var res=[];for(var i in obj)res.push(i);return res};var getKeysStartingWith=function(obj,pref){var res=[];for(var i in obj)if(i.includes(pref))res.push(i.replace(pref,""));return res};var oreglaList=autoCompleteObject(sound,true);var oreglaKeyWordList=getAllKeys(oreglaList);var oreglaCompleter={getCompletions:function(editor,session,pos,prefix,callback){var keyWordList,index=editor.session.getTokenAt(pos.row,pos.column).index,currLine=editor.session.getTokens(pos.row);if(currLine.length>2){var startPoint=index,subLine,pre="";while(typeof currLine[startPoint-1]!=="undefined"&&(currLine[startPoint-1].type==="punctuation.operator"||currLine[startPoint-1].type==="identifier")){startPoint--}subLine=currLine.slice(startPoint,index);for(var i=0;i<line.length;i++)pre+=subLine[i].value;keyWordList=getKeysStartingWith(oreglaList,pre)}else{keyWordList=oreglaKeyWordList}callback(null,keyWordList.map(function(word){return{caption:word,value:word,meta:"oregla"}}))}};langTools.addCompleter(oreglaCompleter);editor.commands.addCommands([{name:"updateSchedule",bindKey:{win:"Ctrl-S",mac:"Ctrl-s"},exec:function(editor){var foo=editor.getValue(),name=editingNameHTMLel.innerHTML,time=editingTimeHTMLel.innerHTML;var lookingForFoo=schedule.findFunction(name);if(typeof lookingForFoo==="undefined"&&time!=="??"){schedule.repeat(new Function(editor.getValue()),time,name)}else{schedule.updateFunction(name,lookingForFoo)}blinkEditorElement("editorTitle","rgba(255,255,0,0.5)")}},{name:"newSchedule",bindKey:{win:"Ctrl-n",mac:"Ctrl-n"},exec:function(editor){editor.setValue("");editingNameHTMLel.innerHTML="insertName";editingTimeHTMLel.innerHTML="??";drawBrowser();blinkEditorElement("editor","rgb(100,100,0)")}},{name:"deleteSchedule",bindKey:{win:"Ctrl-d",mac:"Ctrl-d"},exec:function(editor){schedule.clear(editingNameHTMLel.innerHTML)}},{name:"restoreSchedule",bindKey:{win:"Ctrl-r",mac:"Ctrl-r"},exec:function(editor){editor.commands.byName["updateSchedule"].exec(editor);schedule.restore(editingNameHTMLel.innerHTML)}},{name:"switchToConsole",bindKey:{win:"Ctrl-x",mac:"Ctrl-x"},exec:function(editor){jqconsole.Focus()}},{name:"pauseSchedule",bindKey:{win:"Ctrl-p",mac:"Ctrl-p"},exec:function(editor){schedule.togglePause(editingNameHTMLel.innerHTML)}}]);for(var i=1;i<10;i++){(function(i){editor.commands.addCommand({name:"selectSchedule"+i,bindKey:{win:"Ctrl-"+i,mac:"Ctrl-"+i},exec:function(editor){if(i-1<schedule.getLengthOfRepeatArr()){schedule.getFunctionByIndex(i-1);drawBrowser();blinkEditorElement("editor","rgb(100,100,0)")}}})})(i)}function blinkEditorElement(id,color){var editor=document.getElementById(id);var oldColor=editor.style.backgroundColor;editor.style.transition="background-color 0.15s ease-in-out";editor.style.backgroundColor=color;setTimeout(function(){document.getElementById(id).style.backgroundColor=oldColor},150)}drawBrowser=function(){var tab="┃ ",browser,width=Math.ceil(window.innerWidth/41),eol="┖─╴";browser="╻̊<b>Scheduled tasks:</b><br>";(addTitle=function(title,last){browser+="┃<br>";browser+=last?"┗━┱╴":"┣━┱╴";browser+="<b>"+title+":</b><br>";if(last)tab="  "})("Repeats",false);(drawArr=function(arr,emptyLength,f){var tree,paddedname,name,select,cancel,pause,restore,pcolor,foo,nr,fontColor;if(arr.length===emptyLength){browser+=tab+eol+"<i>0. empty</i><br>"}for(var i=emptyLength;i<arr.length;i++){tree=i===arr.length-1?eol:"┠─╴";nr="<i>"+(i+1-emptyLength)+". </i>";name=arr[i].name;paddedname=utilities.rightPad(name,Math.floor(width*.2)," ");select="<span onclick=sound.schedule.getFunction('"+name+"')>"+paddedname+"</span>";select+=utilities.rightPad("("+arr[i].time+")",Math.floor(width*.4)-paddedname.length+5);cancel="<span onclick=sound.schedule.clear('"+name+"')>x</span>";restore="<span onclick=sound.schedule.restore('"+name+'\') style="color:orange;">▲</span> ';if(emptyLength!==0){pcolor=arr[i].paused?"red":"green";pause="<span onclick=sound.schedule.togglePause('"+name+"') ";pause+='style="color:'+pcolor+';">▶</span> '}else{pause="  "}bcolor=i%2===0?"rgba(100, 100, 100, 0.5)":"rgba(100, 100, 100, 0.25)";fontColor=name===editingNameHTMLel.innerHTML?"yellow":"white";bcolor='<span style="background:'+bcolor+"; color:"+fontColor+'">';if(typeof f!=="undefined")pause=restore;browser+=tab+tree+bcolor+nr+select+pause+cancel+"</span><br>"}})(sound.schedule.getRepeatArr(),3);addTitle("Once",sound.schedule.getFailedArr().length===0);drawArr(sound.schedule.getOnceArr(),0);if(sound.schedule.getFailedArr().length!==0){addTitle("Failed",true);drawArr(sound.schedule.getFailedArr(),0,"f")}document.getElementById("scheduleBrowser").innerHTML=browser}}
 (function(){Schillinger.prototype.newRhythm.help={title:"New Rhythm",type:"Generator",content:"A new rhythm.<br> a1(str): fast,slow. arg2: an array of numbers."};Schillinger.prototype.reverse.help={title:"Reverse",type:"Modifier",content:"If called without an argument reverses the whole sequence. Optional <string>arg1 what you want reversed: notes or rhythm."};Schillinger.prototype.multiplyIntervals.help={title:"Multiply intervals",type:"Modifier",content:"Multiply all intervals with scalar of <int>arg1."};Schillinger.prototype.transpose.help={title:"Transpose",type:"Modifier",content:"Transpose the sequence horisontally by <int>arg1."};Schillinger.prototype.clampToRange.help={title:"Clamp",type:"Modifier",content:"Notes are transposed by an octave until they fit in range between <int>arg1(low) and <int>arg2(high)."};var mirror={title:"Mirror",type:"Modifier",content:"Maps the highest value in the sequence to lowest value. 2nd highest to 2nd lowest and so forth."};Schillinger.prototype.mirrorNotes.help=mirror;Schillinger.prototype.mirrorIntervals.help=mirror;Schillinger.prototype.mirrorRhythm.help=mirror;var sort={title:"Sort",type:"Modifier",content:"Sort based on given type of sort.",options:[["ascending","low to high"],["descending","high to low"],["average-deviation-ascending","delta from avg h2l"],["average-deviation-descending",,"delta from avg l2h"],["wondrous-ascending","howWonderous h2l"],["wondrous-descending","howWonderous l2h"]]};Schillinger.prototype.sortNotes.help=sort;Schillinger.prototype.sortIntervals.help=sort;Schillinger.prototype.sortRhythm.help=sort;Chaos.prototype.getAllFromBuffer.help={title:"Get all from buffer",type:"Data",content:"Returns an array with all elements of requested value <string>arg1 from the chaos buffer."};Chaos.prototype.fillChaosBuffer.help={title:"Fill Chaos Buffer",type:"Generator",content:"Fills a buffer with iterations from chaos. Takes an option object as argument.",options:[["length","int"],["offset","int"],["coords","object { a: f, t: f, b: f, o: f}"],["reorder","string"],["release","float"],["t","time value"]]};Sequencer.prototype.mapBufferToNotes.help={title:"Map buffer to notes",type:"Modifier",content:"Maps chaos buffer to note values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};Sequencer.prototype.mapBufferToRhythm.help={title:"Map buffer to rhythm",type:"Modifier",content:"Maps chaos buffer to rhytmic values. Making them playable.",options:[["valueToMap","x, y, length"],["mapTo","object { low: i, high: i }"]]};sound.scales.set.help={title:"Set scale",type:"Modifier",content:"Selects the scale to tune notes too.",docLink:"documentation.html#scales"};Instrument.prototype.envelope.help={title:"Envelope",type:"Sound",content:"Edit the envelope. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["attack","float"],["sustain","float 0-1"],["release","float"],["t","time value"]]};Instrument.prototype.filter.help={title:"Filter",type:"Sound",content:"Edit the filter. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["cutoff","frequence"],["resonance","float"],["t","time value"]]};Instrument.prototype.oscillators.help={title:"Oscillators",type:"Sound",content:"Edit the oscillators. To edit a single value: <string>arg1 pm to edit, <float> pm value, <opt string> Change transition time. For multiple values at once pass an option object.",options:[["detune","float 0-100"],["offset","int"],["t","time value"]]};sound.drums.start.help={title:"Start",type:"Schedule",content:"The drum sequences start playing, individual drum states remain the same."};sound.drums.startAll.help={title:"Start all",type:"Schedule",content:"All drums start playing."};sound.drums.stop.help={title:"Stop",type:"Schedule",content:"The drum sequences stop playing, individual drum states remain the same."};sound.drums.stopAll.help={title:"Stop all",type:"Schedule",content:"All drums stop playing."}})();
+$(document).ready(function(){initConsole();initDrawingAndUI();drawFaderbox();drawButtonbox();initResize();lpseq.init();setupEditorBrowser();drawBrowser();for(var i=0;i<sound.instruments.length;i++){var synth=sound.instruments[i];setupFader(i,{name:synth,instrument:sound[synth].synth})}setupFader(i++,{name:"drums",instrument:synthDef.drumBus});var o=i;for(var i=0;i<sound.drums.list.length;i++){var drum=sound.drums.list[i];setupFader(i+o,{name:drum,instrument:sound.drums[drum].synth})}for(var i=0;i<sound.instruments.length;i++){setupButton(i,{instrument:sound[sound.instruments[i]],onOn:sound[sound.instruments[i]].start,onOff:sound[sound.instruments[i]].stop})}setupButton(i++,{instrument:sound.drums,onOn:sound.drums.start,onOff:sound.drums.stop});var o=i;for(var i=0;i<sound.drums.list.length;i++){var drum=sound.drums.list[i];setupButton(i+o,{instrument:sound.drums[drum],onOn:sound.drums[drum].start,onOff:sound.drums[drum].stop})}initSuggestions()});

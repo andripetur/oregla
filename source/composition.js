@@ -299,9 +299,9 @@ var Instrument = null; // make accesible to help
 
   // Assign lpSeq to drums
   // TODO make this a user accesible function
-  for (var i = 0; i < playheads.length; i++) {
+  for (var i = 0; i < lpseq.playheads.length; i++) {
     (function(i){
-      playheads[i].do = function(){ drums.play(drums.list[i]); }
+      lpseq.playheads[i].do = function(){ drums.play(drums.list[i]); }
     })(i);
   }
 

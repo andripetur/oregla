@@ -30,7 +30,8 @@ SOURCES=('libs/polyfills.js'
 'composition.js'
 'scheduler.js'
 'editor-browser.js'
-'help.js' )
+'help.js'
+'setupGui.js')
 
 SOURCES_NOGUI=('libs/flocking-all.min.js'
 'defaults.js'
